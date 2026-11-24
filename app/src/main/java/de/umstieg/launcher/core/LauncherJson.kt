@@ -6,6 +6,7 @@ import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.booleanOrNull
 import kotlinx.serialization.json.contentOrNull
+import kotlinx.serialization.json.intOrNull
 import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
 
@@ -32,6 +33,8 @@ object LauncherJson {
         if ("widgetSide" !in settings) settings["widgetPageEnabled"]?.jsonPrimitive?.booleanOrNull?.let { extra["widgetSide"] = JsonPrimitive(if (it) "LEFT" else "OFF") }
         // Daten aus 1.0 (noch ohne Seitenwahl): die damalige Standardansicht „Kategorien“ wird zu den neuen Kacheln.
         if ("drawerSide" !in settings && settings["drawerView"]?.jsonPrimitive?.contentOrNull == "CATEGORIES") extra["drawerView"] = JsonPrimitive("TILES")
+        // Ebenso die alte Glas-Tönung 30 → neuer, kräftigerer Standard 50 (besser lesbar auf hellen Fotos).
+        if ("drawerSide" !in settings && settings["glassTint"]?.jsonPrimitive?.intOrNull == 30) extra["glassTint"] = JsonPrimitive(50)
         if (extra.isEmpty()) return text
         val newRoot = JsonObject(root + ("settings" to JsonObject(settings + extra)))
         return json.encodeToString(JsonElement.serializer(), newRoot)

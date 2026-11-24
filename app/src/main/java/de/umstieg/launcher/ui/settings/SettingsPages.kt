@@ -451,7 +451,8 @@ fun GlassPage(p: PageEnv) {
     SubpageHeader(stringResource(R.string.settings_section_glass), p.back)
     SettingsCard {
         SliderBlock(
-            stringResource(R.string.setting_glass_tint), s.glassTint, 0..100, pct, onPreview = {}, onCommit = { v -> p.set { it.copy(glassTint = v) } }, stepSize = 10,
+            // Angezeigt wird die Durchsichtigkeit (100 − Tönung): mehr Prozent = mehr Hintergrund sichtbar.
+            stringResource(R.string.setting_glass_tint), 100 - s.glassTint, 0..100, pct, onPreview = {}, onCommit = { v -> p.set { it.copy(glassTint = 100 - v) } }, stepSize = 10,
             start = { SideGlyph(R.drawable.ic_lucide_sparkles) }, end = { SideGlyph(R.drawable.ic_lucide_sun_moon) },
         )
         Note(stringResource(R.string.setting_glass_tint_summary))

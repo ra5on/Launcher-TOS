@@ -237,7 +237,7 @@ private fun Overview(d: LauncherData, isDefault: Boolean, versionName: String, a
     SettingsCard {
         NavRow(R.drawable.ic_lucide_palette, Color(0xFF2FB8D6), stringResource(R.string.settings_section_design), stringResource(themeName(s.theme))) { open(Section.DESIGN) }
         CardDivider()
-        NavRow(R.drawable.ic_lucide_sun_moon, Color(0xFF5C8DF0), stringResource(R.string.settings_section_glass), stringResource(R.string.summary_glass, s.glassTint, s.blurStrength)) { open(Section.GLASS) }
+        NavRow(R.drawable.ic_lucide_sun_moon, Color(0xFF5C8DF0), stringResource(R.string.settings_section_glass), stringResource(R.string.summary_glass, 100 - s.glassTint, s.blurStrength)) { open(Section.GLASS) }
         CardDivider()
         NavRow(R.drawable.ic_lucide_hand, Color(0xFFF2A93B), stringResource(R.string.settings_section_gestures), stringResource(R.string.summary_gestures)) { open(Section.GESTURES) }
         CardDivider()

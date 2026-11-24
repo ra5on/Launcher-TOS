@@ -141,16 +141,20 @@ private fun CategoryTile(vm: HomeViewModel, d: LauncherData, cat: AppCategory, a
                             val app = shown.getOrNull(i)
                             Box(Modifier.size(cell), contentAlignment = Alignment.Center) {
                                 when {
-                                    app != null -> AppIconImage(
+                                    app != null -> {
+                                        var iconBounds by remember { mutableStateOf(Rect.Zero) }
+                                        AppIconImage(
                                         vm.icons, app, d.settings.iconOptions(), shape, icon,
                                         modifier = Modifier
+                                            .onGloballyPositioned { iconBounds = it.boundsInWindow() }
                                             .semantics { contentDescription = app.label }
                                             .combinedClickable(role = Role.Button, onLongClickLabel = menu, onLongClick = { vm.showMenu(app) }) {
                                                 vm.controller.recordSearch(null, app.key)
-                                                vm.launch(app, null, null)
+                                                vm.launchFrom(app, iconBounds)
                                             },
                                         shadow = d.settings.iconShadow,
                                     )
+                                    }
                                     overflow && i == n - 1 -> MoreSlot(vm, d, apps.drop(shown.size).take(4), rest, shape, icon) {
                                         vm.openCategory(cat, bounds)
                                     }
@@ -276,11 +280,12 @@ fun CategoryPanel(vm: HomeViewModel, d: LauncherData, apps: Map<de.umstieg.launc
                         Row(Modifier.fillMaxWidth()) {
                             row.forEach { app ->
                                 Box(Modifier.weight(1f), contentAlignment = Alignment.TopCenter) {
+                                    var iconBounds by remember { mutableStateOf(Rect.Zero) }
                                     Column(
-                                        Modifier.clickable(role = Role.Button) {
+                                        Modifier.onGloballyPositioned { iconBounds = it.boundsInWindow() }.clickable(role = Role.Button) {
                                             vm.openCategory(null, null)
                                             vm.controller.recordSearch(null, app.key)
-                                            vm.launch(app, null, null)
+                                            vm.launchFrom(app, iconBounds)
                                         },
                                         horizontalAlignment = Alignment.CenterHorizontally,
                                     ) {

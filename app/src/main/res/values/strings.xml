@@ -73,7 +73,7 @@
     <string name="setting_columns">Spalten</string>
     <string name="setting_rows">Reihen</string>
     <string name="setting_side_margin">Abstand zum Rand</string>
-    <string name="dp_value">%1$d dp</string>
+    <string name="dp_value">%1$d</string>
     <string name="setting_indicator">Aussehen der Seitenpunkte</string>
     <string name="indicator_dots">Punkte</string>
     <string name="indicator_bar">Balken</string>
@@ -404,7 +404,7 @@
     <string name="setting_contrast">Kräftigerer Kontrast</string>
     <string name="setting_contrast_summary">Kräftigeres Glas, deutlichere Schrift</string>
     <string name="setting_glass_tint">Durchsichtigkeit</string>
-    <string name="setting_glass_tint_summary">Wie stark Glasflächen (Dock, Ordner, Panels) eingefärbt sind</string>
+    <string name="setting_glass_tint_summary">Mehr Prozent: mehr Hintergrundbild scheint durch. Weniger: kräftigeres, dunkleres Glas – besser lesbar auf hellen Fotos.</string>
     <string name="setting_blur">Unschärfe (Weichzeichner)</string>
     <string name="setting_blur_summary">Hinter Ordnern, Suche und Panels</string>
     <string name="setting_blur_unsupported">Unschärfe gibt es erst ab Android 12; darunter wird halbtransparent abgedunkelt.</string>
@@ -655,4 +655,17 @@
     <string name="size_small">Klein</string>
     <string name="size_normal">Normal</string>
     <string name="size_large">Groß</string>
+    <string name="setting_edge_height_info">Wie weit unter der Statusleiste der Wischbereich der Ecken reicht. Ein Wisch aus der Statusleiste selbst öffnet immer Android.</string>
+    <string name="gesture_edge_left_info">Wisch nach unten, der oben links knapp unter der Statusleiste beginnt.</string>
+    <string name="gesture_edge_center_info">Wisch nach unten, der oben in der Mitte knapp unter der Statusleiste beginnt.</string>
+    <string name="gesture_edge_right_info">Wisch nach unten, der oben rechts knapp unter der Statusleiste beginnt.</string>
+    <string name="gesture_edge_info">Wisch nach unten, der oben knapp unter der Statusleiste beginnt.</string>
+    <string name="gesture_down_info">Wisch nach unten irgendwo auf dem Raster, auch auf einem Icon.</string>
+    <string name="gesture_up_info">Wisch nach oben irgendwo auf dem Raster.</string>
+    <string name="gesture_double_tap_info">Zweimal schnell auf eine freie Stelle tippen.</string>
+    <string name="gesture_double_tap_bottom_info">Zweimal schnell auf eine freie Stelle im unteren Drittel tippen.</string>
+    <string name="quick_reset_info">Stellt die ursprünglichen Kacheln und Seiten im Schnellzugriff wieder her.</string>
+    <string name="search_clear_history_info">Entfernt die zuletzt gesuchten und gestarteten Apps aus der Suche.</string>
+    <string name="settings_section_hidden_info">Apps, die nicht in Übersicht und Suche erscheinen.</string>
+    <string name="settings_reset_section_info">Setzt nur die Einstellungen dieser Seite zurück, das Layout bleibt.</string>
 </resources>

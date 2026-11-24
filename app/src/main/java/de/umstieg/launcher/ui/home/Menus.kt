@@ -8,6 +8,8 @@ import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.input.nestedscroll.nestedScroll
 import kotlinx.coroutines.launch
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.compose.ui.input.pointer.pointerInput
@@ -127,7 +129,40 @@ fun OverlayHost(
                         scaleX = sc
                         scaleY = sc
                     }
-                    // Gegenwisch nach oben schließt; Listen, die selbst scrollen, haben Vorrang.
+                    // Inhalt, der selbst scrollt (Suchliste, Schnellzugriff): was er am Ende nicht mehr scrollen
+                    // kann, zieht das Panel nach oben zu; beim Loslassen entscheiden Strecke und Tempo.
+                    .nestedScroll(remember(o) {
+                        object : androidx.compose.ui.input.nestedscroll.NestedScrollConnection {
+                            var pulled = 0f
+                            override fun onPreScroll(available: Offset, source: androidx.compose.ui.input.nestedscroll.NestedScrollSource): Offset {
+                                // Finger wieder nach unten, während das Panel schon angezogen ist: erst das Panel zurück.
+                                if (pulled < 0f && available.y > 0f) {
+                                    val use = minOf(available.y, -pulled)
+                                    pulled += use
+                                    scope.launch { anim.snapTo((1f + pulled / (heightPx * 0.45f)).coerceIn(0f, 1f)) }
+                                    return Offset(0f, use)
+                                }
+                                return Offset.Zero
+                            }
+                            override fun onPostScroll(consumed: Offset, available: Offset, source: androidx.compose.ui.input.nestedscroll.NestedScrollSource): Offset {
+                                if (source != androidx.compose.ui.input.nestedscroll.NestedScrollSource.UserInput || available.y >= 0f) return Offset.Zero
+                                pulled += available.y
+                                scope.launch { anim.snapTo((1f + pulled / (heightPx * 0.45f)).coerceIn(0f, 1f)) }
+                                return Offset(0f, available.y)
+                            }
+                            override suspend fun onPreFling(available: androidx.compose.ui.unit.Velocity): androidx.compose.ui.unit.Velocity {
+                                if (pulled >= 0f) return androidx.compose.ui.unit.Velocity.Zero
+                                pulled = 0f
+                                if (anim.value < 0.7f || available.y < -1500f) {
+                                    vm.showOverlay(Overlay.NONE)
+                                } else {
+                                    anim.animateTo(1f, spring(dampingRatio = 0.86f, stiffness = stiffness))
+                                }
+                                return available
+                            }
+                        }
+                    })
+                    // Gegenwisch nach oben auf Flächen, die nicht scrollen.
                     .pointerInput(o) {
                         val tracker = androidx.compose.ui.input.pointer.util.VelocityTracker()
                         var total = 0f

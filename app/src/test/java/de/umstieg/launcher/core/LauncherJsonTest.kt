@@ -47,13 +47,15 @@ class LauncherJsonTest {
 
     @Test
     fun decode_migratesData100() {
-        val old = """{"settings":{"drawerEnabled":true,"widgetPageEnabled":false,"drawerView":"CATEGORIES"}}"""
+        val old = """{"settings":{"drawerEnabled":true,"widgetPageEnabled":false,"drawerView":"CATEGORIES","glassTint":30}}"""
         val s = LauncherJson.decode(old).settings
+        assertEquals(50, s.glassTint)
         assertEquals(PageSide.RIGHT, s.drawerSide)
         assertEquals(PageSide.OFF, s.widgetSide)
         assertEquals(DrawerView.TILES, s.drawerView)
         // Neuere Daten mit bewusst gewählter Ansicht bleiben unverändert.
-        val newer = """{"settings":{"drawerSide":"LEFT","drawerView":"CATEGORIES"}}"""
+        val newer = """{"settings":{"drawerSide":"LEFT","drawerView":"CATEGORIES","glassTint":30}}"""
         assertEquals(DrawerView.CATEGORIES, LauncherJson.decode(newer).settings.drawerView)
+        assertEquals(30, LauncherJson.decode(newer).settings.glassTint)
     }
 }

@@ -253,6 +253,9 @@ private fun HomeContent(vm: HomeViewModel, d: LauncherData, isDefault: Boolean, 
         }
         if (!vm.launch(app, r, options)) Toast.makeText(context, R.string.app_not_startable, Toast.LENGTH_SHORT).show()
     }
+    // Für Kacheln und Kategorie-Panel: App mit Zoom aus dem angetippten Icon starten.
+    SideEffect { vm.animatedLaunch = ::launch }
+    androidx.compose.runtime.DisposableEffect(Unit) { onDispose { vm.animatedLaunch = null } }
 
     fun perform(action: GestureAction, binding: de.umstieg.launcher.core.GestureBinding?) {
         when (action) {
@@ -492,67 +495,72 @@ private fun HomeContent(vm: HomeViewModel, d: LauncherData, isDefault: Boolean, 
                     var claimed = false
                     var peekTarget: Overlay? = null
                     val tracker = androidx.compose.ui.input.pointer.util.VelocityTracker()
+                    try {
                     while (true) {
-                        val ev = awaitPointerEvent(PointerEventPass.Initial)
-                        val ch = ev.changes.firstOrNull { it.id == down.id }
-                        if (ch == null || !ch.pressed) {
-                            // Losgelassen: nach Strecke oder Tempo öffnen, sonst zurückfedern.
+                            val ev = awaitPointerEvent(PointerEventPass.Initial)
+                            val ch = ev.changes.firstOrNull { it.id == down.id }
+                            if (ch == null || !ch.pressed) {
+                                // Losgelassen: nach Strecke oder Tempo öffnen, sonst zurückfedern.
+                                val target = peekTarget
+                                if (target != null) {
+                                    val progress = total.y / (size.height * 0.4f)
+                                    // Schon ab etwa 70 dp oder einem kurzen, schnellen Wisch öffnen (wie die frühere Auslöseschwelle).
+                                    if (progress > 0.18f || tracker.calculateVelocity().y > 700f) {
+                                        view.tosHaptic(current.settings)
+                                        vm.showOverlay(target)
+                                    } else {
+                                        vm.setPeek(null)
+                                    }
+                                }
+                                break
+                            }
+                            if (drag.longPressed || drag.active) {
+                                vm.setPeek(null)
+                                break
+                            }
+                            total += ch.positionChange()
+                            if (!claimed) {
+                                if (abs(total.x) > slop && abs(total.x) >= abs(total.y)) break
+                                if (abs(total.y) > slop && abs(total.y) > abs(total.x)) claimed = true
+                            }
+                            if (!claimed) continue
+                            ch.consume()
+                            val edgeBottom = (statusTop + size.height * current.settings.edgeHeightPercent / 100f) / size.height
+                            // Panels (eigene Benachrichtigungen, Schnellzugriff, Suche) folgen dem Finger.
+                            if (peekTarget == null && total.y > 0f) {
+                                val early = GestureClassifier.classify(
+                                    down.position.x / size.width, down.position.y / size.height, total.x / size.height, 1f,
+                                    edgeBottom, current.settings.edgeSplit, current.settings.swipeZoneLeft, current.settings.swipeZoneRight,
+                                    minDistance = 0f, dominance = 0f,
+                                )
+                                peekTarget = early?.let { overlayFor(GestureClassifier.binding(current.settings, it).action) }
+                            }
                             val target = peekTarget
                             if (target != null) {
-                                val progress = total.y / (size.height * 0.4f)
-                                // Schon ab etwa 70 dp oder einem kurzen, schnellen Wisch öffnen (wie die frühere Auslöseschwelle).
-                                if (progress > 0.18f || tracker.calculateVelocity().y > 700f) {
-                                    view.tosHaptic(current.settings)
-                                    vm.showOverlay(target)
-                                } else {
-                                    vm.setPeek(null)
-                                }
+                                tracker.addPosition(ch.uptimeMillis, ch.position)
+                                vm.setPeek(target, total.y / (size.height * 0.4f))
+                                continue
                             }
-                            break
-                        }
-                        if (drag.longPressed || drag.active) {
-                            vm.setPeek(null)
-                            break
-                        }
-                        total += ch.positionChange()
-                        if (!claimed) {
-                            if (abs(total.x) > slop && abs(total.x) >= abs(total.y)) break
-                            if (abs(total.y) > slop && abs(total.y) > abs(total.x)) claimed = true
-                        }
-                        if (!claimed) continue
-                        ch.consume()
-                        val edgeBottom = (statusTop + size.height * current.settings.edgeHeightPercent / 100f) / size.height
-                        // Panels (eigene Benachrichtigungen, Schnellzugriff, Suche) folgen dem Finger.
-                        if (peekTarget == null && total.y > 0f) {
-                            val early = GestureClassifier.classify(
-                                down.position.x / size.width, down.position.y / size.height, total.x / size.height, 1f,
-                                edgeBottom, current.settings.edgeSplit, current.settings.swipeZoneLeft, current.settings.swipeZoneRight,
-                                minDistance = 0f, dominance = 0f,
+                            val g = GestureClassifier.classify(
+                                down.position.x / size.width, down.position.y / size.height,
+                                total.x / size.height, total.y / size.height,
+                                edgeBottom, current.settings.edgeSplit,
+                                current.settings.swipeZoneLeft, current.settings.swipeZoneRight,
+                                minDistance = SWIPE_TRIGGER_DP.dp.toPx() / size.height,
+                                dominance = 1f,
                             )
-                            peekTarget = early?.let { overlayFor(GestureClassifier.binding(current.settings, it).action) }
+                            if (g != null) {
+                                gesture(g)
+                                do {
+                                    val rest = awaitPointerEvent(PointerEventPass.Initial)
+                                    rest.changes.forEach { it.consume() }
+                                } while (rest.changes.any { it.pressed })
+                                break
+                            }
                         }
-                        val target = peekTarget
-                        if (target != null) {
-                            tracker.addPosition(ch.uptimeMillis, ch.position)
-                            vm.setPeek(target, total.y / (size.height * 0.4f))
-                            continue
-                        }
-                        val g = GestureClassifier.classify(
-                            down.position.x / size.width, down.position.y / size.height,
-                            total.x / size.height, total.y / size.height,
-                            edgeBottom, current.settings.edgeSplit,
-                            current.settings.swipeZoneLeft, current.settings.swipeZoneRight,
-                            minDistance = SWIPE_TRIGGER_DP.dp.toPx() / size.height,
-                            dominance = 1f,
-                        )
-                        if (g != null) {
-                            gesture(g)
-                            do {
-                                val rest = awaitPointerEvent(PointerEventPass.Initial)
-                                rest.changes.forEach { it.consume() }
-                            } while (rest.changes.any { it.pressed })
-                            break
-                        }
+                    } finally {
+                        // Abgebrochene Geste (z. B. Home-Taste mitten im Wisch): kein halb offenes Panel zurücklassen.
+                        if (peekTarget != null && vm.overlay.value == Overlay.NONE) vm.setPeek(null)
                     }
                 }
             }

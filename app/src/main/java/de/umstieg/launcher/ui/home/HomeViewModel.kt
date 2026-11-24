@@ -172,6 +172,7 @@ class HomeViewModel(application: Application) : AndroidViewModel(application) {
         _editMode.value = false
         _overlay.value = Overlay.NONE
         _openCategory.value = null
+        _peek.value = null
         _menuApp.value = null
         _customize.value = null
         _widgetPicker.value = null
@@ -194,6 +195,13 @@ class HomeViewModel(application: Application) : AndroidViewModel(application) {
             _widgetEdit.value -> _widgetEdit.value = false
             _editMode.value -> _editMode.value = false
         }
+    }
+
+    /** Vom Homescreen gesetzt: Start mit Öffnungs-Animation aus [Rect] (Fensterkoordinaten). */
+    var animatedLaunch: ((AppInfo, androidx.compose.ui.geometry.Rect) -> Unit)? = null
+
+    fun launchFrom(app: AppInfo, bounds: androidx.compose.ui.geometry.Rect) {
+        animatedLaunch?.invoke(app, bounds) ?: launch(app, null, null)
     }
 
     fun launch(app: AppInfo, bounds: Rect?, options: ActivityOptions?): Boolean {

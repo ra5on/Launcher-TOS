@@ -98,6 +98,19 @@ fun settingInfoMap(): Map<String, String> {
         R.string.setting_open_animation to R.string.setting_open_animation_info,
         R.string.setting_reduce_motion to R.string.setting_reduce_motion_info,
         R.string.setting_themed_icons to R.string.setting_themed_icons_summary,
+        R.string.setting_edge_height to R.string.setting_edge_height_info,
+        R.string.gesture_edge_left to R.string.gesture_edge_left_info,
+        R.string.gesture_edge_center to R.string.gesture_edge_center_info,
+        R.string.gesture_edge_right to R.string.gesture_edge_right_info,
+        R.string.gesture_edge to R.string.gesture_edge_info,
+        R.string.gesture_down to R.string.gesture_down_info,
+        R.string.gesture_up to R.string.gesture_up_info,
+        R.string.gesture_double_tap to R.string.gesture_double_tap_info,
+        R.string.gesture_double_tap_bottom to R.string.gesture_double_tap_bottom_info,
+        R.string.quick_reset to R.string.quick_reset_info,
+        R.string.search_clear_history to R.string.search_clear_history_info,
+        R.string.settings_section_hidden to R.string.settings_section_hidden_info,
+        R.string.settings_reset_section to R.string.settings_reset_section_info,
     )
     return pairs.associate { (t, i) -> stringResource(t) to stringResource(i) }
 }
@@ -211,7 +224,7 @@ fun SimpleOverview(d: LauncherData, vm: SettingsViewModel, actions: SettingsActi
     SettingsCard {
         SimpleRow(stringResource(R.string.simple_theme), stringResource(R.string.simple_theme_info), stringResource(themeName(s.theme))) { choice = Choice.THEME }
         CardDivider()
-        SimpleRow(stringResource(R.string.simple_glass), stringResource(R.string.simple_glass_info), stringResource(R.string.percent_value, s.glassTint)) { open(Section.GLASS) }
+        SimpleRow(stringResource(R.string.simple_glass), stringResource(R.string.simple_glass_info), stringResource(R.string.percent_value, 100 - s.glassTint)) { open(Section.GLASS) }
         CardDivider()
         SwitchRow(stringResource(R.string.simple_badges), stringResource(R.string.simple_badges_info), s.badgesEnabled) { v -> vm.update { it.copy(badgesEnabled = v) } }
     }
