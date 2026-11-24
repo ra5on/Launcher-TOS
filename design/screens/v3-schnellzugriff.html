@@ -1,0 +1,92 @@
+<!doctype html><html lang="de"><head><meta charset="utf-8">
+<title>Schnellzugriff v3</title>
+<link rel="stylesheet" href="../assets/kit.css">
+<style>
+  /* Kompakt und fein: Kacheln 64 px, Abstände 10–12 px, Regler 48 px, Seiten senkrecht mit Punkten rechts. */
+  .head { position:absolute; top:44px; left:var(--side); right:var(--side); display:flex; align-items:center; }
+  .head .t { font-size:13px; font-weight:600; color:var(--ink-2); letter-spacing:.2px; }
+  .head .pen { margin-left:auto; width:30px; height:30px; border-radius:50%; display:grid; place-items:center; }
+  .head .pen i { width:15px; height:15px; }
+  .page { position:absolute; top:84px; left:var(--side); right:34px; display:flex; flex-direction:column; gap:12px; }
+  .grid { display:grid; grid-template-columns:repeat(4,64px); justify-content:space-between; row-gap:12px; }
+  .tile { width:64px; display:flex; flex-direction:column; align-items:center; gap:5px; }
+  .tile .sq { width:64px; height:64px; border-radius:20px; display:grid; place-items:center; }
+  .tile .sq i { width:22px; height:22px; }
+  .tile.on .sq { background:var(--accent); color:var(--accent-ink); border-color:transparent; }
+  .tile b { font-size:10.5px; font-weight:600; white-space:nowrap; }
+  .tile small { font-size:9.5px; color:var(--ink-3); margin-top:-4px; }
+  .media { height:56px; border-radius:18px; display:flex; align-items:center; gap:10px; padding:0 8px 0 8px; }
+  .cover { width:40px; height:40px; border-radius:11px; flex:none;
+    background:radial-gradient(80% 80% at 25% 20%, #FFC18A 0%, transparent 60%), radial-gradient(90% 90% at 85% 85%, #7B5CFF 0%, transparent 65%), linear-gradient(140deg,#E8607A,#3B2A6E); }
+  .media .m { flex:1; min-width:0; }
+  .media .m b { display:block; font-size:12.5px; font-weight:650; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .media .m span { font-size:11px; color:var(--ink-2); }
+  .media .c { display:flex; align-items:center; gap:12px; }
+  .media .c i { width:17px; height:17px; }
+  .media .play { width:30px; height:30px; border-radius:50%; background:#fff; color:#10141C; display:grid; place-items:center; }
+  .media .play i { width:13px; height:13px; }
+  .media.idle { height:44px; }
+  .media.idle .m b { font-weight:550; color:var(--ink-2); }
+  .sl { height:48px; border-radius:16px; position:relative; overflow:hidden; display:flex; align-items:center; }
+  .sl .fill { position:absolute; left:0; top:0; bottom:0; background:rgba(255,255,255,.22); }
+  .sl .knob { position:absolute; top:10px; bottom:10px; width:4px; border-radius:2px; background:#fff; }
+  .sl .ico { position:relative; width:48px; display:grid; place-items:center; }
+  .sl .ico i { width:18px; height:18px; }
+  .sl b { position:relative; font-size:12.5px; font-weight:600; }
+  .sl span { position:relative; margin-left:auto; margin-right:14px; font-size:12px; color:var(--ink-2); }
+  .dots { position:absolute; right:12px; top:50%; transform:translateY(-50%); display:flex; flex-direction:column; gap:7px; align-items:center; }
+  .dots div { width:6px; height:6px; border-radius:3px; background:var(--ink-3); }
+  .dots .on { height:18px; background:#fff; }
+  .dots .add { width:10px; height:10px; background:none; display:grid; place-items:center; color:var(--ink-3); }
+  .dots .add i { width:10px; height:10px; }
+  .peek { position:absolute; left:var(--side); right:34px; bottom:-18px; height:96px; border-radius:22px; display:flex; align-items:center; justify-content:center; gap:8px; color:var(--ink-2); font-size:12.5px; font-weight:600; opacity:.75; }
+  .peek i { width:16px; height:16px; }
+  .note { font-size:10.5px; color:var(--ink-3); line-height:1.35; }
+  .lbl { font-size:11px; font-weight:600; color:var(--ink-3); letter-spacing:.6px; text-transform:uppercase; margin:2px 0 -4px 2px; }
+</style></head>
+<body data-time="08:15">
+<div class="wall blurred dim"></div>
+<div class="layer">
+  <div class="head"><span class="t">Schnellzugriff · Seite 1</span><div class="pen glass"><i data-i="pencil"></i></div></div>
+
+  <div class="page">
+    <div class="grid">
+      <div class="tile on"><div class="sq glass"><i data-i="wifi"></i></div><b>WLAN</b><small>Zuhause</small></div>
+      <div class="tile on"><div class="sq glass"><i data-i="bluetooth"></i></div><b>Bluetooth</b><small>An</small></div>
+      <div class="tile"><div class="sq glass"><i data-i="signal-high"></i></div><b>Mobil</b><small>Aus</small></div>
+      <div class="tile"><div class="sq glass"><i data-i="plane"></i></div><b>Flugmodus</b><small>Aus</small></div>
+    </div>
+
+    <div class="media glass idle"><div class="cover" style="width:30px;height:30px;border-radius:9px;opacity:.6"></div>
+      <div class="m"><b>Nichts wird abgespielt</b></div>
+      <div class="c"><div class="play"><i data-i="play"></i></div></div></div>
+
+    <div class="sl glass"><div class="fill" style="width:64%"></div><div class="knob" style="left:calc(64% - 8px)"></div>
+      <div class="ico"><i data-i="sun"></i></div><b>Helligkeit</b><span>64 %</span></div>
+    <div class="sl glass"><div class="fill" style="width:12%"></div><div class="knob" style="left:calc(12% - 8px)"></div>
+      <div class="ico"><i data-i="volume-2"></i></div><b>Lautstärke</b><span>12 %</span></div>
+
+    <div class="grid">
+      <div class="tile"><div class="sq glass"><i data-i="flashlight"></i></div><b>Lampe</b></div>
+      <div class="tile on"><div class="sq glass"><i data-i="moon"></i></div><b>Nicht stören</b></div>
+      <div class="tile"><div class="sq glass"><i data-i="rotate-ccw"></i></div><b>Drehsperre</b></div>
+      <div class="tile"><div class="sq glass"><i data-i="calculator"></i></div><b>Rechner</b></div>
+      <div class="tile"><div class="sq glass"><i data-i="alarm-clock"></i></div><b>Wecker</b></div>
+      <div class="tile"><div class="sq glass"><i data-i="camera"></i></div><b>Kamera</b></div>
+      <div class="tile"><div class="sq glass"><i data-i="scan-qr-code"></i></div><b>QR-Code</b></div>
+      <div class="tile"><div class="sq glass"><i data-i="battery-charging"></i></div><b>Sparen</b></div>
+    </div>
+
+    <div class="lbl">Mit Wiedergabe</div>
+    <div class="media glass"><div class="cover"></div>
+      <div class="m"><b>Leuchtfeuer am Hafen</b><span>Nordlicht Quartett</span></div>
+      <div class="c"><i data-i="skip-back"></i><div class="play"><i data-i="pause"></i></div><i data-i="skip-forward"></i></div></div>
+
+    <div class="note">Nach oben oder unten wischen wechselt die Seite. Lange drücken oder ✎ zum Bearbeiten.</div>
+  </div>
+
+  <div class="dots"><div class="on"></div><div></div><div class="add"><i data-i="plus"></i></div></div>
+  <div class="peek glass"><i data-i="plus"></i>Seite hinzufügen</div>
+</div>
+<script src="../assets/kit.js"></script>
+</body></html>

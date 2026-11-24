@@ -1,0 +1,76 @@
+<!doctype html><html lang="de"><head><meta charset="utf-8">
+<title>Gesten v3</title>
+<link rel="stylesheet" href="../assets/kit.css">
+<style>
+  body { background:#0E1420; }
+  .wrap { position:absolute; top:40px; left:var(--side); right:var(--side); bottom:0; display:flex; flex-direction:column; gap:12px; }
+  .h { display:flex; align-items:center; gap:10px; }
+  .h .back { width:34px; height:34px; border-radius:50%; display:grid; place-items:center; }
+  .h .back i { width:16px; height:16px; }
+  .h b { font-size:22px; font-weight:680; letter-spacing:-.4px; }
+  .sub { font-size:12px; color:var(--ink-2); margin-top:-4px; }
+  /* Interaktives Handy-Bild: jede Zone farbig mit Symbol und Kurzname der Aktion. */
+  .phone { flex:none; align-self:center; width:200px; height:372px; border-radius:30px; border:2px solid rgba(255,255,255,.22); position:relative; overflow:hidden;
+    background:linear-gradient(170deg,#1B2A4A,#14243A 55%,#2A1E3A); }
+  .sb { position:absolute; top:0; left:0; right:0; height:14px; font-size:7px; color:var(--ink-3); padding:3px 10px; }
+  .z { position:absolute; border-radius:10px; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:2px; font-size:8.5px; font-weight:650; text-align:center; line-height:1.15; }
+  .z i { width:13px; height:13px; }
+  .z.l { left:4px; top:4px; width:62px; height:70px; background:rgba(46,196,166,.55); border:1.5px solid #2EC4A6; }
+  .z.m { left:70px; top:4px; width:60px; height:70px; background:rgba(255,255,255,.12); border:1.5px dashed rgba(255,255,255,.45); }
+  .z.r { right:4px; top:4px; width:62px; height:70px; background:rgba(122,160,255,.5); border:1.5px solid #7AA0FF; }
+  .z.down { left:30px; right:30px; top:110px; height:84px; background:rgba(255,193,120,.35); border:1.5px solid #FFC178; }
+  .z.up { left:30px; right:30px; top:212px; height:64px; background:rgba(214,120,255,.30); border:1.5px solid #D678FF; }
+  .z.dt { left:30px; right:30px; bottom:16px; height:48px; background:rgba(255,255,255,.10); border:1.5px dashed rgba(255,255,255,.35); }
+  .z.sel { box-shadow:0 0 0 3px #fff; }
+  .ov { position:absolute; top:0; left:0; right:0; height:4px; background:linear-gradient(90deg,#2EC4A6 0 33%,transparent 33% 67%,#7AA0FF 67%); }
+  .tap { font-size:10.5px; color:var(--ink-3); text-align:center; margin-top:-4px; }
+  .chips { display:flex; gap:6px; flex-wrap:wrap; }
+  .chip { height:30px; padding:0 11px; border-radius:15px; font-size:11.5px; font-weight:600; display:inline-flex; align-items:center; }
+  .chip.on { background:#fff; color:#10141C; }
+  .card { border-radius:20px; padding:12px 14px; display:flex; flex-direction:column; gap:10px; }
+  .sl b { font-size:12.5px; font-weight:600; display:flex; justify-content:space-between; }
+  .sl b span { color:var(--accent); }
+  .sl small { font-size:10.5px; color:var(--ink-2); display:block; margin-top:1px; }
+  .track { height:6px; border-radius:3px; background:rgba(255,255,255,.16); margin-top:8px; position:relative; }
+  .track div { position:absolute; left:0; top:0; bottom:0; border-radius:3px; background:var(--accent); }
+  .track div::after { content:""; position:absolute; right:-8px; top:-5px; width:16px; height:16px; border-radius:50%; background:#fff; }
+  .sw { display:flex; align-items:center; gap:10px; }
+  .sw .tx { flex:1; }
+  .sw b { font-size:12.5px; font-weight:600; }
+  .sw small { display:block; font-size:10.5px; color:var(--ink-2); margin-top:1px; line-height:1.3; }
+  .toggle { width:40px; height:24px; border-radius:12px; background:var(--accent); position:relative; flex:none; }
+  .toggle::after { content:""; position:absolute; right:3px; top:3px; width:18px; height:18px; border-radius:50%; background:#fff; }
+  .seg { display:flex; background:rgba(255,255,255,.08); border-radius:14px; padding:3px; }
+  .seg span { flex:1; text-align:center; font-size:11px; font-weight:600; padding:6px 0; border-radius:11px; color:var(--ink-2); }
+  .seg .on { background:#fff; color:#10141C; }
+</style></head>
+<body data-time="08:15">
+<div class="wrap">
+  <div class="h"><div class="back glass"><i data-i="chevron-left"></i></div><b>Gesten</b></div>
+  <div class="sub">Links: Benachrichtigungen · Rechts: Schnellzugriff · Mitte: Suche</div>
+
+  <div class="phone">
+    <div class="ov"></div>
+    <div class="sb">08:15</div>
+    <div class="z l sel"><i data-i="bell"></i>Benach-<br>richtigungen</div>
+    <div class="z m"><i data-i="panel-bottom"></i>Android</div>
+    <div class="z r"><i data-i="sliders-horizontal"></i>Schnell-<br>zugriff</div>
+    <div class="z down"><i data-i="search"></i>Nach unten:<br>Suche</div>
+    <div class="z up"><i data-i="layout-grid"></i>Nach oben:<br>App-Übersicht</div>
+    <div class="z dt"><i data-i="lock"></i>Doppeltipp unten: Sperren</div>
+  </div>
+  <div class="tap">Zone antippen, um die Aktion zu wählen</div>
+
+  <div class="chips"><span class="chip glass">Launcher TOS</span><span class="chip glass">Android-Standard</span><span class="chip glass">Android + Suche</span><span class="chip on">Eigen</span></div>
+
+  <div class="card glass">
+    <div class="sl"><b>Breite links <span>33 %</span></b><small>Wie viel vom oberen Rand links eigene Panels öffnet.</small><div class="track"><div style="width:33%"></div></div></div>
+    <div class="sl"><b>Breite rechts <span>33 %</span></b><small>Dazwischen bleibt Android.</small><div class="track"><div style="width:33%"></div></div></div>
+  </div>
+  <div class="card glass">
+    <div class="sw"><div class="tx"><b>Systemweite Wischgesten</b><small>Ganz oben auf der Statusleiste, auch in anderen Apps. Braucht die Bedienungshilfe von Launcher TOS (liest keine Inhalte).</small></div><div class="toggle"></div></div>
+    <div class="seg"><span>Nur Homescreen</span><span class="on">Überall</span></div>
+  </div>
+</div>
+<script src="../assets/kit.js"></script>
+</body></html>

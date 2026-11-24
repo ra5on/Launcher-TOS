@@ -1,0 +1,40 @@
+<!doctype html><html lang="de"><head><meta charset="utf-8">
+<title>Gesten-Auswahl v3</title>
+<link rel="stylesheet" href="../assets/kit.css">
+<style>
+  body { background:#0E1420; }
+  .dim { position:absolute; inset:0; background:rgba(4,6,10,.55); }
+  .sheet { position:absolute; left:0; right:0; bottom:0; top:120px; border-radius:28px 28px 0 0; background:#151C28; padding:10px 16px 0; display:flex; flex-direction:column; gap:8px; }
+  .grab { width:36px; height:4px; border-radius:2px; background:rgba(255,255,255,.3); align-self:center; margin-bottom:6px; }
+  .sheet h3 { font-size:17px; font-weight:680; }
+  .sheet .s { font-size:11.5px; color:var(--ink-2); margin-top:-4px; margin-bottom:4px; }
+  .opt { border-radius:16px; padding:10px 12px; display:flex; align-items:center; gap:12px; background:rgba(255,255,255,.06); border:1px solid rgba(255,255,255,.08); }
+  .opt.on { border:1.5px solid var(--accent); background:rgba(46,196,166,.12); }
+  .opt .ic { width:34px; height:34px; border-radius:11px; display:grid; place-items:center; background:rgba(255,255,255,.12); flex:none; }
+  .opt.on .ic { background:var(--accent); color:var(--accent-ink); }
+  .opt .ic i { width:17px; height:17px; }
+  .opt .tx { flex:1; min-width:0; }
+  .opt b { font-size:12.5px; font-weight:650; }
+  .opt small { display:block; font-size:10.5px; color:var(--ink-2); margin-top:1px; line-height:1.3; }
+  /* Mini-Vorschau: kleines Handy mit dem Ergebnis. */
+  .pv { width:30px; height:52px; border-radius:7px; border:1.5px solid rgba(255,255,255,.3); flex:none; position:relative; overflow:hidden; background:#1B2A4A; }
+  .pv .p { position:absolute; left:2px; right:2px; top:2px; border-radius:4px; background:rgba(255,255,255,.35); }
+  .lock { font-size:9.5px; color:var(--ink-3); }
+</style></head>
+<body data-time="08:15">
+<div class="dim"></div>
+<div class="sheet">
+  <div class="grab"></div>
+  <h3>Oben links nach unten wischen</h3>
+  <div class="s">Was soll sich öffnen?</div>
+  <div class="opt on"><div class="ic"><i data-i="bell"></i></div><div class="tx"><b>Eigene Benachrichtigungen</b><small>Nach App gestapelt, mit Antworten und Aktionen.</small></div><div class="pv"><div class="p" style="height:30px"></div></div></div>
+  <div class="opt"><div class="ic"><i data-i="sliders-horizontal"></i></div><div class="tx"><b>Eigener Schnellzugriff</b><small>WLAN, Helligkeit, Medien und eigene Kacheln.</small></div><div class="pv"><div class="p" style="height:40px;background:rgba(46,196,166,.5)"></div></div></div>
+  <div class="opt"><div class="ic"><i data-i="panel-bottom"></i></div><div class="tx"><b>Android-Benachrichtigungen</b><small>Die Leiste des Systems, wie gewohnt.</small></div><div class="pv"><div class="p" style="height:24px;background:#fff"></div></div></div>
+  <div class="opt"><div class="ic"><i data-i="layout-grid"></i></div><div class="tx"><b>Android-Schnelleinstellungen</b><small>Die Kacheln des Systems, ganz aufgeklappt.</small></div><div class="pv"><div class="p" style="height:46px;background:#fff"></div></div></div>
+  <div class="opt"><div class="ic"><i data-i="search"></i></div><div class="tx"><b>Suche</b><small>Apps, Einstellungen, Kontakte und das Web.</small></div><div class="pv"><div class="p" style="height:8px;border-radius:4px"></div></div></div>
+  <div class="opt"><div class="ic"><i data-i="app-window"></i></div><div class="tx"><b>App öffnen</b><small>Eine App deiner Wahl starten.</small></div><div class="pv"></div></div>
+  <div class="opt"><div class="ic"><i data-i="lock"></i></div><div class="tx"><b>Bildschirm sperren</b><small>Nur mit eingeschalteter Bedienungshilfe.</small></div><div class="pv" style="background:#000"></div></div>
+  <div class="opt"><div class="ic"><i data-i="x"></i></div><div class="tx"><b>Nichts</b><small>Die Geste bleibt frei.</small></div><div class="pv"></div></div>
+</div>
+<script src="../assets/kit.js"></script>
+</body></html>
