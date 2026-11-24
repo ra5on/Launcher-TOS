@@ -396,7 +396,10 @@ fun SearchOverlay(vm: HomeViewModel, d: LauncherData, apps: Map<de.umstieg.launc
                 }
             } else if (query.isNotBlank() && calc == null && settingHits.isEmpty()) {
                 item(key = "none") {
-                    Text(stringResource(R.string.search_none), style = TextStyle(fontFamily = Inter, fontSize = 16.sp, color = Tos.Ink2), modifier = Modifier.padding(12.dp))
+                    Column(Modifier.padding(12.dp)) {
+                        Text(stringResource(R.string.search_none), style = TextStyle(fontFamily = Inter, fontSize = 16.sp, color = Tos.Ink2))
+                        Text(stringResource(R.string.search_typo_hint), style = TextStyle(fontFamily = Inter, fontSize = 13.sp, color = Tos.Ink3), modifier = Modifier.padding(top = 4.dp))
+                    }
                 }
             }
             if (settingHits.isNotEmpty()) {
@@ -452,17 +455,6 @@ fun SearchOverlay(vm: HomeViewModel, d: LauncherData, apps: Map<de.umstieg.launc
         }
         Box(Modifier.weight(1f)) {
             AzList(vm, d, list, shape, Modifier.fillMaxSize(), query, { app, _ -> open(app) }, prefixCount, prefix)
-            if (query.isNotEmpty()) {
-                Row(
-                    Modifier.align(Alignment.BottomCenter).padding(bottom = 12.dp).glass(Tos.PillShape, Tos.Glass, Tos.GlassLine)
-                        .padding(horizontal = 18.dp, vertical = 10.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                ) {
-                    Icon(painterResource(R.drawable.ic_lucide_sparkles), null, tint = Tos.Accent, modifier = Modifier.size(18.dp))
-                    Spacer(Modifier.width(8.dp))
-                    Text(stringResource(R.string.search_typo_hint), style = TextStyle(fontFamily = Inter, fontSize = 14.sp, color = Tos.Ink2, textAlign = TextAlign.Center))
-                }
-            }
         }
     }
 }

@@ -178,7 +178,7 @@
     <string name="search_recent">Zuletzt</string>
     <string name="search_clear_history">Verlauf löschen</string>
     <string name="search_all_apps">Alle Apps</string>
-    <string name="search_typo_hint">Findet Apps auch bei Tippfehlern</string>
+    <string name="search_typo_hint">Tippfehler werden berücksichtigt – versuche weniger Buchstaben.</string>
     <string name="search_copied">Ergebnis kopiert</string>
     <string name="search_no_contacts">Kontakte werden nicht durchsucht – dafür bräuchte Launcher TOS eine zusätzliche Berechtigung.</string>
     <string name="letter_rail">Buchstaben-Leiste: tippen oder ziehen, um zu springen</string>
