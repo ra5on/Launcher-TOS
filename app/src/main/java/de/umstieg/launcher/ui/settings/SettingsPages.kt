@@ -493,6 +493,7 @@ fun actionName(a: GestureAction) = stringResource(
         GestureAction.OPEN_APP -> R.string.action_open_app
         GestureAction.ASSISTANT -> R.string.action_assistant
         GestureAction.NOTHING -> R.string.action_nothing
+        GestureAction.LOCK_SCREEN -> R.string.action_lock_screen
     },
 )
 

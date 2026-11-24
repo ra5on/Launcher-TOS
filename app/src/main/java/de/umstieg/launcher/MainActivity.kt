@@ -71,6 +71,7 @@ class MainActivity : ComponentActivity() {
             }
         }
         readWallpaperColor()
+        handleGestureIntent(intent)
         val actions = HomeActions(
             openSettings = { section ->
                 startActivity(
@@ -120,9 +121,17 @@ class MainActivity : ComponentActivity() {
     /** Home-Taste bei laufendem Launcher: Panels schließen, erste Seite (animiert, wenn schon sichtbar). */
     override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
+        handleGestureIntent(intent)
         if (Intent.ACTION_MAIN == intent.action && intent.hasCategory(Intent.CATEGORY_HOME)) {
             vm.onHomePressed(visible = lifecycle.currentState.isAtLeast(Lifecycle.State.RESUMED))
         }
+    }
+
+    /** Wisch auf der Statusleiste (Bedienungshilfe): passende Aktion auf dem Homescreen ausführen. */
+    private fun handleGestureIntent(intent: Intent?) {
+        val name = intent?.getStringExtra(EXTRA_GESTURE_ACTION) ?: return
+        intent.removeExtra(EXTRA_GESTURE_ACTION)
+        runCatching { de.umstieg.launcher.core.GestureAction.valueOf(name) }.getOrNull()?.let { vm.requestAction(it) }
     }
 
     /** Hauptfarbe des Hintergrunds (für „Akzent aus Hintergrund“). */
@@ -227,6 +236,7 @@ class MainActivity : ComponentActivity() {
     }
 
     companion object {
+        const val EXTRA_GESTURE_ACTION = "de.umstieg.launcher.GESTURE_ACTION"
         private const val REQUEST_CONFIGURE = 0x7A
         private const val BLUR_RADIUS_PX = 60
     }

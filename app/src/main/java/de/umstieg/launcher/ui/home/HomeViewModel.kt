@@ -94,6 +94,19 @@ class HomeViewModel(application: Application) : AndroidViewModel(application) {
         }
     }
 
+    /** Android-Benachrichtigungsleiste öffnen: über die Bedienungshilfe (sauber), sonst über den Statusleisten-Dienst. */
+    fun openSystemNotifications(quickSettings: Boolean = false) {
+        if (!de.umstieg.launcher.data.EdgeGestureService.openSystemPanel(quickSettings)) system.expandStatusBar(quickSettings)
+    }
+
+    /** Aktion von außen (Bedienungshilfe), ausgeführt vom Homescreen. */
+    private val _actions = kotlinx.coroutines.flow.MutableSharedFlow<de.umstieg.launcher.core.GestureAction>(extraBufferCapacity = 4)
+    val externalActions: kotlinx.coroutines.flow.SharedFlow<de.umstieg.launcher.core.GestureAction> = _actions
+
+    fun requestAction(action: de.umstieg.launcher.core.GestureAction) {
+        _actions.tryEmit(action)
+    }
+
     fun showSetup(show: Boolean) {
         if (show) controller.setupOnly = null
         if (show) controller.setupIndex = 0

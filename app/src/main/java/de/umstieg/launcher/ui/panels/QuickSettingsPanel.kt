@@ -568,7 +568,7 @@ private fun FitText(text: String, style: TextStyle, maxSp: Int) {
  * Sitzung, falls vorhanden); mit Wiedergabe Cover links, Titel, Steuerung. L zeigt zusätzlich den Fortschritt.
  */
 @Composable
-private fun MediaCard(info: MediaInfo?, large: Boolean, vm: HomeViewModel, onNoAccess: () -> Unit) {
+internal fun MediaCard(info: MediaInfo?, large: Boolean, vm: HomeViewModel, onNoAccess: () -> Unit) {
     val context = LocalContext.current
     val granted = NotificationCenter.isPermissionGranted(context)
     val shape = RoundedCornerShape(18.dp)

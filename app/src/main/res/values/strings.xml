@@ -681,4 +681,17 @@
     <string name="menu_change_category">Kategorie ändern</string>
     <string name="qs_header">Schnellzugriff · %1$s</string>
     <string name="qs_add_page">Seite hinzufügen</string>
+    <string name="notifications_android">Android</string>
+    <string name="notifications_collapse">Einklappen</string>
+    <string name="notifications_clear_group">Gruppe löschen</string>
+    <string name="notifications_hint">Antippen klappt einen Stapel auf · nach links wischen: entfernen · nach rechts oder lange drücken: Optionen</string>
+    <string name="notifications_options">Optionen</string>
+    <string name="notifications_snooze_1h">1 Stunde stummschalten</string>
+    <string name="notifications_app_settings">Benachrichtigungen dieser App …</string>
+    <string name="notifications_reply_hint">Antworten …</string>
+    <string name="notifications_send">Senden</string>
+    <string name="a11y_service_label">Launcher TOS: Systemweite Wischgesten</string>
+    <string name="a11y_service_summary">Wisch von ganz oben (auf der Statusleiste) öffnet die Panels von Launcher TOS.</string>
+    <string name="a11y_service_description">Legt schmale, unsichtbare Streifen auf den linken und rechten Teil der Statusleiste. Ein Wisch nach unten dort öffnet die eigenen Benachrichtigungen bzw. den Schnellzugriff von Launcher TOS, auf Wunsch auch in anderen Apps. Die Mitte bleibt für Android frei. Der Dienst liest keine Bildschirminhalte und keine Eingaben; er erfährt nur, welche App gerade im Vordergrund ist (für „nur auf dem Homescreen“). Optional kann er die Android-Leiste öffnen und den Bildschirm sperren.</string>
+    <string name="action_lock_screen">Bildschirm sperren</string>
 </resources>

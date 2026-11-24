@@ -111,6 +111,20 @@
             android:name=".data.InstallReceiver"
             android:exported="false" />
 
+        <!-- Optional: „Systemweite Wischgesten“. Nur schmale Streifen auf der Statusleiste, liest keine Inhalte. -->
+        <service
+            android:name=".data.EdgeGestureService"
+            android:exported="true"
+            android:label="@string/a11y_service_label"
+            android:permission="android.permission.BIND_ACCESSIBILITY_SERVICE">
+            <intent-filter>
+                <action android:name="android.accessibilityservice.AccessibilityService" />
+            </intent-filter>
+            <meta-data
+                android:name="android.accessibilityservice"
+                android:resource="@xml/edge_gesture_service" />
+        </service>
+
         <!-- Benachrichtigungszugriff (optional): Badges, eigene Benachrichtigungsliste, Mediensteuerung. -->
         <service
             android:name=".data.TosNotificationListener"

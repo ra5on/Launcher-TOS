@@ -259,6 +259,7 @@ private fun HomeContent(vm: HomeViewModel, d: LauncherData, isDefault: Boolean, 
 
     fun perform(action: GestureAction, binding: de.umstieg.launcher.core.GestureBinding?) {
         when (action) {
+            GestureAction.LOCK_SCREEN -> de.umstieg.launcher.data.EdgeGestureService.lockScreen()
             // Eigene Liste auch ohne Zugriff: das Panel erklärt dann, wie man ihn erteilt (kein stiller Wechsel).
             GestureAction.NOTIFICATIONS -> if (s.ownNotificationList || !vm.system.expandStatusBar(false)) vm.showOverlay(Overlay.NOTIFICATIONS)
             GestureAction.QUICK_SETTINGS -> vm.showOverlay(Overlay.QUICK_SETTINGS)
@@ -275,6 +276,14 @@ private fun HomeContent(vm: HomeViewModel, d: LauncherData, isDefault: Boolean, 
                 Toast.makeText(context, R.string.assistant_missing, Toast.LENGTH_SHORT).show()
             }
             GestureAction.NOTHING -> Unit
+        }
+    }
+    // Wisch auf der Statusleiste (Bedienungshilfe): Aktion mit der Belegung der Zone ausführen.
+    LaunchedEffect(Unit) {
+        vm.externalActions.collect { a ->
+            val edge = listOf(de.umstieg.launcher.core.Gesture.EDGE_LEFT, de.umstieg.launcher.core.Gesture.EDGE_RIGHT, de.umstieg.launcher.core.Gesture.EDGE)
+                .map { GestureClassifier.binding(current.settings, it) }.firstOrNull { it.action == a }
+            perform(a, edge)
         }
     }
 

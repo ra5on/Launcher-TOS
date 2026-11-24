@@ -140,6 +140,8 @@ enum class Gesture { EDGE_LEFT, EDGE_CENTER, EDGE_RIGHT, EDGE, SWIPE_DOWN, SWIPE
 enum class GestureAction {
     NOTIFICATIONS, QUICK_SETTINGS, SYSTEM_NOTIFICATIONS, SYSTEM_QUICK_SETTINGS,
     SEARCH, APP_DRAWER, OPEN_APP, ASSISTANT, NOTHING,
+    /** Bildschirm sperren (nur mit der Bedienungshilfe „Systemweite Wischgesten“). */
+    LOCK_SCREEN,
 }
 
 /** Gesten-Vorlagen (Schnellwahl); jede einzelne Änderung führt zu [CUSTOM]. */
@@ -213,6 +215,12 @@ data class LauncherSettings(
     val edgeHeightPercent: Int = 25,
     val swipeZoneLeft: Int = 35,
     val swipeZoneRight: Int = 35,
+    /** Systemweite Wischgesten über die Bedienungshilfe (Streifen auf der Statusleiste). */
+    val systemGestures: Boolean = false,
+    /** Auch in anderen Apps (sonst nur, wenn der Homescreen im Vordergrund ist). */
+    val systemGesturesEverywhere: Boolean = true,
+    /** Ganze Breite eigene Panels (sonst links + rechts, Mitte bleibt Android). */
+    val systemGestureFull: Boolean = false,
     val badgesEnabled: Boolean = true,
     val badgeStyle: BadgeStyle = BadgeStyle.NUMBER,
     val badgeColor: BadgeColor = BadgeColor.RED,

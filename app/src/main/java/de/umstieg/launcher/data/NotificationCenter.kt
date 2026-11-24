@@ -61,6 +61,33 @@ object NotificationCenter {
         runCatching { service?.get()?.cancelAllNotifications() }
     }
 
+    /** Mehrere entfernen (z. B. „Gruppe löschen“). */
+    fun cancel(keys: Collection<String>) {
+        runCatching { service?.get()?.cancelNotifications(keys.toTypedArray()) }
+    }
+
+    /** Für eine Weile stummschalten (Android blendet sie aus und zeigt sie danach wieder). */
+    fun snooze(key: String, durationMs: Long) {
+        runCatching { service?.get()?.snoozeNotification(key, durationMs) }
+    }
+
+    /** Aktion einer Benachrichtigung auslösen, bei Direktantwort mit Text. */
+    fun runAction(context: Context, action: Notification.Action, reply: String? = null): Boolean = runCatching {
+        val inputs = action.remoteInputs
+        if (reply != null && inputs != null && inputs.isNotEmpty()) {
+            val intent = android.content.Intent()
+            val results = android.os.Bundle().apply { inputs.forEach { putCharSequence(it.resultKey, reply) } }
+            android.app.RemoteInput.addResultsToIntent(inputs, intent, results)
+            action.actionIntent.send(context, 0, intent)
+        } else {
+            action.actionIntent.send()
+        }
+        true
+    }.getOrDefault(false)
+
+    /** Medien-Benachrichtigungen erscheinen oben als eigene Karte, nicht in der Liste. */
+    fun isMedia(sbn: StatusBarNotification): Boolean = sbn.notification.extras.containsKey(Notification.EXTRA_MEDIA_SESSION)
+
     /** Fakten für die Badge-Zählung. */
     fun facts(context: Context, list: List<StatusBarNotification>): List<NotificationFacts> {
         val um = context.getSystemService(UserManager::class.java)
@@ -77,7 +104,7 @@ object NotificationCenter {
 
     /** Laufende Benachrichtigungen und Gruppen-Zusammenfassungen werden in der Liste nicht gezeigt. */
     fun visible(list: List<StatusBarNotification>): List<StatusBarNotification> = list.filter { sbn ->
-        !sbn.isOngoing && (sbn.notification.flags and Notification.FLAG_GROUP_SUMMARY) == 0
+        !sbn.isOngoing && (sbn.notification.flags and Notification.FLAG_GROUP_SUMMARY) == 0 && !isMedia(sbn)
     }
 }
 
