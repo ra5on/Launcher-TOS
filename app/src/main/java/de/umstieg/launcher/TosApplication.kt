@@ -10,7 +10,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 
 /** Hält die prozessweiten Einzelobjekte (Speicher, App-Liste, Icon-Cache). */
-class KlarApplication : Application() {
+class TosApplication : Application() {
     val appScope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
 
     val controller: LauncherController by lazy {

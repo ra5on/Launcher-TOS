@@ -1,6 +1,6 @@
 # Einstellungen – Katalog
 
-Arbeitstitel der App: **Klar** (Platzhalter). Grundsatz: Fast alles ist einstellbar,
+App-Name: **Launcher TOS**. Grundsatz: Fast alles ist einstellbar,
 aber die Standardwerte funktionieren ohne Einrichtung. Jede Seite hat eine Live-Vorschau
 und „Auf Standard zurücksetzen“. Eine Suche über alle Einstellungen gibt es oben auf der
 Startseite der Einstellungen.
@@ -66,7 +66,7 @@ Einstellbar ist nur, wie sie dargestellt werden.
 ## 6. Hintergrund & Glas
 | Einstellung | Werte | Phase |
 |---|---|---|
-| Glas-Effekt | Klar ↔ Getönt (Regler) | P2 |
+| Glas-Effekt | Durchsichtig ↔ Getönt (Regler) | P2 |
 | Unschärfe-Stärke | 0–100 % (unter API 31: halbtransparent) | P2 |
 | Hintergrund abdunkeln | 0–60 % | P2 |
 | Hintergrund-Parallax beim Blättern | an/aus | P3 |

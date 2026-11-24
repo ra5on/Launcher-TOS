@@ -48,7 +48,7 @@ import de.umstieg.launcher.data.AppInfo
 import de.umstieg.launcher.ui.icons.AppIconImage
 import de.umstieg.launcher.ui.icons.SuperellipseShape
 import de.umstieg.launcher.ui.theme.Inter
-import de.umstieg.launcher.ui.theme.Klar
+import de.umstieg.launcher.ui.theme.Tos
 import de.umstieg.launcher.ui.theme.LocalPanelColors
 import de.umstieg.launcher.ui.theme.glass
 
@@ -66,31 +66,31 @@ fun EditTopBar(vm: HomeViewModel, actions: HomeActions) {
         Row(
             Modifier
                 .height(48.dp)
-                .clip(Klar.PillShape)
-                .glass(Klar.PillShape, Klar.GlassControl)
+                .clip(Tos.PillShape)
+                .glass(Tos.PillShape, Tos.GlassControl)
                 .clickable(onClickLabel = addLabel, role = Role.Button) { vm.showAddSheet(true) }
                 .padding(horizontal = 16.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            Icon(painterResource(R.drawable.ic_lucide_plus), null, tint = Klar.Ink, modifier = Modifier.size(20.dp))
+            Icon(painterResource(R.drawable.ic_lucide_plus), null, tint = Tos.Ink, modifier = Modifier.size(20.dp))
             Spacer(Modifier.width(6.dp))
-            Text(addLabel, style = ButtonText.copy(color = Klar.Ink))
+            Text(addLabel, style = ButtonText.copy(color = Tos.Ink))
         }
         Box(
             Modifier
                 .size(48.dp)
                 .clip(CircleShape)
-                .glass(CircleShape, Klar.GlassControl)
+                .glass(CircleShape, Tos.GlassControl)
                 .clickable(role = Role.Button) { actions.openSettings() },
             contentAlignment = Alignment.Center,
         ) {
-            Icon(painterResource(R.drawable.ic_lucide_settings), stringResource(R.string.edit_settings), tint = Klar.Ink, modifier = Modifier.size(22.dp))
+            Icon(painterResource(R.drawable.ic_lucide_settings), stringResource(R.string.edit_settings), tint = Tos.Ink, modifier = Modifier.size(22.dp))
         }
         Spacer(Modifier.weight(1f))
         Row(
             Modifier
                 .height(48.dp)
-                .clip(Klar.PillShape)
+                .clip(Tos.PillShape)
                 .background(Color.White)
                 .clickable(role = Role.Button) { vm.setEditMode(false) }
                 .padding(horizontal = 20.dp),
@@ -103,7 +103,7 @@ fun EditTopBar(vm: HomeViewModel, actions: HomeActions) {
     }
 }
 
-/** Hinweiskarte beim ersten Start, falls Klar nicht der Standard-Launcher ist. */
+/** Hinweiskarte beim ersten Start, falls Launcher TOS nicht der Standard-Launcher ist. */
 @Composable
 fun DefaultHintCard(onSet: () -> Unit, onLater: () -> Unit, modifier: Modifier = Modifier) {
     val c = LocalPanelColors.current
@@ -112,7 +112,7 @@ fun DefaultHintCard(onSet: () -> Unit, onLater: () -> Unit, modifier: Modifier =
             .windowInsetsPadding(WindowInsets.systemBars)
             .padding(horizontal = 14.dp, vertical = 8.dp)
             .fillMaxWidth()
-            .glass(Klar.CardShape, if (c.dark) Color(0xE6182233) else Color(0xF2FFFFFF), c.glassLine)
+            .glass(Tos.CardShape, if (c.dark) Color(0xE6182233) else Color(0xF2FFFFFF), c.glassLine)
             .padding(18.dp),
     ) {
         Text(stringResource(R.string.default_hint_title), style = TextStyle(fontFamily = Inter, fontWeight = FontWeight.SemiBold, fontSize = 17.sp, color = c.content))
@@ -121,12 +121,12 @@ fun DefaultHintCard(onSet: () -> Unit, onLater: () -> Unit, modifier: Modifier =
         Spacer(Modifier.height(12.dp))
         Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
             Box(
-                Modifier.defaultMinSize(minHeight = 48.dp).clip(Klar.PillShape).background(Klar.Accent)
+                Modifier.defaultMinSize(minHeight = 48.dp).clip(Tos.PillShape).background(Tos.Accent)
                     .clickable(role = Role.Button, onClick = onSet).padding(horizontal = 18.dp),
                 contentAlignment = Alignment.Center,
-            ) { Text(stringResource(R.string.default_hint_action), style = ButtonText.copy(color = Klar.AccentInk)) }
+            ) { Text(stringResource(R.string.default_hint_action), style = ButtonText.copy(color = Tos.AccentInk)) }
             Box(
-                Modifier.defaultMinSize(minHeight = 48.dp).clip(Klar.PillShape).background(c.chip)
+                Modifier.defaultMinSize(minHeight = 48.dp).clip(Tos.PillShape).background(c.chip)
                     .clickable(role = Role.Button, onClick = onLater).padding(horizontal = 18.dp),
                 contentAlignment = Alignment.Center,
             ) { Text(stringResource(R.string.default_hint_later), style = ButtonText.copy(color = c.content)) }
@@ -143,7 +143,7 @@ fun LockedHintCard(onOpenSettings: () -> Unit) {
             .windowInsetsPadding(WindowInsets.systemBars)
             .padding(14.dp)
             .fillMaxWidth()
-            .glass(Klar.CardShape, if (c.dark) Color(0xE6182233) else Color(0xF2FFFFFF), c.glassLine)
+            .glass(Tos.CardShape, if (c.dark) Color(0xE6182233) else Color(0xF2FFFFFF), c.glassLine)
             .padding(horizontal = 16.dp, vertical = 10.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
@@ -151,9 +151,9 @@ fun LockedHintCard(onOpenSettings: () -> Unit) {
         Spacer(Modifier.width(10.dp))
         Text(stringResource(R.string.locked_hint), style = TextStyle(fontFamily = Inter, fontSize = 14.sp, color = c.content), modifier = Modifier.weight(1f))
         Box(
-            Modifier.defaultMinSize(minHeight = 48.dp).clip(Klar.PillShape).clickable(role = Role.Button, onClick = onOpenSettings).padding(horizontal = 12.dp),
+            Modifier.defaultMinSize(minHeight = 48.dp).clip(Tos.PillShape).clickable(role = Role.Button, onClick = onOpenSettings).padding(horizontal = 12.dp),
             contentAlignment = Alignment.Center,
-        ) { Text(stringResource(R.string.locked_hint_settings), style = ButtonText.copy(color = Klar.Accent)) }
+        ) { Text(stringResource(R.string.locked_hint_settings), style = ButtonText.copy(color = Tos.Accent)) }
     }
 }
 
@@ -214,8 +214,8 @@ fun AddAppsSheet(d: LauncherData, apps: Map<AppKey, AppInfo>, shape: Superellips
                         AppIconImage(vm.icons, app, d.settings.legacyBackground, shape, 44.dp)
                         Spacer(Modifier.width(14.dp))
                         Text(app.label, style = TextStyle(fontFamily = Inter, fontWeight = FontWeight.Medium, fontSize = 16.sp, color = c.content), modifier = Modifier.weight(1f))
-                        Box(Modifier.size(36.dp).background(Klar.Accent, CircleShape), contentAlignment = Alignment.Center) {
-                            Icon(painterResource(R.drawable.ic_lucide_plus), null, tint = Klar.AccentInk, modifier = Modifier.size(20.dp))
+                        Box(Modifier.size(36.dp).background(Tos.Accent, CircleShape), contentAlignment = Alignment.Center) {
+                            Icon(painterResource(R.drawable.ic_lucide_plus), null, tint = Tos.AccentInk, modifier = Modifier.size(20.dp))
                         }
                     }
                 }

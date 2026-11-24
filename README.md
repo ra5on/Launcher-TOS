@@ -1,4 +1,4 @@
-# Klar – Launcher für Android
+# Launcher TOS
 
 Ein Homescreen für Menschen, die von einem anderen Smartphone-System zu Android wechseln:
 vertraut, aufgeräumt und einfach zu bedienen – mit eigener Optik. Phase 1.
@@ -7,7 +7,7 @@ vertraut, aufgeräumt und einfach zu bedienen – mit eigener Optik. Phase 1.
 
 - **Standard-Launcher**: als Startbildschirm registrierbar (HOME). Die Home-Taste führt immer zurück
   auf Seite 1; „Zurück“ schließt nur Ordner und den Bearbeitungsmodus. Beim ersten Start erscheint
-  eine Hinweiskarte, falls Klar noch nicht der Standard ist.
+  eine Hinweiskarte, falls Launcher TOS noch nicht der Standard ist.
 - **Mehrere Seiten** mit Raster (3–7 Spalten, 4–9 Reihen) und Seitenindikator
   (Punkte, Balken, Zahl oder aus).
 - **Dock** unten als Glas-Fläche mit 3–6 Apps (Standard 4), abschaltbar.
@@ -28,7 +28,7 @@ vertraut, aufgeräumt und einfach zu bedienen – mit eigener Optik. Phase 1.
 - **Speichern**: Das Layout wird nur lokal gespeichert. Wird das Raster verkleinert, rücken
   überzählige Elemente auf freie Stellen oder neue Seiten – nichts geht verloren.
 - **Einstellungen** mit Live-Vorschau, erreichbar über den Bearbeitungsmodus oder den eigenen
-  Eintrag „Klar-Einstellungen“ in der App-Liste: Raster, Icons, Beschriftung, Dock und Ordner,
+  Eintrag „Launcher TOS“ in der App-Liste: Raster, Icons, Beschriftung, Dock und Ordner,
   Hell/Dunkel/System, Haptik, Wackeln, Layout sperren, große Touch-Flächen, Layout exportieren,
   importieren (JSON) und zurücksetzen, Standard-Launcher festlegen, Über und Lizenzen.
 
@@ -54,15 +54,15 @@ adb install -r app/build/outputs/apk/debug/app-debug.apk
 
 ## Als Standard-Launcher festlegen
 
-- Home-Taste drücken und „Klar – Launcher für Android“ wählen, oder
-- in Klar: lange drücken → Zahnrad → „Standard-Launcher“, oder
+- Home-Taste drücken und „Launcher TOS“ wählen, oder
+- in Launcher TOS: lange drücken → Zahnrad → „Standard-Launcher“, oder
 - in den Android-Einstellungen unter „Apps“ → „Standard-Apps“ → „Startbildschirm-App“.
 
 ## Berechtigungen
 
-Keine. Klar hat keinen Internetzugriff, zeigt keine Werbung und sammelt keine Daten. Sichtbar sind
+Keine. Launcher TOS hat keinen Internetzugriff, zeigt keine Werbung und sammelt keine Daten. Sichtbar sind
 nur Apps mit einem Eintrag in der App-Liste (Manifest-Abfrage `MAIN`/`LAUNCHER`); zusätzlich fragt
-Klar beim ersten Start die Standard-Apps für Telefon, Nachrichten, Browser und Kamera ab, um das
+Launcher TOS beim ersten Start die Standard-Apps für Telefon, Nachrichten, Browser und Kamera ab, um das
 Dock vorzubelegen. Haptisches Feedback läuft ohne Vibrationsberechtigung.
 
 ## Lizenz

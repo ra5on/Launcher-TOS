@@ -52,7 +52,7 @@ import de.umstieg.launcher.data.AppInfo
 import de.umstieg.launcher.data.IconLoader
 import de.umstieg.launcher.ui.icons.AppIconImage
 import de.umstieg.launcher.ui.icons.SuperellipseShape
-import de.umstieg.launcher.ui.theme.Klar
+import de.umstieg.launcher.ui.theme.Tos
 import kotlin.math.abs
 
 /** Alles, was ein Icon zum Zeichnen braucht (vermeidet lange Parameterlisten). */
@@ -159,7 +159,7 @@ fun HomeItemView(
     onRemove: () -> Unit,
     onStartEdit: (() -> Unit)?,
     modifier: Modifier = Modifier,
-    labelColor: Color = Klar.Ink,
+    labelColor: Color = Tos.Ink,
 ) {
     val app = (item as? AppItem)?.let { apps[it.app] }
     if (item is AppItem && app == null) return

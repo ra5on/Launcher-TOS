@@ -12,5 +12,5 @@ Rendern:
     ./render.sh 04         # nur Bildschirme mit „04“ im Namen
     ./render.sh store      # nur Store-Bilder + Feature-Grafik
 
-App-Name ändern: `store/feature-graphic.html` (Text „Klar“) und Überschrift in `store/overview.html`.
+App-Name ändern: `store/feature-graphic.html` (Text „Launcher TOS“) und Überschrift in `store/overview.html`.
 Später echte Screenshots einsetzen: PNG unter `export/screens/<name>.png` ablegen und `./render.sh store` laufen lassen.

@@ -2,7 +2,7 @@ package de.umstieg.launcher.ui.home
 
 import android.app.Application
 import androidx.lifecycle.AndroidViewModel
-import de.umstieg.launcher.KlarApplication
+import de.umstieg.launcher.TosApplication
 import de.umstieg.launcher.core.AppKey
 import de.umstieg.launcher.core.DropTarget
 import de.umstieg.launcher.core.Slot
@@ -19,7 +19,7 @@ import android.graphics.Rect
 
 /** Zustand des Homescreens: Bearbeitungsmodus, geöffneter Ordner, Aktionen auf dem Layout. */
 class HomeViewModel(application: Application) : AndroidViewModel(application) {
-    val controller = (application as KlarApplication).controller
+    val controller = (application as TosApplication).controller
     val data = controller.data
     val apps: StateFlow<Map<AppKey, AppInfo>> = controller.appsByKey
     val icons = controller.icons

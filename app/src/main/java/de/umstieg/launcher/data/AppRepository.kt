@@ -66,7 +66,7 @@ class AppRepository(context: Context, private val scope: CoroutineScope) {
     val changedPackages: SharedFlow<String> = _changedPackages.asSharedFlow()
 
     private var reloadJob: Job? = null
-    private val callbackThread = HandlerThread("klar-apps").apply { start() }
+    private val callbackThread = HandlerThread("tos-apps").apply { start() }
 
     private val callback = object : LauncherApps.Callback() {
         override fun onPackageRemoved(packageName: String, user: UserHandle) = scheduleReload()
@@ -134,7 +134,7 @@ class AppRepository(context: Context, private val scope: CoroutineScope) {
     }.onFailure { Log.w(TAG, "Start fehlgeschlagen: ${app.key.id}", it) }.isSuccess
 
     companion object {
-        private const val TAG = "KlarApps"
+        private const val TAG = "TosApps"
         private const val RELOAD_DEBOUNCE_MS = 250L
     }
 }

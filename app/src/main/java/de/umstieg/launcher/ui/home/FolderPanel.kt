@@ -60,7 +60,7 @@ import de.umstieg.launcher.core.Slot
 import de.umstieg.launcher.data.AppInfo
 import de.umstieg.launcher.ui.icons.SuperellipseShape
 import de.umstieg.launcher.ui.theme.Inter
-import de.umstieg.launcher.ui.theme.Klar
+import de.umstieg.launcher.ui.theme.Tos
 import de.umstieg.launcher.ui.theme.LocalPanelColors
 import de.umstieg.launcher.ui.theme.glass
 import kotlin.math.ceil
@@ -89,7 +89,7 @@ fun FolderOverlay(
         else -> 3
     }
     val rows = ceil(folder.apps.size / columns.toFloat()).toInt().coerceAtLeast(1)
-    val ink = if (c.dark) Klar.Ink else c.content
+    val ink = if (c.dark) Tos.Ink else c.content
     var panelBounds by remember { mutableStateOf(Rect.Zero) }
 
     Box(
@@ -105,7 +105,7 @@ fun FolderOverlay(
                     .padding(horizontal = 24.dp)
                     .fillMaxWidth()
                     .onGloballyPositioned { panelBounds = it.boundsInRoot() }
-                    .glass(Klar.PanelShape, if (c.dark) Color.White.copy(alpha = 0.14f) else Color.White.copy(alpha = 0.95f), c.glassLine)
+                    .glass(Tos.PanelShape, if (c.dark) Color.White.copy(alpha = 0.14f) else Color.White.copy(alpha = 0.95f), c.glassLine)
                     // Tipps im Panel schließen den Ordner nicht.
                     .clickable(interactionSource = remember { MutableInteractionSource() }, indication = null) {}
                     .padding(horizontal = 18.dp, vertical = 22.dp),
@@ -153,7 +153,7 @@ fun FolderOverlay(
             Spacer(Modifier.height(28.dp))
             Text(
                 stringResource(R.string.folder_rename_hint),
-                style = TextStyle(fontFamily = Inter, fontSize = 15.sp, color = Klar.Ink2, textAlign = TextAlign.Center),
+                style = TextStyle(fontFamily = Inter, fontSize = 15.sp, color = Tos.Ink2, textAlign = TextAlign.Center),
             )
         }
     }
@@ -179,7 +179,7 @@ private fun FolderTitle(folder: FolderItem, ink: Color, secondary: Color, vm: Ho
                 onValueChange = { text = it.take(40) },
                 singleLine = true,
                 textStyle = titleStyle,
-                cursorBrush = SolidColor(Klar.Accent),
+                cursorBrush = SolidColor(Tos.Accent),
                 keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Sentences, imeAction = ImeAction.Done),
                 keyboardActions = KeyboardActions(onDone = { commit() }),
                 modifier = Modifier

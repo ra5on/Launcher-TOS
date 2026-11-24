@@ -7,7 +7,7 @@ import android.content.pm.PackageManager
 import android.os.Build
 import android.provider.Settings
 
-/** Prüfen und Anfragen, ob Klar der Standard-Launcher ist. */
+/** Prüfen und Anfragen, ob Launcher TOS der Standard-Launcher ist. */
 object DefaultLauncher {
     fun isDefault(context: Context): Boolean {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {

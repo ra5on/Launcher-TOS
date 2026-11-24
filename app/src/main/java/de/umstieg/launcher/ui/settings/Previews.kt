@@ -40,7 +40,7 @@ import de.umstieg.launcher.ui.home.IconLabel
 import de.umstieg.launcher.ui.icons.AppIconImage
 import de.umstieg.launcher.ui.icons.rememberSuperellipse
 import de.umstieg.launcher.ui.theme.Inter
-import de.umstieg.launcher.ui.theme.Klar
+import de.umstieg.launcher.ui.theme.Tos
 import kotlin.math.max
 
 /** Eigener Verlaufs-Hintergrund für Vorschauen (selbst erzeugt). */
@@ -81,7 +81,7 @@ fun IconRowPreview(apps: List<AppInfo>, loader: IconLoader, s: LauncherSettings,
             if (caption) {
                 Text(
                     stringResource(R.string.icons_preview_caption),
-                    style = TextStyle(fontFamily = Inter, fontSize = 14.sp, fontWeight = FontWeight.Medium, color = Klar.Ink2),
+                    style = TextStyle(fontFamily = Inter, fontSize = 14.sp, fontWeight = FontWeight.Medium, color = Tos.Ink2),
                     modifier = Modifier.padding(top = 8.dp),
                 )
             }
@@ -117,7 +117,7 @@ fun GridPreview(apps: List<AppInfo>, loader: IconLoader, s: LauncherSettings) {
             if (s.dockEnabled) {
                 Row(
                     Modifier.align(Alignment.BottomCenter).fillMaxWidth().height(dockH)
-                        .background(Klar.Glass, RoundedCornerShape(16.dp)),
+                        .background(Tos.Glass, RoundedCornerShape(16.dp)),
                     horizontalArrangement = Arrangement.SpaceEvenly,
                     verticalAlignment = Alignment.CenterVertically,
                 ) {

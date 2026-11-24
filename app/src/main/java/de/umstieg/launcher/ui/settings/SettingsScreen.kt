@@ -45,7 +45,7 @@ import de.umstieg.launcher.core.LegacyBackground
 import de.umstieg.launcher.core.ThemeMode
 import de.umstieg.launcher.data.AppInfo
 import de.umstieg.launcher.ui.theme.Inter
-import de.umstieg.launcher.ui.theme.Klar
+import de.umstieg.launcher.ui.theme.Tos
 import de.umstieg.launcher.ui.theme.LocalPanelColors
 import kotlin.math.max
 
@@ -357,7 +357,7 @@ private fun BackupPage(vm: SettingsViewModel, actions: SettingsActions, back: ()
         ActionRow(stringResource(R.string.backup_import), stringResource(R.string.backup_import_summary), onClick = actions.import)
     }
     SettingsCard {
-        ActionRow(stringResource(R.string.backup_reset), stringResource(R.string.backup_reset_summary), color = Klar.Danger) { confirm = true }
+        ActionRow(stringResource(R.string.backup_reset), stringResource(R.string.backup_reset_summary), color = Tos.Danger) { confirm = true }
     }
     if (confirm) {
         AlertDialog(
@@ -368,7 +368,7 @@ private fun BackupPage(vm: SettingsViewModel, actions: SettingsActions, back: ()
                 TextButton(onClick = {
                     confirm = false
                     vm.resetLayout()
-                }) { Text(stringResource(R.string.backup_reset_confirm), color = Klar.Danger) }
+                }) { Text(stringResource(R.string.backup_reset_confirm), color = Tos.Danger) }
             },
             dismissButton = { TextButton(onClick = { confirm = false }) { Text(stringResource(R.string.cancel)) } },
         )

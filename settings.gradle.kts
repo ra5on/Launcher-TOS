@@ -13,5 +13,5 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "KlarLauncher"
+rootProject.name = "LauncherTOS"
 include(":app")

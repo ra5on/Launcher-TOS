@@ -25,10 +25,10 @@ import de.umstieg.launcher.data.DefaultLauncher
 import de.umstieg.launcher.ui.settings.SettingsActions
 import de.umstieg.launcher.ui.settings.SettingsScreen
 import de.umstieg.launcher.ui.settings.SettingsViewModel
-import de.umstieg.launcher.ui.theme.KlarTheme
+import de.umstieg.launcher.ui.theme.TosTheme
 import de.umstieg.launcher.ui.theme.isDark
 
-/** Einstellungen (erreichbar über den Bearbeitungsmodus und den Eintrag „Klar-Einstellungen“). */
+/** Einstellungen (erreichbar über den Bearbeitungsmodus und den Eintrag „Launcher TOS“). */
 class SettingsActivity : ComponentActivity() {
     private val vm: SettingsViewModel by viewModels()
 
@@ -69,7 +69,7 @@ class SettingsActivity : ComponentActivity() {
                 import = { runCatching { importLauncher.launch(arrayOf("application/json", "text/plain", "application/octet-stream")) } },
             )
         }
-        KlarTheme(dark = dark) {
+        TosTheme(dark = dark) {
             SettingsScreen(vm, isDefault, versionName(), ::loadLicenses, actions)
         }
     }

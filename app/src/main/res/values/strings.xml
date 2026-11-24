@@ -1,13 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">Klar – Launcher für Android</string>
-    <string name="settings_entry_name">Klar</string>
+    <string name="app_name">Launcher TOS</string>
+    <string name="settings_entry_name">Launcher TOS</string>
 
     <!-- Homescreen -->
     <string name="home_page_description">Seite %1$d von %2$d</string>
     <string name="home_dock_description">Dock</string>
-    <string name="default_hint_title">Klar als Startbildschirm verwenden?</string>
-    <string name="default_hint_text">Damit die Home-Taste immer hierher führt, lege Klar als Standard-Launcher fest.</string>
+    <string name="default_hint_title">Launcher TOS als Startbildschirm verwenden?</string>
+    <string name="default_hint_text">Damit die Home-Taste immer hierher führt, lege Launcher TOS als Standard-Launcher fest.</string>
     <string name="default_hint_action">Als Standard festlegen</string>
     <string name="default_hint_later">Später</string>
     <string name="locked_hint">Das Layout ist gesperrt. Entsperren kannst du es in den Einstellungen.</string>
@@ -61,7 +61,7 @@
     <string name="summary_dock_on">%1$d Apps · Glas</string>
     <string name="summary_dock_off">Dock aus</string>
     <string name="summary_haptics">%1$s · Wackeln %2$s</string>
-    <string name="summary_default_yes">Klar ist der Standard-Launcher</string>
+    <string name="summary_default_yes">Launcher TOS ist der Standard-Launcher</string>
     <string name="summary_default_no">Noch nicht festgelegt</string>
     <string name="summary_backup">Exportieren · Importieren · Zurücksetzen</string>
     <string name="summary_about">Version %1$s · keine Berechtigungen</string>
@@ -145,13 +145,13 @@
     <string name="backup_import_done">Layout importiert</string>
     <string name="backup_import_failed">Die Datei ist kein gültiges Layout</string>
     <string name="backup_reset_done">Layout zurückgesetzt</string>
-    <string name="backup_file_name">klar-layout.json</string>
+    <string name="backup_file_name">launcher-tos-layout.json</string>
 
     <!-- Standard-Launcher -->
 
     <!-- Über -->
     <string name="about_version">Version %1$s</string>
-    <string name="about_text">Klar ist freie Software unter der GNU General Public License Version 3. Die App braucht keine Berechtigungen, hat keinen Internetzugriff, zeigt keine Werbung und sammelt keine Daten.</string>
+    <string name="about_text">Launcher TOS ist freie Software unter der GNU General Public License Version 3. Die App braucht keine Berechtigungen, hat keinen Internetzugriff, zeigt keine Werbung und sammelt keine Daten.</string>
     <string name="about_licenses">Lizenzen</string>
     <string name="about_licenses_summary">Inter (SIL OFL 1.1), Lucide (ISC), AndroidX und Kotlin (Apache 2.0)</string>
 </resources>

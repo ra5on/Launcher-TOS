@@ -72,7 +72,7 @@ Spalten/Reihen, Icongröße, Icon-Rundung (mit Vorschau und Schnellwahl Eckig/We
 Beschriftungen + Schriftgröße, Hell/Dunkel/System (für Einstellungen und Panels), Dock an/aus,
 Haptik an/aus, Wackeln an/aus, Layout sperren, Legacy-Icon-Hintergrund, Layout zurücksetzen (mit Rückfrage),
 Layout exportieren/importieren (JSON), „Als Standard-Launcher festlegen“, Über/Lizenzen.
-Erreichbar über den Bearbeitungsmodus und über einen eigenen Launcher-Eintrag (activity-alias „Klar-Einstellungen“).
+Erreichbar über den Bearbeitungsmodus und über einen eigenen Launcher-Eintrag (activity-alias „Launcher TOS“).
 
 ## Qualität
 - Manifest: `<queries><intent><action MAIN/><category LAUNCHER/></intent></queries>`, kein QUERY_ALL_PACKAGES.

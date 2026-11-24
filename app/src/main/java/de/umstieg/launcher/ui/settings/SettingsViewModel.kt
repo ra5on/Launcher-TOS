@@ -4,7 +4,7 @@ import android.app.Application
 import android.net.Uri
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
-import de.umstieg.launcher.KlarApplication
+import de.umstieg.launcher.TosApplication
 import de.umstieg.launcher.R
 import de.umstieg.launcher.core.LauncherSettings
 import de.umstieg.launcher.core.LayoutOps
@@ -21,7 +21,7 @@ import kotlinx.coroutines.withContext
 
 /** Einstellungen: liest und schreibt denselben prozessweiten Speicher wie der Homescreen. */
 class SettingsViewModel(application: Application) : AndroidViewModel(application) {
-    private val controller = (application as KlarApplication).controller
+    private val controller = (application as TosApplication).controller
     val data = controller.data
     val icons = controller.icons
 

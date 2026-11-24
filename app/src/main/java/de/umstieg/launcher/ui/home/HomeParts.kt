@@ -35,21 +35,21 @@ import androidx.compose.ui.unit.sp
 import de.umstieg.launcher.R
 import de.umstieg.launcher.core.IndicatorStyle
 import de.umstieg.launcher.ui.theme.Inter
-import de.umstieg.launcher.ui.theme.Klar
+import de.umstieg.launcher.ui.theme.Tos
 import de.umstieg.launcher.ui.theme.glass
 
 /** Beschriftung unter Icons: weiß mit leichtem Schatten, damit sie auf jedem Hintergrund lesbar ist. */
-fun labelStyle(fontScale: Int, color: Color = Klar.Ink): TextStyle = TextStyle(
+fun labelStyle(fontScale: Int, color: Color = Tos.Ink): TextStyle = TextStyle(
     fontFamily = Inter,
     fontWeight = FontWeight.Medium,
     fontSize = (12f * fontScale / 100f).sp,
     color = color,
     textAlign = TextAlign.Center,
-    shadow = if (color == Klar.Ink) Shadow(Color.Black.copy(alpha = 0.40f), Offset(0f, 2f), 6f) else null,
+    shadow = if (color == Tos.Ink) Shadow(Color.Black.copy(alpha = 0.40f), Offset(0f, 2f), 6f) else null,
 )
 
 @Composable
-fun IconLabel(text: String, fontScale: Int, modifier: Modifier = Modifier, color: Color = Klar.Ink) {
+fun IconLabel(text: String, fontScale: Int, modifier: Modifier = Modifier, color: Color = Tos.Ink) {
     Text(
         text = text,
         style = labelStyle(fontScale, color),
@@ -75,7 +75,7 @@ fun PageIndicator(
     Row(
         modifier
             .semantics { contentDescription = description }
-            .glass(Klar.PillShape, fill = Klar.GlassDark)
+            .glass(Tos.PillShape, fill = Tos.GlassDark)
             .padding(horizontal = 14.dp, vertical = 9.dp),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(8.dp),
@@ -83,13 +83,13 @@ fun PageIndicator(
         when (style) {
             IndicatorStyle.NUMBER -> Text(
                 text = "${current + 1} / $pageCount",
-                style = TextStyle(fontFamily = Inter, fontWeight = FontWeight.SemiBold, fontSize = 13.sp, color = Klar.Ink),
+                style = TextStyle(fontFamily = Inter, fontWeight = FontWeight.SemiBold, fontSize = 13.sp, color = Tos.Ink),
             )
             IndicatorStyle.BAR -> Row(horizontalArrangement = Arrangement.spacedBy(3.dp)) {
                 repeat(pageCount) { i ->
                     Box(
-                        Modifier.width(18.dp).height(4.dp).clip(Klar.PillShape)
-                            .background(if (i == current) Klar.Ink else Klar.Ink3),
+                        Modifier.width(18.dp).height(4.dp).clip(Tos.PillShape)
+                            .background(if (i == current) Tos.Ink else Tos.Ink3),
                     )
                 }
             }
@@ -98,14 +98,14 @@ fun PageIndicator(
                     Icon(
                         painterResource(R.drawable.ic_lucide_plus),
                         contentDescription = null,
-                        tint = if (i == current) Klar.Ink else Klar.Ink2,
+                        tint = if (i == current) Tos.Ink else Tos.Ink2,
                         modifier = Modifier.size(12.dp),
                     )
                 } else {
                     val w by animateDpAsState(if (i == current) 20.dp else 7.dp, label = "dot")
                     Box(
                         Modifier.width(w).height(7.dp).clip(CircleShape)
-                            .background(if (i == current) Klar.Ink else Klar.Ink3),
+                            .background(if (i == current) Tos.Ink else Tos.Ink3),
                     )
                 }
             }

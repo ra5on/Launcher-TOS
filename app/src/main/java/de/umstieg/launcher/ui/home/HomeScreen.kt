@@ -73,12 +73,12 @@ import de.umstieg.launcher.core.LauncherData
 import de.umstieg.launcher.core.LayoutOps
 import de.umstieg.launcher.core.Slot
 import de.umstieg.launcher.data.AppInfo
-import de.umstieg.launcher.ui.components.klarHaptic
+import de.umstieg.launcher.ui.components.tosHaptic
 import de.umstieg.launcher.ui.icons.SuperellipseShape
 import de.umstieg.launcher.ui.icons.rememberSuperellipse
 import de.umstieg.launcher.ui.theme.Inter
-import de.umstieg.launcher.ui.theme.Klar
-import de.umstieg.launcher.ui.theme.KlarTheme
+import de.umstieg.launcher.ui.theme.Tos
+import de.umstieg.launcher.ui.theme.TosTheme
 import de.umstieg.launcher.ui.theme.glass
 import de.umstieg.launcher.ui.theme.isDark
 import kotlinx.coroutines.delay
@@ -96,7 +96,7 @@ fun HomeScreen(vm: HomeViewModel, isDefault: Boolean, actions: HomeActions) {
     val data by vm.data.collectAsStateWithLifecycle()
     val apps by vm.apps.collectAsStateWithLifecycle()
     val d = data ?: return
-    KlarTheme(dark = isDark(d.settings.theme)) {
+    TosTheme(dark = isDark(d.settings.theme)) {
         HomeContent(vm, d, apps, isDefault, actions)
     }
 }
@@ -216,7 +216,7 @@ private fun HomeContent(vm: HomeViewModel, d: LauncherData, apps: Map<AppKey, Ap
             } else {
                 drag.target?.let { vm.drop(from, it) }
             }
-            view.klarHaptic(current.settings)
+            view.tosHaptic(current.settings)
         }
         drag.clear()
     }
@@ -271,7 +271,7 @@ private fun HomeContent(vm: HomeViewModel, d: LauncherData, apps: Map<AppKey, Ap
                         }
                         val hit = hitTest(p)
                         if (!currentEdit) vm.setEditMode(true)
-                        view.klarHaptic(current.settings)
+                        view.tosHaptic(current.settings)
                         if (hit != null) {
                             drag.start(hit.item, hit.slot, p, hit.center)
                             drag.target = targetAt(p)
@@ -323,7 +323,7 @@ private fun HomeContent(vm: HomeViewModel, d: LauncherData, apps: Map<AppKey, Ap
             if (editMode && drag.active && currentFolder == null) {
                 Text(
                     stringResource(R.string.edit_hint_edge),
-                    style = TextStyle(fontFamily = Inter, fontSize = 14.sp, color = Klar.Ink2, textAlign = TextAlign.Center),
+                    style = TextStyle(fontFamily = Inter, fontSize = 14.sp, color = Tos.Ink2, textAlign = TextAlign.Center),
                     modifier = Modifier.fillMaxWidth().padding(top = 4.dp),
                 )
             }
@@ -425,7 +425,7 @@ private fun PageGrid(
             LayoutOps.itemAt(d.layout, page, target.x, target.y) == null
         ) {
             Box(Modifier.offset(cellW * target.x, cellH * target.y).size(cellW, cellH), contentAlignment = Alignment.Center) {
-                Box(Modifier.offset(y = -labelSpace / 2).size(iconSize).border(2.dp, Klar.Accent, shape))
+                Box(Modifier.offset(y = -labelSpace / 2).size(iconSize).border(2.dp, Tos.Accent, shape))
             }
         }
         items.forEach { placed ->
@@ -459,7 +459,7 @@ internal fun ItemCell(
     onLaunch: (AppInfo, Rect) -> Unit,
     vm: HomeViewModel,
     modifier: Modifier = Modifier,
-    labelColor: androidx.compose.ui.graphics.Color = Klar.Ink,
+    labelColor: androidx.compose.ui.graphics.Color = Tos.Ink,
 ) {
     val bounds = remember { arrayOf(Rect.Zero) }
     val label = when (item) {

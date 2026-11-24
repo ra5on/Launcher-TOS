@@ -19,7 +19,7 @@ import androidx.compose.ui.unit.dp
 import de.umstieg.launcher.core.ThemeMode
 
 /** Eigene Design-Werte (Akzent Mint, Glas-Flächen, Radien). */
-object Klar {
+object Tos {
     val Accent = Color(0xFF2EC4A6)
     val AccentInk = Color(0xFF04261F)
     val Danger = Color(0xFFF2545B)
@@ -111,11 +111,11 @@ private fun typography(): Typography {
 
 /** Material-Theme mit Inter und Mint-Akzent; [dark] steuert Panels und Einstellungen. */
 @Composable
-fun KlarTheme(dark: Boolean, content: @Composable () -> Unit) {
+fun TosTheme(dark: Boolean, content: @Composable () -> Unit) {
     val scheme = if (dark) {
-        darkColorScheme(primary = Klar.Accent, onPrimary = Klar.AccentInk, secondary = Klar.Accent, error = Klar.Danger)
+        darkColorScheme(primary = Tos.Accent, onPrimary = Tos.AccentInk, secondary = Tos.Accent, error = Tos.Danger)
     } else {
-        lightColorScheme(primary = Color(0xFF14917A), onPrimary = Color.White, secondary = Klar.Accent, error = Klar.Danger)
+        lightColorScheme(primary = Color(0xFF14917A), onPrimary = Color.White, secondary = Tos.Accent, error = Tos.Danger)
     }
     androidx.compose.runtime.CompositionLocalProvider(LocalPanelColors provides if (dark) DarkPanel else LightPanel) {
         MaterialTheme(colorScheme = scheme, typography = typography(), content = content)
@@ -123,5 +123,5 @@ fun KlarTheme(dark: Boolean, content: @Composable () -> Unit) {
 }
 
 /** Glas-Fläche: halbtransparente Füllung mit feiner heller Kante (echte Unschärfe des Systemhintergrunds ist nicht möglich). */
-fun Modifier.glass(shape: Shape, fill: Color = Klar.Glass, line: Color = Klar.GlassLine): Modifier =
+fun Modifier.glass(shape: Shape, fill: Color = Tos.Glass, line: Color = Tos.GlassLine): Modifier =
     this.background(fill, shape).border(1.dp, line, shape)

@@ -50,7 +50,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import de.umstieg.launcher.R
 import de.umstieg.launcher.ui.theme.Inter
-import de.umstieg.launcher.ui.theme.Klar
+import de.umstieg.launcher.ui.theme.Tos
 import de.umstieg.launcher.ui.theme.LocalPanelColors
 import de.umstieg.launcher.ui.theme.glass
 import kotlin.math.roundToInt
@@ -149,7 +149,7 @@ fun SwitchRow(title: String, summary: String? = null, checked: Boolean, onChange
             checked = checked,
             onCheckedChange = null,
             colors = SwitchDefaults.colors(
-                checkedTrackColor = Klar.Accent,
+                checkedTrackColor = Tos.Accent,
                 checkedThumbColor = Color.White,
                 uncheckedTrackColor = c.track,
                 uncheckedThumbColor = Color.White,
@@ -203,7 +203,7 @@ fun SliderBlock(
     Column(Modifier.fillMaxWidth().padding(horizontal = 18.dp, vertical = 12.dp)) {
         Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
             Text(title, style = TitleStyle.copy(color = c.content), modifier = Modifier.weight(1f))
-            Text(valueText(current), style = ValueStyle.copy(color = Klar.Accent))
+            Text(valueText(current), style = ValueStyle.copy(color = Tos.Accent))
         }
         Row(verticalAlignment = Alignment.CenterVertically) {
             if (start != null) {
@@ -221,7 +221,7 @@ fun SliderBlock(
                 steps = if (stepSize > 1 || range.last - range.first <= 12) steps else 0,
                 colors = SliderDefaults.colors(
                     thumbColor = Color.White,
-                    activeTrackColor = Klar.Accent,
+                    activeTrackColor = Tos.Accent,
                     inactiveTrackColor = c.track,
                     activeTickColor = Color.Transparent,
                     inactiveTickColor = Color.Transparent,
@@ -246,7 +246,7 @@ fun <T> SegmentedRow(title: String?, options: List<Pair<T, String>>, selected: T
             Spacer(Modifier.height(10.dp))
         }
         Row(
-            Modifier.fillMaxWidth().background(c.chip, Klar.PillShape).padding(4.dp).selectableGroup(),
+            Modifier.fillMaxWidth().background(c.chip, Tos.PillShape).padding(4.dp).selectableGroup(),
             horizontalArrangement = Arrangement.spacedBy(4.dp),
         ) {
             options.forEach { (value, label) ->
@@ -255,7 +255,7 @@ fun <T> SegmentedRow(title: String?, options: List<Pair<T, String>>, selected: T
                     Modifier
                         .weight(1f)
                         .defaultMinSize(minHeight = 44.dp)
-                        .clip(Klar.PillShape)
+                        .clip(Tos.PillShape)
                         .background(if (isSel) (if (c.dark) Color.White else Color(0xFF10141C)) else Color.Transparent)
                         .selectable(selected = isSel, role = Role.RadioButton, onClick = { onSelect(value) }),
                     contentAlignment = Alignment.Center,
@@ -288,12 +288,12 @@ fun ChipRow(options: List<Pair<Int, String>>, selected: Int?, onSelect: (Int) ->
                 Modifier
                     .weight(1f)
                     .defaultMinSize(minHeight = 48.dp)
-                    .clip(Klar.PillShape)
-                    .background(if (isSel) Klar.Accent else c.chip)
+                    .clip(Tos.PillShape)
+                    .background(if (isSel) Tos.Accent else c.chip)
                     .selectable(selected = isSel, role = Role.RadioButton, onClick = { onSelect(value) }),
                 contentAlignment = Alignment.Center,
             ) {
-                Text(label, style = SummaryStyle.copy(fontWeight = FontWeight.SemiBold, fontSize = 15.sp, color = if (isSel) Klar.AccentInk else c.content))
+                Text(label, style = SummaryStyle.copy(fontWeight = FontWeight.SemiBold, fontSize = 15.sp, color = if (isSel) Tos.AccentInk else c.content))
             }
         }
     }
