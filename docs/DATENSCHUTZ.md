@@ -2,7 +2,7 @@
 
 Stand: 24. November 2026
 
-**Verantwortlich:** [PLATZHALTER – Name und Anschrift des Anbieters bitte vom Inhaber eintragen]
+**Verantwortlich:** ra5on (https://github.com/ra5on)
 
 ## Kurzfassung
 

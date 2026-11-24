@@ -1,10 +1,10 @@
-# Vorlagen & Play-Store-Bilder
+# Vorlagen & Screenshots
 
 - `screens/` – 15 Bildschirm-Vorlagen (HTML, 360 × 800 CSS-px → 1080 × 2400 PNG)
 - `store/list.tsv` – Auswahl, Überschriften und Hintergrund der 8 Store-Bilder
 - `store/frame.html` – Store-Rahmen (1080 × 1920), `store/feature-graphic.html` (1024 × 500)
 - `assets/kit.css`, `assets/kit.js` – Design-System (Farben, Glas, Squircle-Maske, Platzhalter-Apps)
-- `export/` – fertige PNGs (`store/` = Play-Store-Bilder 1080 × 1920 und Feature-Grafik)
+- `export/` – fertige PNGs (`store/` = Präsentationsbilder 1080 × 1920 und Banner)
 
 Rendern:
     python3 -m http.server 8765 --bind 127.0.0.1 &   # im Ordner store-screenshots

@@ -5,6 +5,15 @@ vertraut, aufgeräumt und einfach zu bedienen, mit eigener Optik. Fast alles ist
 Standardwerte funktionieren aber ohne Einrichtung. Freie Software (GPLv3), kein Internetzugriff,
 keine Werbung, keine Datenerhebung.
 
+**[Download: neueste Version](https://github.com/ra5on/Launcher-TOS/releases/latest)** · Android 8.0 oder neuer
+
+<p>
+  <img src="design/export/store/01-store-homescreen.png" width="24%" alt="Homescreen">
+  <img src="design/export/store/02-store-schnellzugriff.png" width="24%" alt="Schnellzugriff">
+  <img src="design/export/store/06-store-benachrichtigungen.png" width="24%" alt="Benachrichtigungen">
+  <img src="design/export/store/07-store-raster.png" width="24%" alt="Icons und Raster">
+</p>
+
 ## Funktionen
 
 **Homescreen**
@@ -100,29 +109,29 @@ Voraussetzungen: JDK 17 oder neuer, Android SDK mit Plattform 37 (`local.propert
 ./gradlew testDebugUnitTest lint        # Tests und Prüfungen
 ```
 
-## Veröffentlichen (Google Play)
+## Veröffentlichen (GitHub)
 
-Alle Texte, Antworten und Grafiken für die Play Console stehen in [`docs/PLAY-STORE.md`](docs/PLAY-STORE.md).
-Fertige APKs gibt es unter [Releases](https://github.com/ra5on/Launcher-TOS/releases).
-
-Für Play wird ein App Bundle (AAB) mit dem **Upload-Schlüssel** signiert; den eigentlichen
-App-Signaturschlüssel verwaltet Google („Play App Signing“). Upload-Schlüssel einmalig anlegen –
-**außerhalb des Repos** aufbewahren (Keystores sind per `.gitignore` ausgeschlossen):
+Launcher TOS erscheint nur auf GitHub unter [Releases](https://github.com/ra5on/Launcher-TOS/releases)
+als signierte APK mit `SHA256SUMS`. Alle Versionen müssen mit **demselben Schlüssel** signiert sein,
+sonst lässt sich ein Update nicht über die installierte App spielen. Der Schlüssel liegt **außerhalb
+des Repos** (Keystores sind per `.gitignore` ausgeschlossen).
 
 ```sh
-keytool -genkeypair -v -keystore ~/launchertos-upload.jks -alias launchertos-upload \
-  -keyalg RSA -keysize 4096 -validity 10000
-```
-
-Signiertes AAB bauen (ohne die Variablen entsteht ein unsigniertes Bundle):
-
-```sh
-export LAUNCHERTOS_KEYSTORE=~/launchertos-upload.jks
+export LAUNCHERTOS_KEYSTORE=/pfad/zu/launchertos-upload.jks
 export LAUNCHERTOS_KEYSTORE_PASSWORD='…'   # Keystore- und Schlüssel-Passwort
-./gradlew bundleRelease                     # → app/build/outputs/bundle/release/app-release.aab
+./gradlew assembleRelease                   # → app/build/outputs/apk/release/app-release.apk
 ```
 
-## Demo-Apps für Store-Bilder
+Neue Version: `versionCode`/`versionName` in `app/build.gradle.kts` erhöhen, `CHANGELOG.md` und
+`docs/releases/vX.Y.Z.md` schreiben, signiert bauen, Tag `vX.Y.Z` setzen und die APK als
+`LauncherTOS-X.Y.Z.apk` mit `SHA256SUMS` an das Release hängen. Zertifikat (SHA-256):
+`2142791db9ee6283bbe1b7c05b5205ae96c433e363f4fe78fe71a5486c4a063c`.
+
+Die App hat keine Internet-Berechtigung und sucht deshalb nicht selbst nach Updates. Wer automatisch
+aktualisieren möchte, kann das Repo in einem Update-Werkzeug für GitHub-Releases eintragen
+(z. B. Obtainium).
+
+## Demo-Apps für Screenshots
 
 Das Modul `:demoapps` gehört nicht zum Launcher. Es erzeugt kleine Demo-Apps (je Flavor eine eigene
 App, Paket `de.umstieg.launcher.demo.<name>`) mit deutschen Namen, eigenen Icons und
@@ -162,7 +171,7 @@ lange drücken → Zahnrad → „Standard-Launcher“, oder in den Android-Eins
 
 ## Geplant
 
-- Icon-Pakete aus dem Play Store (pro App überschreibbar)
+- Icon-Pakete (pro App überschreibbar)
 - Profile („Arbeit“, „Freizeit“, „Einfach“) und automatische tägliche Sicherung
 - Mehrere Dock-Seiten, Zwei-Finger-Zoom in eine Seitenübersicht
 - „Bildschirm sperren“ als Geste (bräuchte einen Bedienungshilfe-Dienst)
