@@ -216,7 +216,8 @@ fun SimpleOverview(d: LauncherData, vm: SettingsViewModel, actions: SettingsActi
     }
     Header(stringResource(R.string.simple_section_swipe))
     SettingsCard {
-        SimpleRow(stringResource(R.string.simple_edge), stringResource(R.string.simple_edge_info), presetName(s.gesturePreset)) { choice = Choice.EDGE }
+        // Führt direkt auf die Gesten-Seite; der Untertitel zeigt die aktuelle Belegung.
+        SimpleRow(stringResource(R.string.simple_edge), edgeSummary(s), null) { open(Section.GESTURES) }
         CardDivider()
         SimpleRow(stringResource(R.string.simple_middle), stringResource(R.string.simple_middle_info), actionName(GestureClassifier.binding(s, Gesture.SWIPE_DOWN).action)) { choice = Choice.MIDDLE }
     }

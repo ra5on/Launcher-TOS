@@ -69,6 +69,7 @@ class SettingsViewModel(application: Application) : AndroidViewModel(application
         help.appInfoOpenedFor = de.umstieg.launcher.data.PermissionHelp.Kind.LISTENER
     }
     fun appDetailsIntent() = help.appDetailsIntent()
+    fun restricted() = help.restricted()
 
     /** Zurück aus der App-Info: direkt weiter zur Listener-Einstellung (einmal). */
     fun afterAppInfo(context: android.content.Context) {
