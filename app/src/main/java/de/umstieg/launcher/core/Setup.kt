@@ -7,6 +7,8 @@ enum class SetupStep(val optional: Boolean) {
     NOTIFICATIONS(false),
     DND(true),
     WRITE_SETTINGS(true),
+    /** Optional: Bedienungshilfe für Wische ab der Statusleiste. */
+    EDGE_GESTURES(true),
     UPDATES(true),
     INSTALL_UNKNOWN(true),
     GESTURES(false),
@@ -21,6 +23,8 @@ data class SetupFacts(
     val canInstall: Boolean,
     val updateChoiceMade: Boolean,
     val gesturesSeen: Boolean,
+    /** Bedienungshilfe „Systemweite Wischgesten“ eingeschaltet. */
+    val edgeService: Boolean = false,
 )
 
 /** Reine Logik der Einrichtung: was ist erledigt, was ist offen, welcher Schritt kommt. */
@@ -31,6 +35,7 @@ object SetupLogic {
         SetupStep.NOTIFICATIONS -> f.listener
         SetupStep.DND -> f.dnd
         SetupStep.WRITE_SETTINGS -> f.writeSettings
+        SetupStep.EDGE_GESTURES -> f.edgeService
         SetupStep.UPDATES -> f.updateChoiceMade
         // Nur nötig, wenn automatische Updates gewünscht sind.
         SetupStep.INSTALL_UNKNOWN -> f.canInstall

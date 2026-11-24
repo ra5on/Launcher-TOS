@@ -97,7 +97,7 @@ class UpdateSetupTest {
 
     // ---------- Einrichtung ----------
 
-    private val none = SetupFacts(false, false, false, false, false, false, false)
+    private val none = SetupFacts(false, false, false, false, false, false, false, false)
 
     @Test
     fun setup_skipsDoneSteps() {
@@ -105,7 +105,7 @@ class UpdateSetupTest {
         assertEquals(SetupStep.WELCOME, SetupLogic.next(0, f, emptySet(), includeWelcome = true))
         assertEquals(SetupStep.DND, SetupLogic.next(1, f, emptySet(), includeWelcome = true))
         assertEquals(SetupStep.WRITE_SETTINGS, SetupLogic.next(1, f, setOf(SetupStep.DND), includeWelcome = true))
-        val all = SetupFacts(true, true, true, true, true, true, true)
+        val all = SetupFacts(true, true, true, true, true, true, true, true)
         assertNull(SetupLogic.next(1, all, emptySet(), includeWelcome = true))
         assertTrue(SetupLogic.open(all, emptySet()).isEmpty())
     }
@@ -113,8 +113,8 @@ class UpdateSetupTest {
     @Test
     fun setup_openCountRespectsDeclined() {
         val f = none.copy(isDefault = true, listener = true, gesturesSeen = true, updateChoiceMade = true)
-        assertEquals(listOf(SetupStep.DND, SetupStep.WRITE_SETTINGS, SetupStep.INSTALL_UNKNOWN), SetupLogic.open(f, emptySet()))
-        assertEquals(listOf(SetupStep.INSTALL_UNKNOWN), SetupLogic.open(f, setOf(SetupStep.DND, SetupStep.WRITE_SETTINGS)))
+        assertEquals(listOf(SetupStep.DND, SetupStep.WRITE_SETTINGS, SetupStep.EDGE_GESTURES, SetupStep.INSTALL_UNKNOWN), SetupLogic.open(f, emptySet()))
+        assertEquals(listOf(SetupStep.INSTALL_UNKNOWN), SetupLogic.open(f, setOf(SetupStep.DND, SetupStep.WRITE_SETTINGS, SetupStep.EDGE_GESTURES)))
     }
 
     @Test

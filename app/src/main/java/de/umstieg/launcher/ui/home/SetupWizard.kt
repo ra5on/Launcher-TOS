@@ -78,6 +78,7 @@ fun setupFacts(vm: HomeViewModel, d: LauncherData, isDefault: Boolean, context: 
     canInstall = vm.controller.updater.canInstall() || (d.updateChoiceMade && !d.settings.autoUpdateCheck),
     updateChoiceMade = d.updateChoiceMade,
     gesturesSeen = d.gesturesSeen,
+    edgeService = de.umstieg.launcher.data.EdgeGestureService.isEnabled(context),
 )
 
 /**
@@ -176,6 +177,7 @@ fun SetupWizard(vm: HomeViewModel, d: LauncherData, isDefault: Boolean, actions:
                     }
                     SetupStep.DND -> StepBody(R.drawable.ic_lucide_moon, R.string.setup_dnd_title, R.string.setup_dnd_text)
                     SetupStep.WRITE_SETTINGS -> StepBody(R.drawable.ic_lucide_sun, R.string.setup_write_title, R.string.setup_write_text)
+                    SetupStep.EDGE_GESTURES -> StepBody(R.drawable.ic_lucide_arrow_down_to_line, R.string.setup_edge_title, if (help.restricted()) R.string.setup_edge_text_restricted else R.string.setup_edge_text)
                     SetupStep.UPDATES -> StepBody(R.drawable.ic_lucide_download, R.string.setup_updates_title, R.string.setup_updates_text)
                     SetupStep.INSTALL_UNKNOWN -> StepBody(R.drawable.ic_lucide_shield, R.string.setup_install_title, R.string.setup_install_text)
                     SetupStep.GESTURES -> GestureSketch(d)
@@ -187,6 +189,7 @@ fun SetupWizard(vm: HomeViewModel, d: LauncherData, isDefault: Boolean, actions:
                 SetupStep.DEFAULT_HOME -> R.string.setup_default_action
                 SetupStep.NOTIFICATIONS -> if (listenerHelp) R.string.setup_open_app_info else R.string.listener_allow
                 SetupStep.DND, SetupStep.WRITE_SETTINGS, SetupStep.INSTALL_UNKNOWN -> R.string.setup_allow
+                SetupStep.EDGE_GESTURES -> if (help.restricted()) R.string.setup_open_app_info else R.string.setup_edge_action
                 SetupStep.UPDATES -> R.string.setup_updates_yes
                 SetupStep.GESTURES -> R.string.intro_done
             }
@@ -207,6 +210,11 @@ fun SetupWizard(vm: HomeViewModel, d: LauncherData, isDefault: Boolean, actions:
                         vm.system.start(context, vm.system.policyAccessIntent())
                     }
                     SetupStep.WRITE_SETTINGS -> vm.system.start(context, vm.system.writeSettingsIntent())
+                    SetupStep.EDGE_GESTURES -> {
+                        // Einschalten vormerken; aktiv wird es, sobald der Dienst in den Bedienungshilfen läuft.
+                        vm.controller.updateData { it.copy(settings = it.settings.copy(systemGestures = true)) }
+                        vm.system.start(context, if (help.restricted()) help.appDetailsIntent() else de.umstieg.launcher.data.EdgeGestureService.settingsIntent())
+                    }
                     SetupStep.UPDATES -> vm.controller.updateData { it.copy(updateChoiceMade = true, settings = it.settings.copy(autoUpdateCheck = true)) }
                     SetupStep.INSTALL_UNKNOWN -> vm.system.start(context, vm.controller.updater.allowInstallIntent())
                     SetupStep.GESTURES -> {

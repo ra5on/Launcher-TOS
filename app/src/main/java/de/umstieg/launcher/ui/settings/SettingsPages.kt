@@ -2,6 +2,10 @@ package de.umstieg.launcher.ui.settings
 
 import android.os.Build
 import androidx.compose.foundation.background
+import androidx.compose.ui.unit.sp
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.ui.draw.clip
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -109,13 +113,47 @@ internal fun ResetSection(onReset: () -> Unit) {
 /** „Links / Rechts / Aus“ für eine Zusatzseite. */
 @Composable
 fun PageSideRow(title: String, summary: String, value: PageSide, onChange: (PageSide) -> Unit) {
-    SegmentedRow(
-        title,
-        listOf(PageSide.LEFT to stringResource(R.string.side_left), PageSide.RIGHT to stringResource(R.string.side_right), PageSide.OFF to stringResource(R.string.off)),
-        value,
-        onChange,
-    )
-    Note(summary)
+    Column(Modifier.fillMaxWidth().padding(horizontal = 14.dp, vertical = 10.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+        Text(title, style = TitleStyle.copy(color = LocalPanelColors.current.content))
+        Text(summary, style = SummaryStyle.copy(color = LocalPanelColors.current.secondary))
+        PageSide.entries.forEach { side ->
+            OptionCard(
+                icon = null,
+                title = stringResource(when (side) { PageSide.LEFT -> R.string.side_left; PageSide.RIGHT -> R.string.side_right; PageSide.OFF -> R.string.off }),
+                info = stringResource(when (side) { PageSide.LEFT -> R.string.side_left_info; PageSide.RIGHT -> R.string.side_right_info; PageSide.OFF -> R.string.side_off_info }),
+                selected = side == value,
+                preview = { SidePreview(side) },
+            ) { onChange(side) }
+        }
+    }
+}
+
+/** Mini-Vorschau: drei Seiten nebeneinander, die besondere Seite hervorgehoben. */
+@Composable
+private fun SidePreview(side: PageSide) {
+    Row(horizontalArrangement = Arrangement.spacedBy(3.dp)) {
+        listOf(PageSide.LEFT, null, PageSide.RIGHT).forEach { pos ->
+            val special = pos != null && pos == side
+            val home = pos == null
+            Box(
+                Modifier.size(16.dp, 28.dp).clip(RoundedCornerShape(4.dp))
+                    .background(if (special) Tos.Accent else if (home) Color.White.copy(alpha = 0.35f) else Color.White.copy(alpha = 0.08f)),
+            )
+        }
+    }
+}
+
+/** Mini-Vorschau der Seitenpunkte über dem Dock. */
+@Composable
+private fun DotsPreview(mode: de.umstieg.launcher.core.DotsMode) {
+    Box(Modifier.size(30.dp, 52.dp).clip(RoundedCornerShape(7.dp)).background(Color(0xFF1B2A4A)), contentAlignment = Alignment.BottomCenter) {
+        Row(Modifier.padding(bottom = 12.dp), horizontalArrangement = Arrangement.spacedBy(2.dp)) {
+            val a = when (mode) { de.umstieg.launcher.core.DotsMode.ALWAYS -> 1f; de.umstieg.launcher.core.DotsMode.SCROLL -> 0.45f; de.umstieg.launcher.core.DotsMode.OFF -> 0f }
+            Box(Modifier.size(7.dp, 3.dp).clip(Tos.PillShape).background(Color.White.copy(alpha = a)))
+            Box(Modifier.size(3.dp).clip(Tos.PillShape).background(Color.White.copy(alpha = a * 0.5f)))
+        }
+        Box(Modifier.padding(bottom = 3.dp, start = 3.dp, end = 3.dp).fillMaxWidth().height(6.dp).clip(RoundedCornerShape(2.dp)).background(Color.White.copy(alpha = 0.2f)))
+    }
 }
 
 // ---------- Homescreen & Raster ----------
@@ -158,15 +196,18 @@ fun GridPage(p: PageEnv) {
         CardDivider()
         SegmentedRow(stringResource(R.string.setting_indicator), IndicatorStyle.entries.map { it to indicatorName(it) }, s.indicator) { v -> p.set { it.copy(indicator = v) } }
         CardDivider()
-        SegmentedRow(
-            stringResource(R.string.setting_dots_mode),
+        Column(Modifier.fillMaxWidth().padding(horizontal = 14.dp, vertical = 10.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            Text(stringResource(R.string.setting_dots_mode), style = TitleStyle.copy(color = LocalPanelColors.current.content))
             listOf(
-                de.umstieg.launcher.core.DotsMode.SCROLL to stringResource(R.string.dots_scroll),
-                de.umstieg.launcher.core.DotsMode.ALWAYS to stringResource(R.string.dots_always),
-                de.umstieg.launcher.core.DotsMode.OFF to stringResource(R.string.off),
-            ),
-            s.dotsMode,
-        ) { v -> p.set { it.copy(dotsMode = v) } }
+                de.umstieg.launcher.core.DotsMode.SCROLL to (R.string.dots_scroll to R.string.dots_scroll_info),
+                de.umstieg.launcher.core.DotsMode.ALWAYS to (R.string.dots_always to R.string.dots_always_info),
+                de.umstieg.launcher.core.DotsMode.OFF to (R.string.off to R.string.dots_off_info),
+            ).forEach { (mode, texts) ->
+                OptionCard(null, stringResource(texts.first), stringResource(texts.second), s.dotsMode == mode, preview = { DotsPreview(mode) }) {
+                    p.set { it.copy(dotsMode = mode) }
+                }
+            }
+        }
         CardDivider()
         SegmentedRow(
             stringResource(R.string.setting_page_transition),
@@ -444,11 +485,35 @@ fun DesignPage(p: PageEnv) {
 
 // ---------- Hintergrund & Glas ----------
 
+/** Mini-Vorschau einer Glasfläche auf hellem Foto. */
+@Composable
+private fun GlassPreview(tint: Int) {
+    Box(
+        Modifier.size(44.dp, 44.dp).clip(RoundedCornerShape(10.dp))
+            .background(androidx.compose.ui.graphics.Brush.linearGradient(listOf(Color(0xFFF0C08A), Color(0xFF8AB8F0)))),
+        contentAlignment = Alignment.Center,
+    ) {
+        val fill = Color(0xFF0E121A).copy(alpha = de.umstieg.launcher.core.GlassLogic.fillAlpha(tint, true))
+        Box(Modifier.size(32.dp, 18.dp).clip(RoundedCornerShape(6.dp)).background(fill), contentAlignment = Alignment.Center) {
+            Text("Aa", style = SummaryStyle.copy(color = Color.White, fontSize = 10.sp))
+        }
+    }
+}
+
 @Composable
 fun GlassPage(p: PageEnv) {
     val s = p.s
     val pct = percentFormat()
     SubpageHeader(stringResource(R.string.settings_section_glass), p.back)
+    // Schnellwahl als Auswahlkarten; darunter fein einstellbar.
+    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+        listOf(Triple(R.string.glass_clear, R.string.glass_clear_info, 20 to 40), Triple(R.string.glass_balanced, R.string.glass_balanced_info, 50 to 60), Triple(R.string.glass_strong, R.string.glass_strong_info, 75 to 80))
+            .forEach { (t, i, v) ->
+                OptionCard(null, stringResource(t), stringResource(i), s.glassTint == v.first && s.blurStrength == v.second, preview = { GlassPreview(v.first) }) {
+                    p.set { it.copy(glassTint = v.first, blurStrength = v.second) }
+                }
+            }
+    }
     SettingsCard {
         SliderBlock(
             // Angezeigt wird die Durchsichtigkeit (100 − Tönung): mehr Prozent = mehr Hintergrund sichtbar.

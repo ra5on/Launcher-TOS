@@ -774,4 +774,20 @@
     <string name="engine_startpage_info">Google-Ergebnisse, aber ohne Tracking.</string>
     <string name="engine_ecosia_info">Werbeeinnahmen fließen in Baumpflanzungen.</string>
     <string name="simple_keyboard_info">Beim Öffnen der Suche gleich lostippen.</string>
+    <string name="setup_edge_title">Von ganz oben wischen</string>
+    <string name="setup_edge_text">Optional: Mit der Bedienungshilfe von Launcher TOS öffnet ein Wisch direkt auf der Statusleiste links bzw. rechts die eigenen Panels – auch in anderen Apps. Die Mitte bleibt Android. Der Dienst liest keine Inhalte.</string>
+    <string name="setup_edge_text_restricted">Optional: Wisch direkt auf der Statusleiste für die eigenen Panels. Android sperrt Bedienungshilfen für heruntergeladene Apps: zuerst in der App-Info über ⋮ „Eingeschränkte Einstellungen zulassen“, danach in den Bedienungshilfen einschalten.</string>
+    <string name="setup_edge_action">Bedienungshilfen öffnen</string>
+    <string name="side_left_info">Ganz links, erreichbar mit einem Wisch nach rechts.</string>
+    <string name="side_right_info">Ganz rechts, erreichbar mit einem Wisch nach links.</string>
+    <string name="side_off_info">Gibt es nicht; der Homescreen beginnt direkt.</string>
+    <string name="dots_scroll_info">Unsichtbar in Ruhe, erscheinen beim Blättern.</string>
+    <string name="dots_always_info">Immer über dem Dock zu sehen; Antippen öffnet die Suche.</string>
+    <string name="dots_off_info">Nie sichtbar (außer beim Bearbeiten).</string>
+    <string name="glass_clear">Klar</string>
+    <string name="glass_clear_info">Viel Hintergrundbild, leichte Weichzeichnung.</string>
+    <string name="glass_balanced">Ausgewogen</string>
+    <string name="glass_balanced_info">Standard: gut lesbar und trotzdem durchscheinend.</string>
+    <string name="glass_strong">Kräftig</string>
+    <string name="glass_strong_info">Dunkles Glas – am besten auf hellen Fotos.</string>
 </resources>
