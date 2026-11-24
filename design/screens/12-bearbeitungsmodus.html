@@ -1,0 +1,61 @@
+<!doctype html><html lang="de"><head><meta charset="utf-8">
+<title>Bearbeitungsmodus</title>
+<link rel="stylesheet" href="../assets/kit.css">
+<style>
+  .bar { position:absolute; top:44px; left:var(--side); right:var(--side); display:flex; justify-content:space-between; align-items:center; z-index:5; }
+  .grid { position:absolute; top:104px; left:var(--side); right:var(--side);
+    display:grid; grid-template-columns:repeat(4,1fr); row-gap:20px; justify-items:center; }
+  .slot { width:58px; height:58px; border-radius:18px; border:1.5px dashed rgba(255,255,255,.35); }
+  .lifted { transform:translate(10px,-14px) scale(1.12) rotate(3deg); z-index:6; }
+  .lifted .ico { filter:drop-shadow(0 14px 18px rgba(0,0,0,.45)); }
+  .drop { width:58px; height:58px; border-radius:18px; background:rgba(46,196,166,.22); border:1.5px solid var(--accent); }
+  .pager { position:absolute; top:612px; left:0; right:0; display:flex; justify-content:center; }
+  .pager .glass { display:flex; align-items:center; gap:6px; height:30px; padding:0 12px; border-radius:15px; }
+  .dots span { display:inline-block; width:6px; height:6px; border-radius:3px; background:rgba(255,255,255,.45); margin:0 3px; }
+  .dots span.on { width:16px; background:#fff; }
+  .edge { position:absolute; right:0; top:300px; width:22px; height:200px; border-radius:22px 0 0 22px;
+    background:linear-gradient(270deg, rgba(46,196,166,.45), transparent); }
+  .dock { position:absolute; left:12px; right:12px; bottom:22px; height:92px; border-radius:30px;
+    display:flex; justify-content:space-around; align-items:center; padding:0 10px; }
+  .toast { position:absolute; left:50%; transform:translateX(-50%); top:560px; font-size:12.5px; color:var(--ink-2); white-space:nowrap; }
+</style></head>
+<body>
+<div class="wall"></div>
+<div class="layer">
+  <div class="bar">
+    <div class="pill-btn glass"><i data-i="plus"></i>Widget</div>
+    <div class="done-btn"><i data-i="check"></i>Fertig</div>
+  </div>
+  <div class="grid">
+    <div data-app="kalender" data-minus="1" data-cls="wob1"></div>
+    <div data-app="galerie" data-minus="1" data-cls="wob2"></div>
+    <div data-app="wetter" data-minus="1" data-cls="wob3"></div>
+    <div data-app="mail" data-minus="1" data-cls="wob2" data-badge="3"></div>
+
+    <div data-app="kamera" data-minus="1" data-cls="wob2"></div>
+    <div class="app"><div class="drop"></div><div class="lbl" style="opacity:0">.</div></div>
+    <div data-app="notizen" data-minus="1" data-cls="wob1"></div>
+    <div data-app="aufgaben" data-minus="1" data-cls="wob3"></div>
+
+    <div data-app="fitness" data-minus="1" data-cls="wob3"></div>
+    <div data-app="karten" data-cls="lifted"></div>
+    <div data-app="bank" data-minus="1" data-cls="wob2"></div>
+    <div data-app="home" data-minus="1" data-cls="wob1"></div>
+
+    <div data-app="podcast" data-minus="1" data-cls="wob1"></div>
+    <div data-app="bahn" data-minus="1" data-cls="wob2"></div>
+    <div data-app="einstell" data-minus="1" data-cls="wob3"></div>
+    <div class="app"><div class="slot"></div></div>
+  </div>
+  <div class="edge"></div>
+  <div class="toast">Zum Rand ziehen, um die Seite zu wechseln</div>
+  <div class="pager"><div class="glass dots"><span class="on"></span><span></span><span></span><span style="width:auto;height:auto;background:none;font-size:12px;margin-left:4px">+</span></div></div>
+  <div class="dock glass">
+    <div data-app="telefon" data-label="0" data-minus="1" data-cls="wob2"></div>
+    <div data-app="browser" data-label="0" data-minus="1" data-cls="wob1"></div>
+    <div data-app="chat" data-label="0" data-minus="1" data-cls="wob3"></div>
+    <div data-app="musik" data-label="0" data-minus="1" data-cls="wob2"></div>
+  </div>
+</div>
+<script src="../assets/kit.js"></script>
+</body></html>

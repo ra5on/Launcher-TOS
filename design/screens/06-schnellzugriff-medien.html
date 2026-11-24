@@ -1,0 +1,74 @@
+<!doctype html><html lang="de"><head><meta charset="utf-8">
+<title>Schnellzugriff – Medien</title>
+<link rel="stylesheet" href="../assets/kit.css">
+<style>
+  .tabs { position:absolute; top:44px; left:var(--side); right:var(--side); display:flex; gap:6px; align-items:center; }
+  .chip { height:32px; padding:0 11px; flex:none; border-radius:var(--r-pill); font-size:12.5px; font-weight:600; display:inline-flex; align-items:center; }
+  .chip.on { background:#fff; color:#10141C; border-color:transparent; }
+  .tabs .edit { margin-left:auto; flex:none; }
+  .content { position:absolute; top:92px; left:var(--side); right:var(--side); display:flex; flex-direction:column; gap:10px; }
+  .player { border-radius:26px; padding:16px; }
+  .art { height:206px; border-radius:20px; position:relative; overflow:hidden;
+    background:radial-gradient(70% 70% at 22% 25%, #FFC994 0%, transparent 60%), radial-gradient(80% 80% at 85% 80%, #7B5CFF 0%, transparent 62%), radial-gradient(60% 60% at 70% 20%, #FF6F91 0%, transparent 60%), linear-gradient(150deg,#E8607A,#33245F); }
+  .art::before { content:""; position:absolute; width:150px; height:150px; border-radius:50%; border:14px solid rgba(255,255,255,.28); right:-36px; bottom:-48px; }
+  .art::after { content:""; position:absolute; width:70px; height:70px; border-radius:50%; background:rgba(255,255,255,.18); left:28px; bottom:26px; }
+  .art .app-tag { position:absolute; top:12px; left:12px; display:flex; align-items:center; gap:6px; padding:5px 10px 5px 6px; border-radius:var(--r-pill);
+    background:rgba(10,12,20,.35); backdrop-filter:blur(10px); font-size:11.5px; font-weight:600; }
+  .t { font-size:19px; font-weight:680; letter-spacing:-.3px; margin-top:14px; }
+  .a { font-size:13.5px; color:var(--ink-2); margin-top:2px; }
+  .bar { height:5px; border-radius:3px; background:rgba(255,255,255,.2); margin-top:16px; position:relative; }
+  .bar span { position:absolute; left:0; top:0; bottom:0; width:38%; border-radius:3px; background:#fff; }
+  .bar span::after { content:""; position:absolute; right:-6px; top:-4px; width:13px; height:13px; border-radius:50%; background:#fff; }
+  .times { display:flex; justify-content:space-between; font-size:11.5px; color:var(--ink-3); margin-top:7px; font-variant-numeric:tabular-nums; }
+  .ctrl { display:flex; align-items:center; justify-content:center; gap:34px; margin-top:8px; }
+  .ctrl i { width:26px; height:26px; }
+  .ctrl .play { width:58px; height:58px; border-radius:50%; background:#fff; color:#10141C; display:grid; place-items:center; }
+  .ctrl .play i { width:24px; height:24px; }
+  .vol { display:flex; align-items:center; gap:10px; margin-top:16px; }
+  .vol i { width:17px; height:17px; color:var(--ink-2); }
+  .vol .track { flex:1; height:5px; border-radius:3px; background:rgba(255,255,255,.2); position:relative; }
+  .vol .track span { position:absolute; left:0; top:0; bottom:0; width:55%; background:rgba(255,255,255,.85); border-radius:3px; }
+  .out { display:flex; justify-content:center; margin-top:14px; }
+  .out .pill-btn { background:rgba(255,255,255,.14); }
+  .out .pill-btn i { color:var(--accent); }
+  .paused { border-radius:22px; padding:12px 14px; display:flex; align-items:center; gap:12px; }
+  .paused .mini { width:46px; height:46px; border-radius:13px; flex:none; background:linear-gradient(150deg,#B67CFF,#5A2FB0); display:grid; place-items:center; }
+  .paused .mini i { width:22px; height:22px; }
+  .paused .tx { flex:1; min-width:0; }
+  .paused .tx small { display:block; font-size:11px; font-weight:650; letter-spacing:.5px; text-transform:uppercase; color:var(--ink-3); }
+  .paused .tx b { display:block; font-size:14px; font-weight:600; margin-top:1px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .paused .tx span { display:block; font-size:12px; color:var(--ink-2); }
+  .paused .p { width:38px; height:38px; border-radius:50%; background:rgba(255,255,255,.16); display:grid; place-items:center; flex:none; }
+  .paused .p i { width:16px; height:16px; }
+</style></head>
+<body data-time="08:15">
+<div class="wall blurred dim"></div>
+<div class="layer">
+  <div class="tabs">
+    <div class="chip glass">Steuerung</div>
+    <div class="chip glass">Verbindungen</div>
+    <div class="chip on">Medien</div>
+    <div class="round-btn glass edit"><i data-i="pencil"></i></div>
+  </div>
+
+  <div class="content">
+    <div class="player glass">
+      <div class="art"><div class="app-tag"><div data-tile="musik" data-size="18"></div>Musik</div></div>
+      <div class="t">Leuchtfeuer am Hafen</div>
+      <div class="a">Nordlicht Quartett · Wellenlinien</div>
+      <div class="bar"><span></span></div>
+      <div class="times"><span>1:24</span><span>−2:11</span></div>
+      <div class="ctrl"><i data-i="skip-back"></i><div class="play"><i data-i="pause"></i></div><i data-i="skip-forward"></i></div>
+      <div class="vol"><i data-i="volume-2"></i><div class="track"><span></span></div></div>
+      <div class="out"><div class="pill-btn"><i data-i="speaker"></i>Wohnzimmer-Lautsprecher</div></div>
+    </div>
+
+    <div class="paused glass">
+      <div class="mini"><i data-i="podcast"></i></div>
+      <div class="tx"><small>Pausiert · Podcasts</small><b>Folge 42: Der Wintergarten</b><span>Grüner Daumen Radio</span></div>
+      <div class="p"><i data-i="play"></i></div>
+    </div>
+  </div>
+</div>
+<script src="../assets/kit.js"></script>
+</body></html>

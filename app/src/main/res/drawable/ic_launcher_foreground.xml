@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Eigenes Motiv: 2×2-Raster aus Rundquadraten in Mint (sichtbarer Bereich 18..90 von 108). -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    <path
+        android:fillColor="#FF2EC4A6"
+        android:pathData="M39,33h8a6,6 0 0,1 6,6v8a6,6 0 0,1 -6,6h-8a6,6 0 0,1 -6,-6v-8a6,6 0 0,1 6,-6Z" />
+    <path
+        android:fillColor="#FF2EC4A6"
+        android:pathData="M61,33h8a6,6 0 0,1 6,6v8a6,6 0 0,1 -6,6h-8a6,6 0 0,1 -6,-6v-8a6,6 0 0,1 6,-6Z" />
+    <path
+        android:fillColor="#FF2EC4A6"
+        android:pathData="M39,55h8a6,6 0 0,1 6,6v8a6,6 0 0,1 -6,6h-8a6,6 0 0,1 -6,-6v-8a6,6 0 0,1 6,-6Z" />
+    <path
+        android:fillColor="#B32EC4A6"
+        android:pathData="M61,55h8a6,6 0 0,1 6,6v8a6,6 0 0,1 -6,6h-8a6,6 0 0,1 -6,-6v-8a6,6 0 0,1 6,-6Z" />
+</vector>

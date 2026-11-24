@@ -1,0 +1,101 @@
+<!doctype html><html lang="de"><head><meta charset="utf-8">
+<title>Einstellungen Darstellung</title>
+<link rel="stylesheet" href="../assets/kit.css">
+<style>
+  .bar { position:absolute; top:42px; left:var(--side); right:var(--side); height:40px; display:flex; align-items:center; }
+  .bar .round-btn { background:rgba(255,255,255,.10); border:1px solid rgba(255,255,255,.12); }
+  .bar h1 { margin-left:12px; font-size:18px; font-weight:680; letter-spacing:-.2px; }
+  .body { position:absolute; top:92px; left:var(--side); right:var(--side); bottom:0; overflow:hidden; }
+  .card { background:rgba(255,255,255,.07); border:1px solid rgba(255,255,255,.08); border-radius:var(--r-card); }
+  .preview { height:84px; border-radius:var(--r-card); position:relative; overflow:hidden; display:flex; align-items:center; justify-content:space-around; padding:0 12px; }
+  .preview .bg { position:absolute; inset:0;
+    background:radial-gradient(70% 90% at 15% 20%, #F0A86A, transparent 70%), radial-gradient(60% 90% at 90% 80%, #7A4BA8, transparent 70%), linear-gradient(140deg,#1B2A4A,#10656A); }
+  .livechip { margin-left:auto; display:flex; align-items:center; gap:5px; font-size:11px; font-weight:650; color:var(--accent); background:rgba(46,196,166,.14); padding:5px 10px; border-radius:12px; }
+  .livechip i { width:13px; height:13px; }
+  .preview .tag { position:absolute; top:7px; right:9px; font-size:9.5px; font-weight:650; letter-spacing:.5px; text-transform:uppercase;
+    background:rgba(0,0,0,.28); padding:3px 8px; border-radius:10px; color:rgba(255,255,255,.9); }
+  .preview .app { position:relative; margin-top:4px; gap:4px; }
+  .preview .app .lbl { font-size:10.5px; }
+  .slider { padding:11px 15px 11px; margin-top:8px; }
+  .slider .sub + .row { margin-top:12px; padding-top:12px; border-top:1px solid rgba(255,255,255,.07); }
+  .slider .row { display:flex; align-items:center; justify-content:space-between; }
+  .slider .row b { font-size:14.5px; font-weight:600; display:flex; align-items:center; gap:8px; }
+  .slider .row b i { width:17px; height:17px; color:var(--accent); }
+  .slider .val { font-size:13px; font-weight:650; color:var(--accent); background:rgba(46,196,166,.14); padding:3px 9px; border-radius:10px; }
+  .track { position:relative; height:26px; margin-top:6px; display:flex; align-items:center; }
+  .track .rail { position:absolute; left:0; right:0; height:8px; border-radius:4px; background:rgba(255,255,255,.12); }
+  .track .fill { position:absolute; left:0; height:8px; border-radius:4px; background:linear-gradient(90deg,#1E9C86,var(--accent)); }
+  .track .knob { position:absolute; width:26px; height:26px; margin-left:-13px; border-radius:9px; background:#fff;
+    box-shadow:0 2px 8px rgba(0,0,0,.35); display:grid; place-items:center; }
+  .track .knob::after { content:""; width:8px; height:8px; border-radius:3px; background:var(--accent); }
+  .track .ticks { position:absolute; left:4px; right:4px; top:24px; display:flex; justify-content:space-between; }
+  .track .ticks span { width:3px; height:3px; border-radius:2px; background:rgba(255,255,255,.28); }
+  .ends { display:flex; justify-content:space-between; margin-top:2px; font-size:11.5px; color:var(--ink-3); font-weight:550; }
+  .ends span { display:flex; align-items:center; gap:5px; }
+  .ends i { width:13px; height:13px; }
+  .note { font-size:11px; line-height:1.4; color:var(--ink-3); margin-top:5px; }
+  .label { margin:11px 6px 6px; }
+  .list .it { display:flex; align-items:center; gap:12px; min-height:42px; padding:0 14px; border-bottom:1px solid rgba(255,255,255,.07); font-size:14.5px; font-weight:500; }
+  .list .it:last-child { border-bottom:0; }
+  .list .ic { width:28px; height:28px; border-radius:10px; display:grid; place-items:center; flex:none; }
+  .list .ic i { width:16px; height:16px; color:#fff; }
+  .list .v { margin-left:auto; display:flex; align-items:center; gap:4px; font-size:13.5px; color:var(--ink-3); }
+  .list .v i { width:15px; height:15px; }
+  .seg { margin-left:auto; display:flex; background:rgba(255,255,255,.10); border-radius:10px; padding:2px; }
+  .seg span { font-size:12px; font-weight:600; padding:5px 9px; border-radius:8px; color:var(--ink-2); }
+  .seg span.on { background:var(--accent); color:var(--accent-ink); }
+  .list .it .switch { margin-left:auto; }
+  .gest .it { min-height:50px; }
+  .gest .g { font-size:12px; color:var(--ink-3); margin-top:2px; font-weight:450; }
+</style></head>
+<body data-time="08:15">
+<div class="wall dark"></div>
+<div class="layer">
+  <div class="bar"><div class="round-btn"><i data-i="chevron-left"></i></div><h1>Darstellung</h1><div class="livechip"><i data-i="sparkles"></i>Live-Vorschau</div></div>
+  <div class="body">
+    <div class="preview">
+      <div class="bg"></div>
+      <div data-app="telefon" data-size="44" data-rounding="62"></div>
+      <div data-app="chat" data-size="44" data-rounding="62" data-badge="2"></div>
+      <div data-app="kamera" data-size="44" data-rounding="62"></div>
+      <div data-app="musik" data-size="44" data-rounding="62"></div>
+    </div>
+
+    <div class="card slider">
+      <div class="row"><b><i data-i="circle"></i>Icon-Rundung</b><span class="val">62 %</span></div>
+      <div class="track"><div class="rail"></div><div class="fill" style="width:62%"></div><div class="knob" style="left:62%"></div></div>
+      <div class="ends sub"><span>Eckig</span><span>Rund</span></div>
+      <div class="row"><b><i data-i="maximize-2"></i>Icongröße</b><span class="val">Mittel</span></div>
+      <div class="track"><div class="rail"></div><div class="fill" style="width:50%"></div><div class="knob" style="left:50%"></div></div>
+      <div class="ends"><span>Klein</span><span>Groß</span></div>
+    </div>
+
+    <div class="card slider">
+      <div class="row"><b><i data-i="droplets"></i>Glas-Effekt</b><span class="val">35 %</span></div>
+      <div class="track"><div class="rail"></div><div class="fill" style="width:35%"></div><div class="knob" style="left:35%"></div></div>
+      <div class="ends"><span><i data-i="sparkles"></i>Klar</span><span>Getönt<i data-i="sun-moon"></i></span></div>
+      <div class="note">„Getönt“ macht Panels deckender und kontrastreicher.</div>
+    </div>
+
+    <div class="section-label label">Homescreen</div>
+    <div class="card list">
+      <div class="it"><div class="ic" style="background:#3A8DEB"><i data-i="grid-3x3"></i></div>Raster<div class="v">4 × 6<i data-i="chevron-right"></i></div></div>
+      <div class="it"><div class="ic" style="background:#8343D6"><i data-i="type"></i></div>Beschriftungen<div class="switch on"></div></div>
+      <div class="it"><div class="ic" style="background:#E86A1F"><i data-i="type"></i></div>Schriftgröße<div class="v">Normal<i data-i="chevron-right"></i></div></div>
+      <div class="it"><div class="ic" style="background:#4E586B"><i data-i="sun-moon"></i></div>Design
+        <div class="seg"><span>Hell</span><span>Dunkel</span><span class="on">System</span></div></div>
+      <div class="it"><div class="ic" style="background:#22A06B"><i data-i="layout-dashboard"></i></div>Dock anzeigen<div class="switch on"></div></div>
+      <div class="it"><div class="ic" style="background:#E0457A"><i data-i="vibrate"></i></div>Haptik<div class="switch on"></div></div>
+    </div>
+
+    <div class="section-label label">Gesten</div>
+    <div class="card list gest">
+      <div class="it"><div class="ic" style="background:#1C9DBB"><i data-i="move-up-left"></i></div><div>Wisch oben links<div class="g">Benachrichtigungen</div></div><div class="v"><i data-i="chevron-right"></i></div></div>
+      <div class="it"><div class="ic" style="background:#2B8E70"><i data-i="move-up-right"></i></div><div>Wisch oben rechts<div class="g">Schnellzugriff</div></div><div class="v"><i data-i="chevron-right"></i></div></div>
+      <div class="it"><div class="ic" style="background:#3D5BDB"><i data-i="move-down"></i></div><div>Wisch nach unten (Mitte)<div class="g">Suche</div></div><div class="v"><i data-i="chevron-right"></i></div></div>
+      <div class="it"><div class="ic" style="background:#C94AD8"><i data-i="mouse-pointer-click"></i></div><div>Doppeltipp unten<div class="g">Assistent</div></div><div class="v"><i data-i="chevron-right"></i></div></div>
+    </div>
+  </div>
+</div>
+<script src="../assets/kit.js"></script>
+</body></html>

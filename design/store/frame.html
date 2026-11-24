@@ -1,0 +1,34 @@
+<!doctype html><html lang="de"><head><meta charset="utf-8">
+<title>Store-Rahmen</title>
+<!-- Aufruf: frame.html?s=<screen-name>&h=<Überschrift>&sub=<Unterzeile>&bg=<1-4> -->
+<style>
+  @font-face { font-family:"Inter"; src:url("../assets/fonts/Inter-Variable-latin.woff2") format("woff2"); font-weight:100 900; }
+  @font-face { font-family:"Inter"; src:url("../assets/fonts/Inter-Variable-latin-ext.woff2") format("woff2"); font-weight:100 900; unicode-range:U+0100-024F; }
+  * { box-sizing:border-box; margin:0; padding:0; }
+  html, body { width:360px; height:640px; overflow:hidden; }
+  body { font-family:"Inter",sans-serif; font-feature-settings:"cv11","ss01"; color:#fff; -webkit-font-smoothing:antialiased; position:relative; }
+  .bg { position:absolute; inset:0; }
+  .bg1 { background: radial-gradient(80% 50% at 10% 0%, #2EC4A6 0%, transparent 70%), radial-gradient(70% 60% at 100% 100%, #7A4BA8 0%, transparent 70%), #13223A; }
+  .bg2 { background: radial-gradient(80% 50% at 90% 0%, #F0A86A 0%, transparent 70%), radial-gradient(70% 60% at 0% 100%, #10656A 0%, transparent 70%), #1C1830; }
+  .bg3 { background: radial-gradient(80% 50% at 20% 0%, #7A8CFF 0%, transparent 70%), radial-gradient(70% 60% at 100% 90%, #E0697A 0%, transparent 70%), #151A33; }
+  .bg4 { background: radial-gradient(80% 50% at 80% 0%, #5BD18B 0%, transparent 70%), radial-gradient(70% 60% at 0% 90%, #3A6BD9 0%, transparent 70%), #10202A; }
+  .txt { position:absolute; top:34px; left:26px; right:26px; text-align:center; }
+  h1 { font-size:27px; font-weight:720; letter-spacing:-.7px; line-height:1.12; text-wrap:balance; }
+  p { font-size:14px; font-weight:500; color:rgba(255,255,255,.78); margin-top:9px; line-height:1.35; text-wrap:balance; }
+  .device { position:absolute; left:50%; top:148px; width:252px; height:560px; margin-left:-126px;
+    border-radius:38px; background:#0A0D12; padding:7px; box-shadow:0 24px 60px rgba(0,0,0,.45), 0 0 0 1.5px rgba(255,255,255,.14); }
+  .device img { width:100%; height:100%; border-radius:31px; display:block; object-fit:cover; object-position:top; }
+  .device::after { content:""; position:absolute; top:15px; left:50%; width:9px; height:9px; margin-left:-4.5px; border-radius:50%; background:#000; box-shadow:0 0 0 1.5px #1A1E26; }
+</style></head>
+<body>
+<div class="bg" id="bg"></div>
+<div class="txt"><h1 id="h"></h1><p id="sub"></p></div>
+<div class="device"><img id="img" alt=""></div>
+<script>
+  const q = new URLSearchParams(location.search);
+  document.getElementById("bg").classList.add("bg" + (q.get("bg") || "1"));
+  document.getElementById("h").textContent = q.get("h") || "";
+  document.getElementById("sub").textContent = q.get("sub") || "";
+  document.getElementById("img").src = "../export/screens/" + q.get("s") + ".png";
+</script>
+</body></html>

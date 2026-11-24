@@ -1,0 +1,68 @@
+<!doctype html><html lang="de"><head><meta charset="utf-8">
+<title>App-Icons</title>
+<link rel="stylesheet" href="../assets/kit.css">
+<style>
+  .wrap { position:absolute; top:42px; left:14px; right:14px; }
+  .nav { display:flex; align-items:center; gap:10px; margin-bottom:14px; }
+  .nav .t { font-size:18px; font-weight:650; }
+  .preview { border-radius:24px; padding:18px 10px 16px; overflow:hidden; position:relative; margin-bottom:12px; }
+  .preview::before { content:""; position:absolute; inset:0; z-index:-1;
+    background: radial-gradient(70% 90% at 15% 10%, #F0A86A 0%, transparent 70%), radial-gradient(70% 90% at 90% 80%, #7A4BA8 0%, transparent 70%), #1B2A4A; opacity:.9; }
+  .preview .apps { display:grid; grid-template-columns:repeat(4,1fr); justify-items:center; row-gap:14px; }
+  .preview .cap { text-align:center; font-size:11.5px; color:var(--ink-2); margin-top:12px; font-weight:550; }
+  .card { border-radius:var(--r-card); padding:14px 14px 16px; margin-bottom:10px; }
+  .card .top { display:flex; justify-content:space-between; align-items:baseline; margin-bottom:12px; }
+  .card .n { font-size:14.5px; font-weight:600; }
+  .card .v { font-size:13px; font-weight:650; color:var(--accent); }
+  .slider { position:relative; height:28px; display:flex; align-items:center; gap:10px; }
+  .slider .mini { width:18px; height:18px; flex:none; background:rgba(255,255,255,.7); }
+  .track { flex:1; height:6px; border-radius:3px; background:rgba(255,255,255,.16); position:relative; }
+  .track .fill { position:absolute; left:0; top:0; bottom:0; border-radius:3px; background:var(--accent); }
+  .track .knob { position:absolute; top:50%; width:24px; height:24px; margin:-12px 0 0 -12px; border-radius:50%; background:#fff; box-shadow:0 2px 8px rgba(0,0,0,.35); }
+  .presets { display:flex; gap:8px; margin-top:14px; }
+  .presets span { flex:1; height:30px; border-radius:15px; display:grid; place-items:center; font-size:12px; font-weight:600; background:rgba(255,255,255,.10); }
+  .presets span.on { background:var(--accent); color:var(--accent-ink); }
+  .row { display:flex; align-items:center; justify-content:space-between; padding:10px 0; font-size:14px; font-weight:550; }
+  .row + .row { border-top:1px solid rgba(255,255,255,.08); }
+  .row .val { font-size:13px; color:var(--ink-2); display:flex; align-items:center; gap:4px; font-weight:500; }
+  .row .val i { width:15px; height:15px; }
+  .seg { display:flex; background:rgba(255,255,255,.10); border-radius:10px; padding:3px; }
+  .seg span { padding:5px 10px; font-size:12px; border-radius:8px; font-weight:600; color:var(--ink-2); }
+  .seg span.on { background:rgba(255,255,255,.9); color:#111; }
+</style></head>
+<body>
+<div class="wall dark"></div>
+<div class="layer"><div class="wrap">
+  <div class="nav"><div class="round-btn glass"><i data-i="chevron-left"></i></div><div class="t">App-Icons</div></div>
+
+  <div class="preview">
+    <div class="apps">
+      <div data-app="kalender"></div><div data-app="galerie"></div><div data-app="musik"></div><div data-app="mail" data-badge="3"></div>
+    </div>
+    <div class="cap">Live-Vorschau mit deinen Original-Icons</div>
+  </div>
+
+  <div class="card glass">
+    <div class="top"><span class="n">Rundung</span><span class="v">62 %</span></div>
+    <div class="slider"><div class="mini" style="border-radius:3px"></div>
+      <div class="track"><div class="fill" style="width:62%"></div><div class="knob" style="left:62%"></div></div>
+      <div class="mini" style="border-radius:50%"></div></div>
+    <div class="presets"><span>Eckig</span><span>Weich</span><span class="on">Squircle</span><span>Kreis</span></div>
+  </div>
+
+  <div class="card glass">
+    <div class="top"><span class="n">Größe</span><span class="v">100 %</span></div>
+    <div class="slider"><i data-i="minus" style="width:16px;height:16px;color:var(--ink-2)"></i>
+      <div class="track"><div class="fill" style="width:50%"></div><div class="knob" style="left:50%"></div></div>
+      <i data-i="plus" style="width:16px;height:16px;color:var(--ink-2)"></i></div>
+  </div>
+
+  <div class="card glass" style="padding-top:4px;padding-bottom:4px">
+    <div class="row">Schatten <div class="seg"><span>Aus</span><span class="on">Leicht</span><span>Stark</span></div></div>
+    <div class="row">Ältere Icons <span class="val">Farbe aus Icon <i data-i="chevron-right"></i></span></div>
+    <div class="row">Themen-Icons (einfarbig) <div class="switch"></div></div>
+    <div class="row">Icon-Paket <span class="val">Keins <i data-i="chevron-right"></i></span></div>
+  </div>
+</div></div>
+<script src="../assets/kit.js"></script>
+</body></html>

@@ -1,0 +1,157 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Klar – Launcher für Android</string>
+    <string name="settings_entry_name">Klar</string>
+
+    <!-- Homescreen -->
+    <string name="home_page_description">Seite %1$d von %2$d</string>
+    <string name="home_dock_description">Dock</string>
+    <string name="default_hint_title">Klar als Startbildschirm verwenden?</string>
+    <string name="default_hint_text">Damit die Home-Taste immer hierher führt, lege Klar als Standard-Launcher fest.</string>
+    <string name="default_hint_action">Als Standard festlegen</string>
+    <string name="default_hint_later">Später</string>
+    <string name="locked_hint">Das Layout ist gesperrt. Entsperren kannst du es in den Einstellungen.</string>
+    <string name="locked_hint_settings">Einstellungen</string>
+    <string name="app_not_startable">Die App lässt sich gerade nicht öffnen.</string>
+    <string name="work_app_description">%1$s (Arbeitsprofil)</string>
+
+    <!-- Bearbeitungsmodus -->
+    <string name="edit_done">Fertig</string>
+    <string name="edit_add_apps">Apps hinzufügen</string>
+    <string name="edit_settings">Einstellungen</string>
+    <string name="edit_hint_edge">Zum Rand ziehen, um die Seite zu wechseln</string>
+    <string name="edit_remove_app">%1$s vom Homescreen entfernen</string>
+    <string name="edit_remove_folder">Ordner %1$s auflösen</string>
+    <string name="edit_remove_from_folder">%1$s aus dem Ordner entfernen</string>
+    <string name="edit_remove_from_dock">%1$s aus dem Dock entfernen</string>
+    <string name="edit_start_action">Homescreen bearbeiten</string>
+    <string name="add_apps_title">Apps hinzufügen</string>
+    <string name="add_apps_empty">Alle Apps sind bereits auf dem Homescreen.</string>
+    <string name="add_apps_add">%1$s zum Homescreen hinzufügen</string>
+    <string name="close">Schließen</string>
+
+    <!-- Ordner -->
+    <string name="folder_default_name">Ordner</string>
+    <string name="folder_rename_hint">Name antippen zum Umbenennen</string>
+    <string name="folder_rename">Ordner umbenennen</string>
+    <string name="folder_description">Ordner %1$s, %2$d Apps</string>
+    <plurals name="folder_app_count">
+        <item quantity="one">%d App</item>
+        <item quantity="other">%d Apps</item>
+    </plurals>
+
+    <!-- Einstellungen: Übersicht -->
+    <string name="settings_title">Einstellungen</string>
+    <string name="back">Zurück</string>
+    <string name="settings_section_grid">Homescreen &amp; Raster</string>
+    <string name="settings_section_icons">App-Icons</string>
+    <string name="settings_section_labels">Beschriftung &amp; Schrift</string>
+    <string name="settings_section_dock">Dock &amp; Ordner</string>
+    <string name="settings_section_design">Design</string>
+    <string name="settings_section_haptics">Haptik &amp; Animationen</string>
+    <string name="settings_section_accessibility">Barrierefreiheit</string>
+    <string name="settings_section_backup">Sichern &amp; Zurücksetzen</string>
+    <string name="settings_section_default">Standard-Launcher</string>
+    <string name="settings_section_about">Über &amp; Lizenzen</string>
+    <string name="settings_reset_section">Auf Standard zurücksetzen</string>
+
+    <string name="summary_grid">%1$d × %2$d · %3$s</string>
+    <string name="summary_icons">Rundung %1$d %% · Größe %2$d %%</string>
+    <string name="summary_labels">%1$s · %2$d %%</string>
+    <string name="summary_dock_on">%1$d Apps · Glas</string>
+    <string name="summary_dock_off">Dock aus</string>
+    <string name="summary_haptics">%1$s · Wackeln %2$s</string>
+    <string name="summary_default_yes">Klar ist der Standard-Launcher</string>
+    <string name="summary_default_no">Noch nicht festgelegt</string>
+    <string name="summary_backup">Exportieren · Importieren · Zurücksetzen</string>
+    <string name="summary_about">Version %1$s · keine Berechtigungen</string>
+    <string name="on">An</string>
+    <string name="off">Aus</string>
+    <string name="percent_value">%1$d %%</string>
+
+    <!-- Homescreen & Raster -->
+    <string name="setting_columns">Spalten</string>
+    <string name="setting_rows">Reihen</string>
+    <string name="setting_side_margin">Seitenrand</string>
+    <string name="dp_value">%1$d dp</string>
+    <string name="setting_indicator">Seitenindikator</string>
+    <string name="indicator_dots">Punkte</string>
+    <string name="indicator_bar">Balken</string>
+    <string name="indicator_number">Zahl</string>
+    <string name="indicator_none">Aus</string>
+    <string name="setting_auto_add">Neue Apps automatisch hinzufügen</string>
+    <string name="setting_auto_add_summary">Auf der nächsten freien Stelle</string>
+    <string name="setting_lock">Layout sperren</string>
+    <string name="setting_lock_summary">Kein versehentliches Verschieben</string>
+
+    <!-- App-Icons -->
+    <string name="icons_preview_caption">Live-Vorschau mit deinen Original-Icons</string>
+    <string name="setting_rounding">Rundung</string>
+    <string name="rounding_square">Eckig</string>
+    <string name="rounding_soft">Weich</string>
+    <string name="rounding_squircle">Squircle</string>
+    <string name="rounding_circle">Kreis</string>
+    <string name="setting_icon_size">Größe</string>
+    <string name="setting_legacy_bg">Ältere Icons</string>
+    <string name="setting_legacy_bg_summary">Hintergrund für Icons ohne eigene Form</string>
+    <string name="legacy_bg_white">Weiß</string>
+    <string name="legacy_bg_dominant">Farbe aus Icon</string>
+
+    <!-- Beschriftung -->
+    <string name="setting_labels_home">Beschriftung auf dem Homescreen</string>
+    <string name="setting_labels_dock">Beschriftung im Dock</string>
+    <string name="setting_labels_folder">Beschriftung in Ordnern</string>
+    <string name="setting_font_size">Schriftgröße</string>
+
+    <!-- Dock & Ordner -->
+    <string name="setting_dock">Dock anzeigen</string>
+    <string name="setting_dock_count">Apps im Dock</string>
+    <string name="setting_folder_by_drag">Ordner durch Ziehen erstellen</string>
+    <string name="setting_folder_by_drag_summary">App auf App ziehen</string>
+
+    <!-- Design -->
+    <string name="setting_theme">Erscheinungsbild</string>
+    <string name="setting_theme_summary">Gilt für Einstellungen und Panels</string>
+    <string name="theme_system">System</string>
+    <string name="theme_light">Hell</string>
+    <string name="theme_dark">Dunkel</string>
+
+    <!-- Haptik -->
+    <string name="setting_haptics">Haptik</string>
+    <string name="setting_haptics_summary">Beim Bearbeiten und Ablegen</string>
+    <string name="setting_haptics_strength">Stärke</string>
+    <string name="haptics_light">Leicht</string>
+    <string name="haptics_medium">Mittel</string>
+    <string name="haptics_strong">Stark</string>
+    <string name="setting_wobble">Wackeln im Bearbeitungsmodus</string>
+
+    <!-- Barrierefreiheit -->
+    <string name="setting_large_touch">Große Touch-Flächen</string>
+    <string name="setting_large_touch_summary">Größere Schaltflächen im Bearbeitungsmodus</string>
+
+    <!-- Sichern -->
+    <string name="backup_export">Layout exportieren</string>
+    <string name="backup_export_summary">Als JSON-Datei speichern</string>
+    <string name="backup_import">Layout importieren</string>
+    <string name="backup_import_summary">JSON-Datei laden</string>
+    <string name="backup_reset">Layout zurücksetzen</string>
+    <string name="backup_reset_summary">Alle Apps neu anordnen</string>
+    <string name="backup_reset_confirm_title">Layout zurücksetzen?</string>
+    <string name="backup_reset_confirm_text">Seiten, Ordner und Dock werden neu angelegt. Die Einstellungen bleiben erhalten.</string>
+    <string name="backup_reset_confirm">Zurücksetzen</string>
+    <string name="cancel">Abbrechen</string>
+    <string name="backup_export_done">Layout exportiert</string>
+    <string name="backup_export_failed">Export fehlgeschlagen</string>
+    <string name="backup_import_done">Layout importiert</string>
+    <string name="backup_import_failed">Die Datei ist kein gültiges Layout</string>
+    <string name="backup_reset_done">Layout zurückgesetzt</string>
+    <string name="backup_file_name">klar-layout.json</string>
+
+    <!-- Standard-Launcher -->
+
+    <!-- Über -->
+    <string name="about_version">Version %1$s</string>
+    <string name="about_text">Klar ist freie Software unter der GNU General Public License Version 3. Die App braucht keine Berechtigungen, hat keinen Internetzugriff, zeigt keine Werbung und sammelt keine Daten.</string>
+    <string name="about_licenses">Lizenzen</string>
+    <string name="about_licenses_summary">Inter (SIL OFL 1.1), Lucide (ISC), AndroidX und Kotlin (Apache 2.0)</string>
+</resources>

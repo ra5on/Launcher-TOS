@@ -1,0 +1,156 @@
+/* Design-System der Launcher-Vorlagen. Eigene Werte, keine fremden Vorlagen.
+   Bildschirm: 360 × 800 CSS-px, gerendert mit Faktor 3 → 1080 × 2400. */
+
+@font-face {
+  font-family: "Inter";
+  src: url("fonts/Inter-Variable-latin.woff2") format("woff2");
+  font-weight: 100 900;
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+2000-206F, U+2074, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215;
+}
+@font-face {
+  font-family: "Inter";
+  src: url("fonts/Inter-Variable-latin-ext.woff2") format("woff2");
+  font-weight: 100 900;
+  unicode-range: U+0100-024F, U+0259, U+1E00-1EFF, U+2020, U+20A0-20AB, U+20AD-20CF, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+
+:root {
+  --accent: #2EC4A6;          /* Mintgrün, eigene Akzentfarbe */
+  --accent-ink: #04261F;
+  --danger: #F2545B;
+  --badge: #F2545B;
+  --ink: #FFFFFF;
+  --ink-2: rgba(255,255,255,.72);
+  --ink-3: rgba(255,255,255,.50);
+  --glass: rgba(255,255,255,.13);
+  --glass-strong: rgba(255,255,255,.20);
+  --glass-dark: rgba(14,18,26,.38);
+  --glass-line: rgba(255,255,255,.16);
+  --blur: blur(26px) saturate(150%);
+  --r-card: 20px;
+  --r-tile: 22px;
+  --r-pill: 999px;
+  --gap: 10px;
+  --side: 18px;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { width: 360px; height: 800px; overflow: hidden; background: #0B0F16; }
+body {
+  font-family: "Inter", sans-serif;
+  font-feature-settings: "cv11", "ss01";
+  color: var(--ink);
+  -webkit-font-smoothing: antialiased;
+  position: relative;
+}
+
+/* ---------- Hintergrund (selbst erzeugt) ---------- */
+.wall { position: absolute; inset: 0; overflow: hidden; z-index: 0; }
+.wall::before {
+  content: ""; position: absolute; inset: -60px;
+  background:
+    radial-gradient(60% 40% at 18% 12%, #F0A86A 0%, transparent 70%),
+    radial-gradient(55% 45% at 90% 30%, #7A4BA8 0%, transparent 72%),
+    radial-gradient(70% 50% at 20% 70%, #10656A 0%, transparent 70%),
+    radial-gradient(60% 45% at 85% 92%, #E0697A 0%, transparent 70%),
+    linear-gradient(170deg, #1B2A4A 0%, #14243A 50%, #2A1E3A 100%);
+  filter: saturate(115%);
+}
+.wall.blurred::before { filter: blur(22px) saturate(120%) brightness(.78); }
+.wall.dim::after { content: ""; position: absolute; inset: 0; background: rgba(6,8,14,.28); }
+.wall.dark::before {
+  background:
+    radial-gradient(60% 40% at 20% 15%, #2A4A6A 0%, transparent 70%),
+    radial-gradient(60% 50% at 85% 70%, #4A2A5A 0%, transparent 70%),
+    linear-gradient(180deg, #0E141F, #121826);
+}
+
+.layer { position: absolute; inset: 0; z-index: 1; }
+
+/* ---------- Android-Statusleiste & Gestenleiste ---------- */
+.statusbar {
+  position: absolute; top: 0; left: 0; right: 0; height: 32px; z-index: 50;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0 18px 0 22px; font-size: 13px; font-weight: 550; letter-spacing: .1px;
+}
+.statusbar .right { display: flex; align-items: center; gap: 6px; }
+.statusbar .right i { width: 15px; height: 15px; }
+.navbar {
+  position: absolute; bottom: 8px; left: 50%; transform: translateX(-50%);
+  width: 108px; height: 4px; border-radius: 4px; background: rgba(255,255,255,.85); z-index: 50;
+}
+
+/* ---------- Symbole ---------- */
+i[data-i] { display: inline-flex; width: 20px; height: 20px; flex: none; }
+i[data-i] svg { width: 100%; height: 100%; }
+
+/* ---------- Glas ---------- */
+.glass {
+  background: var(--glass);
+  backdrop-filter: var(--blur); -webkit-backdrop-filter: var(--blur);
+  border: 1px solid var(--glass-line);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.14), 0 8px 24px rgba(0,0,0,.18);
+}
+.glass.dark { background: var(--glass-dark); }
+.glass.strong { background: var(--glass-strong); }
+
+/* ---------- App-Icon (Squircle per JS) ---------- */
+.app { display: flex; flex-direction: column; align-items: center; gap: 6px; position: relative; }
+.app .ico {
+  width: var(--icon, 58px); height: var(--icon, 58px); position: relative;
+  display: grid; place-items: center; color: #fff;
+  filter: drop-shadow(0 3px 6px rgba(0,0,0,.22));
+}
+.app .ico .shape { position: absolute; inset: 0; }
+.app .ico i { position: relative; width: 46%; height: 46%; }
+.app .ico i svg { stroke-width: 2.1; }
+.app .lbl {
+  font-size: 11.5px; font-weight: 500; letter-spacing: .05px; max-width: 76px;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  text-shadow: 0 1px 3px rgba(0,0,0,.35);
+}
+.badge {
+  position: absolute; top: -5px; right: -6px; min-width: 20px; height: 20px; padding: 0 6px;
+  border-radius: 10px; background: var(--badge); color: #fff; font-size: 11.5px; font-weight: 650;
+  display: grid; place-items: center; border: 2px solid rgba(255,255,255,.0); z-index: 3;
+}
+
+/* ---------- Allgemeine Bausteine ---------- */
+.pill-btn {
+  display: inline-flex; align-items: center; gap: 6px; height: 32px; padding: 0 13px;
+  border-radius: var(--r-pill); font-size: 13px; font-weight: 550;
+}
+.pill-btn i { width: 15px; height: 15px; }
+.round-btn { width: 36px; height: 36px; border-radius: 50%; display: grid; place-items: center; }
+.round-btn i { width: 18px; height: 18px; }
+.h-title { font-size: 26px; font-weight: 680; letter-spacing: -.5px; }
+.h-sub { font-size: 13px; color: var(--ink-2); font-weight: 500; }
+.section-label {
+  font-size: 12px; font-weight: 650; letter-spacing: .6px; text-transform: uppercase; color: var(--ink-2);
+}
+.minus {
+  position: absolute; top: -7px; left: -7px; width: 22px; height: 22px; border-radius: 50%;
+  background: rgba(40,44,54,.82); border: 1px solid rgba(255,255,255,.28);
+  display: grid; place-items: center; z-index: 4; backdrop-filter: blur(10px);
+}
+.minus i { width: 13px; height: 13px; }
+.minus i svg { stroke-width: 3; }
+.done-btn {
+  background: #fff; color: #10141C; font-weight: 650; font-size: 14px; height: 36px; padding: 0 18px;
+  border-radius: var(--r-pill); display: inline-flex; align-items: center; gap: 6px;
+}
+.done-btn i { width: 16px; height: 16px; }
+.switch {
+  width: 42px; height: 26px; border-radius: 13px; background: rgba(255,255,255,.22); position: relative; flex: none;
+}
+.switch::after {
+  content: ""; position: absolute; top: 3px; left: 3px; width: 20px; height: 20px; border-radius: 50%; background: #fff;
+  box-shadow: 0 1px 3px rgba(0,0,0,.3);
+}
+.switch.on { background: var(--accent); }
+.switch.on::after { left: 19px; }
+
+/* Wackeln im Bearbeitungsmodus, als Standbild leicht verdreht */
+.wob1 { transform: rotate(-2.2deg); }
+.wob2 { transform: rotate(1.8deg); }
+.wob3 { transform: rotate(-1.2deg); }

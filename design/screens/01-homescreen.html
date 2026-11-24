@@ -1,0 +1,70 @@
+<!doctype html><html lang="de"><head><meta charset="utf-8">
+<title>Homescreen</title>
+<link rel="stylesheet" href="../assets/kit.css">
+<style>
+  .grid { position:absolute; top:52px; left:var(--side); right:var(--side);
+    display:grid; grid-template-columns:repeat(4,1fr); row-gap:20px; justify-items:center; }
+  .widget { grid-column:span 2; grid-row:span 2; width:150px; height:164px; border-radius:24px; padding:14px 15px;
+    display:flex; flex-direction:column; justify-content:space-between; }
+  .widget .day { font-size:12px; font-weight:650; color:rgba(255,255,255,.82); letter-spacing:.4px; text-transform:uppercase; }
+  .widget .date { font-size:40px; font-weight:300; letter-spacing:-1.5px; line-height:1; margin-top:2px; }
+  .widget .ev { font-size:12px; color:var(--ink-2); line-height:1.35; }
+  .widget .ev b { color:#fff; font-weight:600; display:block; font-size:12.5px; }
+  .widget .wx { display:flex; align-items:center; gap:6px; font-size:13px; font-weight:600; }
+  .widget .wx i { width:18px; height:18px; color:#FFD27A; }
+  .folder .ico .shape { background:rgba(255,255,255,.22) !important; backdrop-filter:blur(18px); }
+  .folder .mini { position:relative; display:grid; grid-template-columns:repeat(2,18px); gap:5px; }
+  .pager { position:absolute; top:612px; left:0; right:0; display:flex; justify-content:center; }
+  .pager .glass { display:flex; align-items:center; gap:10px; height:30px; padding:0 12px 0 10px; border-radius:15px; }
+  .pager i { width:14px; height:14px; }
+  .dots { display:flex; gap:6px; }
+  .dots span { width:6px; height:6px; border-radius:3px; background:rgba(255,255,255,.45); }
+  .dots span.on { width:16px; background:#fff; }
+  .dock { position:absolute; left:12px; right:12px; bottom:22px; height:92px; border-radius:30px;
+    display:flex; justify-content:space-around; align-items:center; padding:0 10px; }
+</style></head>
+<body data-time="08:15">
+<div class="wall"></div>
+<div class="layer">
+  <div class="grid">
+    <div class="widget glass">
+      <div><div class="day">Dienstag</div><div class="date">24</div></div>
+      <div class="ev"><b>Zahnarzt</b>10:30 – 11:00</div>
+      <div class="wx"><i data-i="cloud-sun"></i>12° · bewölkt</div>
+    </div>
+    <div data-app="kalender"></div>
+    <div data-app="galerie"></div>
+    <div data-app="wetter"></div>
+    <div data-app="mail" data-badge="3"></div>
+
+    <div data-app="kamera"></div>
+    <div data-app="karten"></div>
+    <div data-app="notizen"></div>
+    <div data-app="aufgaben" data-badge="1"></div>
+
+    <div data-app="fitness"></div>
+    <div class="app folder">
+      <div class="ico"><div class="shape" id="fs"></div>
+        <div class="mini"><div data-tile="rechner" data-size="18"></div><div data-tile="uhr" data-size="18"></div><div data-tile="dateien" data-size="18"></div><div data-tile="kontakte" data-size="18"></div></div>
+      </div><div class="lbl">Werkzeuge</div>
+    </div>
+    <div data-app="bank"></div>
+    <div data-app="home"></div>
+
+    <div data-app="podcast"></div>
+    <div data-app="bahn"></div>
+    <div data-app="einstell"></div>
+  </div>
+
+  <div class="pager"><div class="glass"><i data-i="search"></i><div class="dots"><span class="on"></span><span></span><span></span></div></div></div>
+
+  <div class="dock glass">
+    <div data-app="telefon" data-label="0"></div>
+    <div data-app="browser" data-label="0"></div>
+    <div data-app="chat" data-label="0" data-badge="2"></div>
+    <div data-app="musik" data-label="0"></div>
+  </div>
+</div>
+<script src="../assets/kit.js"></script>
+<script>document.getElementById("fs").style.clipPath = KIT.squirclePath(62);</script>
+</body></html>

@@ -1,0 +1,63 @@
+<!doctype html><html lang="de"><head><meta charset="utf-8">
+<title>App-Übersicht</title>
+<link rel="stylesheet" href="../assets/kit.css">
+<style>
+  .wrap { position:absolute; top:44px; left:var(--side); right:var(--side); bottom:0;
+    -webkit-mask-image:linear-gradient(180deg,#000 88%,transparent 100%); mask-image:linear-gradient(180deg,#000 88%,transparent 100%); }
+  .search { height:42px; border-radius:21px; display:flex; align-items:center; gap:9px; padding:0 15px;
+    font-size:14.5px; color:var(--ink-2); font-weight:500; }
+  .search i { width:18px; height:18px; }
+  .head { display:flex; align-items:baseline; justify-content:space-between; margin:14px 2px 10px; }
+  .head h1 { font-size:24px; font-weight:680; letter-spacing:-.4px; }
+  .head span { font-size:12.5px; color:var(--ink-2); font-weight:500; }
+  .cat { border-radius:var(--r-card); padding:11px 12px 10px; margin-bottom:9px; }
+  .cat .top { display:flex; align-items:center; gap:8px; margin-bottom:9px; }
+  .cat .top .ti { width:24px; height:24px; border-radius:8px; display:grid; place-items:center; background:rgba(255,255,255,.14); }
+  .cat .top .ti i { width:14px; height:14px; }
+  .cat .top b { font-size:14px; font-weight:650; }
+  .cat .top .n { font-size:12px; color:var(--ink-3); font-weight:550; }
+  .cat .top .all { margin-left:auto; display:flex; align-items:center; gap:2px; font-size:12.5px; font-weight:600; color:var(--accent); }
+  .cat .top .all i { width:14px; height:14px; }
+  .row { display:flex; justify-content:space-between; }
+  .row .app { width:56px; gap:5px; }
+  .row .app .lbl { font-size:10.5px; max-width:58px; }
+</style></head>
+<body data-time="08:15">
+<div class="wall blurred dim"></div>
+<div class="layer"><div class="wrap">
+  <div class="search glass"><i data-i="search"></i>Apps durchsuchen</div>
+  <div class="head"><h1>Alle Apps</h1><span>36 Apps · A–Z</span></div>
+
+  <div class="cat glass">
+    <div class="top"><div class="ti"><i data-i="sparkles"></i></div><b>Zuletzt installiert</b><span class="n">5</span>
+      <div class="all">Alle<i data-i="chevron-right"></i></div></div>
+    <div class="row"><div data-app="rezepte" data-size="48"></div><div data-app="sprache" data-size="48"></div><div data-app="fahrrad" data-size="48"></div><div data-app="training" data-size="48"></div><div data-app="geld" data-size="48"></div></div>
+  </div>
+  <div class="cat glass">
+    <div class="top"><div class="ti"><i data-i="message-circle"></i></div><b>Kommunikation</b><span class="n">6</span>
+      <div class="all">Alle<i data-i="chevron-right"></i></div></div>
+    <div class="row"><div data-app="telefon" data-size="48"></div><div data-app="chat" data-size="48" data-badge="2"></div><div data-app="mail" data-size="48" data-badge="3"></div><div data-app="kontakte" data-size="48"></div><div data-app="browser" data-size="48"></div></div>
+  </div>
+  <div class="cat glass">
+    <div class="top"><div class="ti"><i data-i="list-todo"></i></div><b>Produktivität</b><span class="n">8</span>
+      <div class="all">Alle<i data-i="chevron-right"></i></div></div>
+    <div class="row"><div data-app="kalender" data-size="48"></div><div data-app="notizen" data-size="48"></div><div data-app="aufgaben" data-size="48" data-badge="1"></div><div data-app="dateien" data-size="48"></div><div data-app="rechner" data-size="48"></div></div>
+  </div>
+  <div class="cat glass">
+    <div class="top"><div class="ti"><i data-i="image"></i></div><b>Fotos &amp; Video</b><span class="n">5</span>
+      <div class="all">Alle<i data-i="chevron-right"></i></div></div>
+    <div class="row"><div data-app="kamera" data-size="48"></div><div data-app="galerie" data-size="48"></div><div data-app="video" data-size="48"></div><div data-app="malen" data-size="48"></div><div data-app="tv" data-size="48"></div></div>
+  </div>
+  <div class="cat glass">
+    <div class="top"><div class="ti"><i data-i="gamepad-2"></i></div><b>Unterhaltung</b><span class="n">7</span>
+      <div class="all">Alle<i data-i="chevron-right"></i></div></div>
+    <div class="row"><div data-app="musik" data-size="48"></div><div data-app="podcast" data-size="48"></div><div data-app="spiele" data-size="48"></div><div data-app="lesen" data-size="48"></div><div data-app="zeitung" data-size="48"></div></div>
+  </div>
+  <div class="cat glass">
+    <div class="top"><div class="ti"><i data-i="map"></i></div><b>Unterwegs</b><span class="n">6</span>
+      <div class="all">Alle<i data-i="chevron-right"></i></div></div>
+    <div class="row"><div data-app="karten" data-size="48"></div><div data-app="bahn" data-size="48"></div><div data-app="auto" data-size="48"></div><div data-app="flug" data-size="48"></div><div data-app="wetter" data-size="48"></div></div>
+  </div>
+</div></div>
+<script src="../assets/kit.js"></script>
+</body></html>

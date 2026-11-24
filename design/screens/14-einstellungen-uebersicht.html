@@ -1,0 +1,49 @@
+<!doctype html><html lang="de"><head><meta charset="utf-8">
+<title>Einstellungen</title>
+<link rel="stylesheet" href="../assets/kit.css">
+<style>
+  .wrap { position:absolute; top:44px; left:14px; right:14px; }
+  .h-title { font-size:28px; margin:2px 4px 12px; }
+  .search { height:40px; border-radius:20px; display:flex; align-items:center; gap:8px; padding:0 14px; font-size:14px; color:var(--ink-3); margin-bottom:14px; }
+  .search i { width:17px; height:17px; }
+  .group { border-radius:var(--r-card); overflow:hidden; margin-bottom:12px; }
+  .row { display:flex; align-items:center; gap:12px; padding:9px 12px; min-height:50px; position:relative; }
+  .row + .row::before { content:""; position:absolute; top:0; left:56px; right:0; height:1px; background:rgba(255,255,255,.08); }
+  .sq { width:32px; height:32px; border-radius:10px; display:grid; place-items:center; flex:none; }
+  .sq i { width:17px; height:17px; }
+  .row .t { flex:1; min-width:0; }
+  .row .n { font-size:14.5px; font-weight:560; }
+  .row .d { font-size:12px; color:var(--ink-3); margin-top:1px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .row > i { width:16px; height:16px; color:var(--ink-3); }
+  .val { font-size:13px; color:var(--ink-2); }
+</style></head>
+<body>
+<div class="wall dark"></div>
+<div class="layer"><div class="wrap">
+  <div class="h-title">Einstellungen</div>
+  <div class="search glass"><i data-i="search"></i>Einstellungen durchsuchen</div>
+
+  <div class="group glass">
+    <div class="row"><div class="sq" style="background:#2EC4A6;color:#04261F"><i data-i="layout-grid"></i></div><div class="t"><div class="n">Homescreen &amp; Raster</div><div class="d">4 × 6 · 3 Seiten · Punkte</div></div><i data-i="chevron-right"></i></div>
+    <div class="row"><div class="sq" style="background:#5B8CFF"><i data-i="image"></i></div><div class="t"><div class="n">App-Icons</div><div class="d">Rundung 62 % · Größe 100 %</div></div><i data-i="chevron-right"></i></div>
+    <div class="row"><div class="sq" style="background:#9C7CFF"><i data-i="languages"></i></div><div class="t"><div class="n">Beschriftung &amp; Schrift</div><div class="d">An · 100 % · 1 Zeile</div></div><i data-i="chevron-right"></i></div>
+    <div class="row"><div class="sq" style="background:#FF8A6B"><i data-i="smartphone-nfc"></i></div><div class="t"><div class="n">Dock &amp; Ordner</div><div class="d">4 Apps · Glas</div></div><i data-i="chevron-right"></i></div>
+  </div>
+
+  <div class="group glass">
+    <div class="row"><div class="sq" style="background:#4FD6E8;color:#062a30"><i data-i="sun"></i></div><div class="t"><div class="n">Design &amp; Glas</div><div class="d">System · Akzent Mint · Getönt</div></div><i data-i="chevron-right"></i></div>
+    <div class="row"><div class="sq" style="background:#FFB35C;color:#3a2200"><i data-i="hand"></i></div><div class="t"><div class="n">Gesten</div><div class="d">7 Gesten frei belegbar</div></div><i data-i="chevron-right"></i></div>
+    <div class="row"><div class="sq" style="background:#F2545B"><i data-i="bell"></i></div><div class="t"><div class="n">Benachrichtigungen &amp; Badges</div><div class="d">Zahlen · Rot</div></div><i data-i="chevron-right"></i></div>
+    <div class="row"><div class="sq" style="background:#58A6FF"><i data-i="sliders-horizontal"></i></div><div class="t"><div class="n">Schnellzugriff</div><div class="d">3 Seiten · 14 Elemente</div></div><i data-i="chevron-right"></i></div>
+    <div class="row"><div class="sq" style="background:#6B7486"><i data-i="search"></i></div><div class="t"><div class="n">Suche &amp; App-Übersicht</div><div class="d">Kategorien · großzügige Suche</div></div><i data-i="chevron-right"></i></div>
+  </div>
+
+  <div class="group glass">
+    <div class="row"><div class="sq" style="background:#B67CFF"><i data-i="activity"></i></div><div class="t"><div class="n">Haptik &amp; Animationen</div><div class="d">Mittel · 1×</div></div><i data-i="chevron-right"></i></div>
+    <div class="row"><div class="sq" style="background:#5BD18B;color:#05301a"><i data-i="contact"></i></div><div class="t"><div class="n">Barrierefreiheit</div><div class="d">Große Touch-Flächen</div></div><i data-i="chevron-right"></i></div>
+    <div class="row"><div class="sq" style="background:#3D5A80"><i data-i="settings-2"></i></div><div class="t"><div class="n">Berechtigungen</div><div class="d">2 von 4 erteilt · kein Internet</div></div><i data-i="chevron-right"></i></div>
+    <div class="row"><div class="sq" style="background:#C98F5E"><i data-i="folder"></i></div><div class="t"><div class="n">Sichern &amp; Profile</div><div class="d">Profil „Alltag“ · Export als JSON</div></div><i data-i="chevron-right"></i></div>
+  </div>
+</div></div>
+<script src="../assets/kit.js"></script>
+</body></html>

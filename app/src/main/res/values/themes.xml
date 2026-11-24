@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Homescreen: Systemhintergrund sichtbar, transparentes Fenster, helle Statusleisten-Symbole. -->
+    <style name="Theme.Klar.Home" parent="android:Theme.Material.NoActionBar">
+        <item name="android:windowShowWallpaper">true</item>
+        <item name="android:windowBackground">@android:color/transparent</item>
+        <item name="android:colorBackgroundCacheHint">@null</item>
+        <item name="android:statusBarColor">@android:color/transparent</item>
+        <item name="android:navigationBarColor">@android:color/transparent</item>
+        <item name="android:windowLightStatusBar">false</item>
+        <item name="android:windowDrawsSystemBarBackgrounds">true</item>
+    </style>
+
+    <!-- Einstellungen: eigener, deckender Hintergrund (Farbe kommt aus Compose). -->
+    <style name="Theme.Klar.Settings" parent="android:Theme.Material.NoActionBar">
+        <item name="android:windowBackground">@color/settings_window</item>
+        <item name="android:statusBarColor">@android:color/transparent</item>
+        <item name="android:navigationBarColor">@android:color/transparent</item>
+    </style>
+</resources>

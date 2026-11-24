@@ -1,0 +1,90 @@
+<!doctype html><html lang="de"><head><meta charset="utf-8">
+<title>Schnellzugriff</title>
+<link rel="stylesheet" href="../assets/kit.css">
+<style>
+  .tabs { position:absolute; top:44px; left:var(--side); right:var(--side); display:flex; gap:6px; align-items:center; }
+  .chip { height:32px; padding:0 11px; flex:none; border-radius:var(--r-pill); font-size:12.5px; font-weight:600; display:inline-flex; align-items:center; }
+  .chip.on { background:#fff; color:#10141C; border-color:transparent; }
+  .tabs .edit { margin-left:auto; flex:none; }
+  .content { position:absolute; top:92px; left:var(--side); right:var(--side); display:flex; flex-direction:column; gap:10px; }
+  .card { border-radius:24px; padding:14px; }
+  .conn { display:grid; grid-template-columns:repeat(4,1fr); gap:6px; padding:14px 10px 12px; }
+  .tg { display:flex; flex-direction:column; align-items:center; gap:7px; text-align:center; }
+  .tg .sq { width:56px; height:56px; border-radius:18px; background:rgba(255,255,255,.14); display:grid; place-items:center; }
+  .tg .sq i { width:22px; height:22px; }
+  .tg.on .sq { background:var(--accent); color:var(--accent-ink); }
+  .tg b { font-size:11px; font-weight:600; display:block; white-space:nowrap; }
+  .tg small { font-size:10.5px; color:var(--ink-3); display:block; margin-top:1px; }
+  .media { display:flex; gap:12px; align-items:center; }
+  .cover { width:66px; height:66px; border-radius:16px; flex:none; position:relative; overflow:hidden;
+    background:radial-gradient(80% 80% at 25% 20%, #FFC18A 0%, transparent 60%), radial-gradient(90% 90% at 85% 85%, #7B5CFF 0%, transparent 65%), linear-gradient(140deg,#E8607A,#3B2A6E); }
+  .cover::after { content:""; position:absolute; width:40px; height:40px; border-radius:50%; border:6px solid rgba(255,255,255,.35); right:-10px; bottom:-10px; }
+  .media .meta { flex:1; min-width:0; }
+  .media .mt { font-size:14.5px; font-weight:650; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .media .a { font-size:12px; color:var(--ink-2); margin-top:1px; }
+  .ctrl { display:flex; align-items:center; gap:18px; margin-top:8px; }
+  .ctrl i { width:20px; height:20px; }
+  .ctrl .play { width:34px; height:34px; border-radius:50%; background:#fff; color:#10141C; display:grid; place-items:center; }
+  .ctrl .play i { width:16px; height:16px; }
+  .media .out { align-self:flex-start; width:34px; height:34px; border-radius:12px; background:rgba(255,255,255,.14); display:grid; place-items:center; }
+  .media .out i { width:17px; height:17px; }
+  .sl { height:52px; border-radius:26px; position:relative; overflow:hidden; }
+  .sl .fill { position:absolute; left:0; top:0; bottom:0; background:rgba(255,255,255,.9); border-radius:26px 6px 6px 26px; }
+  .sl .in { position:relative; height:100%; display:flex; align-items:center; gap:10px; padding:0 18px; }
+  .sl .in i { width:20px; height:20px; color:#10141C; }
+  .sl .in b { font-size:13.5px; font-weight:600; color:#10141C; }
+  .sl .in span { margin-left:auto; font-size:13px; font-weight:600; color:var(--ink-2); }
+  .tiles { display:grid; grid-template-columns:repeat(4,1fr); row-gap:14px; margin-top:6px; justify-items:center; }
+  .t { display:flex; flex-direction:column; align-items:center; gap:6px; }
+  .t .sq { width:62px; height:62px; border-radius:20px; display:grid; place-items:center; }
+  .t .sq i { width:24px; height:24px; }
+  .t.on .sq { background:var(--accent); color:var(--accent-ink); border-color:transparent; }
+  .t span { font-size:11px; font-weight:550; text-shadow:0 1px 3px rgba(0,0,0,.35); white-space:nowrap; }
+</style></head>
+<body data-time="08:15">
+<div class="wall blurred dim"></div>
+<div class="layer">
+  <div class="tabs">
+    <div class="chip on">Steuerung</div>
+    <div class="chip glass">Verbindungen</div>
+    <div class="chip glass">Medien</div>
+    <div class="round-btn glass edit"><i data-i="pencil"></i></div>
+  </div>
+
+  <div class="content">
+    <div class="card glass conn">
+      <div class="tg on"><div class="sq"><i data-i="wifi"></i></div><div><b>WLAN</b><small>Zuhause</small></div></div>
+      <div class="tg on"><div class="sq"><i data-i="bluetooth"></i></div><div><b>Bluetooth</b><small>An</small></div></div>
+      <div class="tg"><div class="sq"><i data-i="signal-high"></i></div><div><b>Mobile Daten</b><small>Aus</small></div></div>
+      <div class="tg"><div class="sq"><i data-i="plane"></i></div><div><b>Flugmodus</b><small>Aus</small></div></div>
+    </div>
+
+    <div class="card glass media">
+      <div class="cover"></div>
+      <div class="meta">
+        <div class="mt">Leuchtfeuer am Hafen</div>
+        <div class="a">Nordlicht Quartett</div>
+        <div class="ctrl"><i data-i="skip-back"></i><div class="play"><i data-i="pause"></i></div><i data-i="skip-forward"></i></div>
+      </div>
+      <div class="out"><i data-i="cast"></i></div>
+    </div>
+
+    <div class="sl glass"><div class="fill" style="width:64%"></div>
+      <div class="in"><i data-i="sun"></i><b>Helligkeit</b><span>64 %</span></div></div>
+    <div class="sl glass"><div class="fill" style="width:42%"></div>
+      <div class="in"><i data-i="volume-2"></i><b>Lautstärke</b><span>42 %</span></div></div>
+
+    <div class="tiles">
+      <div class="t"><div class="sq glass"><i data-i="flashlight"></i></div><span>Taschenlampe</span></div>
+      <div class="t on"><div class="sq glass"><i data-i="moon"></i></div><span>Nicht stören</span></div>
+      <div class="t"><div class="sq glass"><i data-i="calculator"></i></div><span>Rechner</span></div>
+      <div class="t"><div class="sq glass"><i data-i="camera"></i></div><span>Kamera</span></div>
+      <div class="t"><div class="sq glass"><i data-i="alarm-clock"></i></div><span>Wecker</span></div>
+      <div class="t"><div class="sq glass"><i data-i="rotate-ccw"></i></div><span>Drehsperre</span></div>
+      <div class="t"><div class="sq glass"><i data-i="battery-charging"></i></div><span>Energiesparen</span></div>
+      <div class="t"><div class="sq glass"><i data-i="scan-qr-code"></i></div><span>QR-Scanner</span></div>
+    </div>
+  </div>
+</div>
+<script src="../assets/kit.js"></script>
+</body></html>

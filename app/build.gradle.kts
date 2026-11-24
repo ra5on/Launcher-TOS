@@ -1,0 +1,82 @@
+plugins {
+    alias(libs.plugins.android.application)
+    alias(libs.plugins.kotlin.compose)
+    alias(libs.plugins.kotlin.serialization)
+}
+
+android {
+    namespace = "de.umstieg.launcher"
+    compileSdk = 37
+    defaultConfig {
+        applicationId = "de.umstieg.launcher"
+        minSdk = 26
+        targetSdk = 37
+        versionCode = 1
+        versionName = "0.1.0"
+    }
+    buildTypes {
+        release {
+            isMinifyEnabled = false
+        }
+    }
+    compileOptions {
+        sourceCompatibility = JavaVersion.VERSION_17
+        targetCompatibility = JavaVersion.VERSION_17
+    }
+    buildFeatures { compose = true }
+    testOptions {
+        unitTests.all {
+            it.maxHeapSize = "1g"
+            it.maxParallelForks = 1
+        }
+    }
+    lint {
+        abortOnError = true
+    }
+}
+
+dependencies {
+    implementation(libs.androidx.core.ktx)
+    implementation(libs.androidx.activity.compose)
+    implementation(libs.androidx.lifecycle.runtime.compose)
+    implementation(libs.androidx.lifecycle.viewmodel.compose)
+    implementation(libs.androidx.datastore)
+    implementation(libs.kotlinx.coroutines.android)
+    implementation(libs.kotlinx.serialization.json)
+    implementation(platform(libs.compose.bom))
+    implementation(libs.compose.ui)
+    implementation(libs.compose.ui.graphics)
+    implementation(libs.compose.foundation)
+    implementation(libs.compose.material3)
+    implementation(libs.compose.ui.tooling.preview)
+    debugImplementation(libs.compose.ui.tooling)
+
+    testImplementation(libs.junit)
+}
+
+/** Kopiert LICENSE und THIRD_PARTY_LICENSES in die Assets (Anzeige unter „Über & Lizenzen“). */
+abstract class CopyLicensesTask : DefaultTask() {
+    @get:InputFiles
+    abstract val licenseFiles: ConfigurableFileCollection
+
+    @get:OutputDirectory
+    abstract val outputDir: DirectoryProperty
+
+    @TaskAction
+    fun copy() {
+        val dir = outputDir.get().asFile.resolve("licenses")
+        dir.deleteRecursively()
+        dir.mkdirs()
+        licenseFiles.files.forEach { it.copyTo(dir.resolve(it.name), overwrite = true) }
+    }
+}
+
+val copyLicenses = tasks.register<CopyLicensesTask>("copyLicenses") {
+    licenseFiles.from(rootProject.file("LICENSE"), rootProject.file("THIRD_PARTY_LICENSES"))
+}
+
+androidComponents {
+    onVariants { variant ->
+        variant.sources.assets?.addGeneratedSourceDirectory(copyLicenses, CopyLicensesTask::outputDir)
+    }
+}

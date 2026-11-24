@@ -1,0 +1,54 @@
+<!doctype html><html lang="de"><head><meta charset="utf-8">
+<title>Schnellzugriff – Verbindungen</title>
+<link rel="stylesheet" href="../assets/kit.css">
+<style>
+  .tabs { position:absolute; top:44px; left:var(--side); right:var(--side); display:flex; gap:6px; align-items:center; }
+  .chip { height:32px; padding:0 11px; flex:none; border-radius:var(--r-pill); font-size:12.5px; font-weight:600; display:inline-flex; align-items:center; }
+  .chip.on { background:#fff; color:#10141C; border-color:transparent; }
+  .tabs .edit { margin-left:auto; flex:none; }
+  .content { position:absolute; top:92px; left:var(--side); right:var(--side); display:flex; flex-direction:column; gap:10px; }
+  .group-label { margin:6px 4px 0; }
+  .list { border-radius:24px; padding:4px 0; }
+  .row { display:flex; align-items:center; gap:12px; height:58px; padding:0 14px; position:relative; }
+  .row + .row::before { content:""; position:absolute; top:0; left:60px; right:14px; height:1px; background:rgba(255,255,255,.10); }
+  .row .ic { width:34px; height:34px; border-radius:11px; display:grid; place-items:center; flex:none; color:#fff; }
+  .row .ic i { width:18px; height:18px; }
+  .row .tx { flex:1; min-width:0; }
+  .row .tx b { display:block; font-size:14.5px; font-weight:600; }
+  .row .tx span { display:block; font-size:12px; color:var(--ink-2); margin-top:1px; }
+  .row .chev { width:18px; height:18px; color:var(--ink-3); }
+  .hint { display:flex; gap:8px; align-items:flex-start; font-size:12px; line-height:1.45; color:var(--ink-2); padding:4px 6px 0; }
+  .hint i { width:15px; height:15px; margin-top:1px; flex:none; }
+</style></head>
+<body data-time="08:15">
+<div class="wall blurred dim"></div>
+<div class="layer">
+  <div class="tabs">
+    <div class="chip glass">Steuerung</div>
+    <div class="chip on">Verbindungen</div>
+    <div class="chip glass">Medien</div>
+    <div class="round-btn glass edit"><i data-i="pencil"></i></div>
+  </div>
+
+  <div class="content">
+    <div class="section-label group-label">Netzwerk</div>
+    <div class="list glass">
+      <div class="row"><div class="ic" style="background:#2EC4A6;color:#04261F"><i data-i="wifi"></i></div><div class="tx"><b>WLAN</b><span>Zuhause · verbunden</span></div><div class="switch on"></div></div>
+      <div class="row"><div class="ic" style="background:#4F7DF5"><i data-i="bluetooth"></i></div><div class="tx"><b>Bluetooth</b><span>2 Geräte</span></div><div class="switch on"></div></div>
+      <div class="row"><div class="ic" style="background:#3FA36B"><i data-i="signal-high"></i></div><div class="tx"><b>Mobile Daten</b><span>Aus</span></div><div class="switch"></div></div>
+      <div class="row"><div class="ic" style="background:#F09A3E"><i data-i="plane"></i></div><div class="tx"><b>Flugmodus</b><span>Aus</span></div><div class="switch"></div></div>
+      <div class="row"><div class="ic" style="background:#8B5CF6"><i data-i="radio-tower"></i></div><div class="tx"><b>Hotspot</b><span>Aus</span></div><div class="switch"></div></div>
+    </div>
+
+    <div class="section-label group-label">Weitere</div>
+    <div class="list glass">
+      <div class="row"><div class="ic" style="background:#E8576A"><i data-i="map-pin"></i></div><div class="tx"><b>Standort</b><span>An</span></div><div class="switch on"></div></div>
+      <div class="row"><div class="ic" style="background:#5B6475"><i data-i="nfc"></i></div><div class="tx"><b>NFC</b><span>Kontaktlos bezahlen</span></div><div class="switch on"></div></div>
+      <div class="row"><div class="ic" style="background:#2F9BD6"><i data-i="share-2"></i></div><div class="tx"><b>Teilen in der Nähe</b><span>Nur für Kontakte</span></div><i class="chev" data-i="chevron-right"></i></div>
+    </div>
+
+    <div class="hint"><i data-i="info"></i><span>Einige Schalter öffnen die passende Android-Einstellung, weil Android das direkte Umschalten nur dem System erlaubt.</span></div>
+  </div>
+</div>
+<script src="../assets/kit.js"></script>
+</body></html>
