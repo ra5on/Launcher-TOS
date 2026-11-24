@@ -231,6 +231,13 @@ data class LauncherSettings(
     val searchCalculator: Boolean = true,
     val searchSettings: Boolean = true,
     val searchHistory: Boolean = true,
+    /** Abschnitte der Suche einzeln an/aus. Kontakte und Dateien brauchen eine Berechtigung (Standard aus). */
+    val searchShortcuts: Boolean = true,
+    val searchAndroidSettings: Boolean = true,
+    val searchContacts: Boolean = false,
+    val searchFiles: Boolean = false,
+    val searchWeb: Boolean = true,
+    val searchEngine: SearchEngine = SearchEngine.GOOGLE,
     /** App-Übersicht: links, rechts oder aus. */
     val drawerSide: PageSide = PageSide.RIGHT,
     val drawerView: DrawerView = DrawerView.TILES,

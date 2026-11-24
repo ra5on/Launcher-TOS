@@ -5,6 +5,7 @@ import android.content.ClipboardManager
 import android.widget.Toast
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
+import androidx.compose.runtime.produceState
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
@@ -319,6 +320,41 @@ fun SearchOverlay(vm: HomeViewModel, d: LauncherData, apps: Map<de.umstieg.launc
     val settingHits = remember(query, s.searchSettings) {
         if (!s.searchSettings || query.trim().length < 2) emptyList() else FuzzySearch.rank(settingTitles, { it.second }, query, s.searchFuzziness).distinctBy { it.item.second }.take(4)
     }
+    // Weitere Quellen: Kurzbefehle einmal laden; Kontakte/Dateien je Eingabe im Hintergrund.
+    val shortcuts by produceState(emptyList<de.umstieg.launcher.data.ShortcutEntry>(), s.searchShortcuts) {
+        value = if (s.searchShortcuts) kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.IO) { vm.searchSources.shortcuts() } else emptyList()
+    }
+    val shortcutHits = remember(query, shortcuts) {
+        if (query.trim().length < 2) emptyList() else FuzzySearch.rank(shortcuts, { it.label }, query, s.searchFuzziness).take(4)
+    }
+    val androidSettings = remember(query, s.searchAndroidSettings) {
+        if (s.searchAndroidSettings) de.umstieg.launcher.core.SearchExtras.matchAndroidSettings(query) else emptyList()
+    }
+    val contacts by produceState(emptyList<de.umstieg.launcher.data.ContactEntry>(), query, s.searchContacts) {
+        value = if (s.searchContacts && query.trim().length >= 2) {
+            kotlinx.coroutines.delay(150)
+            kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.IO) { vm.searchSources.contacts(query) }
+        } else {
+            emptyList()
+        }
+    }
+    val files by produceState(emptyList<de.umstieg.launcher.data.FileEntry>(), query, s.searchFiles) {
+        value = if (s.searchFiles && query.trim().length >= 2) {
+            kotlinx.coroutines.delay(200)
+            kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.IO) { vm.searchSources.files(query) }
+        } else {
+            emptyList()
+        }
+    }
+    val url = remember(query) { de.umstieg.launcher.core.SearchExtras.asUrl(query) }
+    fun openUri(uri: String) {
+        vm.showOverlay(Overlay.NONE)
+        runCatching { context.startActivity(android.content.Intent(android.content.Intent.ACTION_VIEW, android.net.Uri.parse(uri)).addFlags(android.content.Intent.FLAG_ACTIVITY_NEW_TASK)) }
+    }
+    fun webSearch() {
+        vm.controller.recordSearch(query, null)
+        openUri(de.umstieg.launcher.core.SearchExtras.webSearchUrl(s.searchEngine, query))
+    }
     LaunchedEffect(Unit) { if (s.searchKeyboard) runCatching { focus.requestFocus() } }
     val searchHint = stringResource(R.string.drawer_search_hint)
 
@@ -357,7 +393,19 @@ fun SearchOverlay(vm: HomeViewModel, d: LauncherData, apps: Map<de.umstieg.launc
                         textStyle = TextStyle(fontFamily = Inter, fontSize = 17.sp, color = Tos.Ink),
                         cursorBrush = SolidColor(Tos.Accent),
                         keyboardOptions = KeyboardOptions(imeAction = ImeAction.Go),
-                        keyboardActions = KeyboardActions(onGo = { hits.firstOrNull()?.let { open(it.item) } }),
+                        // Enter öffnet den ersten Treffer (Adresse, App, Kurzbefehl, Einstellung …, sonst Websuche).
+                        keyboardActions = KeyboardActions(onGo = {
+                            when {
+                                query.isBlank() -> Unit
+                                url != null -> openUri(url)
+                                hits.isNotEmpty() -> open(hits.first().item)
+                                shortcutHits.isNotEmpty() -> { vm.showOverlay(Overlay.NONE); vm.searchSources.startShortcut(shortcutHits.first().item) }
+                                settingHits.isNotEmpty() -> { vm.showOverlay(Overlay.NONE); actions.openSettings(settingHits.first().item.first.section.name) }
+                                androidSettings.isNotEmpty() -> { vm.showOverlay(Overlay.NONE); vm.system.start(context, android.content.Intent(androidSettings.first().action)) }
+                                contacts.isNotEmpty() -> { vm.showOverlay(Overlay.NONE); vm.system.start(context, vm.searchSources.openContactIntent(contacts.first())) }
+                                s.searchWeb -> webSearch()
+                            }
+                        }),
                         modifier = Modifier.fillMaxWidth().focusRequester(focus).semantics { contentDescription = searchHint },
                     )
                 }
@@ -371,10 +419,19 @@ fun SearchOverlay(vm: HomeViewModel, d: LauncherData, apps: Map<de.umstieg.launc
         }
         val showRecent = query.isBlank() && s.searchHistory && (d.recentApps.isNotEmpty() || d.recentQueries.isNotEmpty())
         // Anzahl der Einträge vor der A–Z-Liste (Sprungziele der Buchstaben-Leiste).
-        val prefixCount = (if (calc != null) 1 else 0) +
-            (if (hits.isNotEmpty()) 2 else if (query.isNotBlank() && calc == null && settingHits.isEmpty()) 1 else 0) +
-            (if (settingHits.isNotEmpty()) 2 else 0) + (if (showRecent) 1 else 0) + 1
+        val nothing = query.isNotBlank() && calc == null && settingHits.isEmpty() && url == null && shortcutHits.isEmpty() &&
+            androidSettings.isEmpty() && contacts.isEmpty() && files.isEmpty() && !s.searchWeb
+        val prefixCount = (if (url != null) 1 else 0) + (if (calc != null) 1 else 0) +
+            (if (hits.isNotEmpty()) 2 else if (nothing) 1 else 0) +
+            (if (shortcutHits.isNotEmpty()) 2 else 0) + (if (settingHits.isNotEmpty()) 2 else 0) +
+            (if (androidSettings.isNotEmpty()) 2 else 0) + (if (contacts.isNotEmpty()) 2 else 0) + (if (files.isNotEmpty()) 2 else 0) +
+            (if (query.isNotBlank() && s.searchWeb) 2 else 0) + (if (showRecent) 1 else 0) + 1
         val prefix: LazyListScope.() -> Unit = {
+            if (url != null) {
+                item(key = "url") {
+                    ResultCard { ResultRow(R.drawable.ic_lucide_external_link, stringResource(R.string.search_open_url), url) { openUri(url) } }
+                }
+            }
             if (calc != null) {
                 item(key = "calc") {
                     val result = Calculator.format(calc)
@@ -404,11 +461,25 @@ fun SearchOverlay(vm: HomeViewModel, d: LauncherData, apps: Map<de.umstieg.launc
                         }
                     }
                 }
-            } else if (query.isNotBlank() && calc == null && settingHits.isEmpty()) {
+            } else if (nothing) {
                 item(key = "none") {
                     Column(Modifier.padding(12.dp)) {
                         Text(stringResource(R.string.search_none), style = TextStyle(fontFamily = Inter, fontSize = 16.sp, color = Tos.Ink2))
                         Text(stringResource(R.string.search_typo_hint), style = TextStyle(fontFamily = Inter, fontSize = 13.sp, color = Tos.Ink3), modifier = Modifier.padding(top = 4.dp))
+                    }
+                }
+            }
+            if (shortcutHits.isNotEmpty()) {
+                item(key = "scHeader") { SectionHeader(stringResource(R.string.search_shortcuts), null) }
+                item(key = "sc") {
+                    ResultCard {
+                        shortcutHits.forEach { h ->
+                            val owner = list.firstOrNull { it.key.packageName == h.item.packageName }?.label ?: h.item.packageName
+                            ResultRow(R.drawable.ic_lucide_link, h.item.label, owner) {
+                                vm.showOverlay(Overlay.NONE)
+                                vm.searchSources.startShortcut(h.item)
+                            }
+                        }
                     }
                 }
             }
@@ -430,6 +501,56 @@ fun SearchOverlay(vm: HomeViewModel, d: LauncherData, apps: Map<de.umstieg.launc
                                 Spacer(Modifier.width(14.dp))
                                 Text(highlighted(h.item.second, h.highlight), style = TextStyle(fontFamily = Inter, fontSize = 17.sp, color = Tos.Ink))
                             }
+                        }
+                    }
+                }
+            }
+            if (androidSettings.isNotEmpty()) {
+                item(key = "andHeader") { SectionHeader(stringResource(R.string.search_android_settings), null) }
+                item(key = "and") {
+                    ResultCard {
+                        androidSettings.forEach { page ->
+                            ResultRow(R.drawable.ic_lucide_settings, androidSettingTitle(page.id), stringResource(R.string.search_android_settings_sub)) {
+                                vm.showOverlay(Overlay.NONE)
+                                vm.system.start(context, android.content.Intent(page.action))
+                            }
+                        }
+                    }
+                }
+            }
+            if (contacts.isNotEmpty()) {
+                item(key = "ctHeader") { SectionHeader(stringResource(R.string.search_contacts), null) }
+                item(key = "ct") {
+                    ResultCard {
+                        contacts.forEach { ct ->
+                            ResultRow(R.drawable.ic_lucide_contact, ct.name, null) {
+                                vm.showOverlay(Overlay.NONE)
+                                vm.system.start(context, vm.searchSources.openContactIntent(ct))
+                            }
+                        }
+                    }
+                }
+            }
+            if (files.isNotEmpty()) {
+                item(key = "fiHeader") { SectionHeader(stringResource(R.string.search_files), null) }
+                item(key = "fi") {
+                    ResultCard {
+                        files.forEach { f ->
+                            ResultRow(R.drawable.ic_lucide_file_text, f.name, f.mime) {
+                                vm.showOverlay(Overlay.NONE)
+                                vm.system.start(context, vm.searchSources.openFileIntent(f))
+                            }
+                        }
+                    }
+                }
+            }
+            if (query.isNotBlank() && s.searchWeb) {
+                item(key = "webHeader") { SectionHeader(stringResource(R.string.search_web), null) }
+                item(key = "web") {
+                    ResultCard {
+                        ResultRow(R.drawable.ic_lucide_globe, stringResource(R.string.search_web_for, query.trim()), engineName(s.searchEngine)) { webSearch() }
+                        ResultRow(R.drawable.ic_lucide_store, stringResource(R.string.search_play_store), null) {
+                            openUri(de.umstieg.launcher.core.SearchExtras.playStoreUrl(query))
                         }
                     }
                 }
@@ -468,6 +589,68 @@ fun SearchOverlay(vm: HomeViewModel, d: LauncherData, apps: Map<de.umstieg.launc
         }
     }
 }
+
+/** Glaskarte für eine Gruppe von Treffern. */
+@Composable
+private fun ResultCard(content: @Composable () -> Unit) {
+    Column(Modifier.fillMaxWidth().glass(RoundedCornerShape(22.dp), Tos.Glass, Tos.GlassLine).padding(vertical = 4.dp)) { content() }
+}
+
+/** Trefferzeile: Symbol, Titel, Untertitel. */
+@Composable
+private fun ResultRow(icon: Int, title: String, sub: String?, onClick: () -> Unit) {
+    Row(
+        Modifier.fillMaxWidth().defaultMinSize(minHeight = 52.dp).clickable(role = Role.Button, onClick = onClick).padding(horizontal = 16.dp, vertical = 8.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Icon(painterResource(icon), null, tint = Tos.Ink2, modifier = Modifier.size(20.dp))
+        Spacer(Modifier.width(14.dp))
+        Column(Modifier.weight(1f)) {
+            Text(title, style = TextStyle(fontFamily = Inter, fontSize = 16.sp, color = Tos.Ink), maxLines = 2, overflow = TextOverflow.Ellipsis)
+            if (sub != null) Text(sub, style = TextStyle(fontFamily = Inter, fontSize = 12.sp, color = Tos.Ink3), maxLines = 1, overflow = TextOverflow.Ellipsis)
+        }
+    }
+}
+
+@Composable
+fun engineName(e: de.umstieg.launcher.core.SearchEngine): String = when (e) {
+    de.umstieg.launcher.core.SearchEngine.GOOGLE -> "Google"
+    de.umstieg.launcher.core.SearchEngine.DUCKDUCKGO -> "DuckDuckGo"
+    de.umstieg.launcher.core.SearchEngine.STARTPAGE -> "Startpage"
+    de.umstieg.launcher.core.SearchEngine.ECOSIA -> "Ecosia"
+}
+
+/** Deutsche Titel der Android-Einstellungsseiten. */
+@Composable
+private fun androidSettingTitle(id: String): String = stringResource(
+    when (id) {
+        "wifi" -> R.string.android_setting_wifi
+        "bluetooth" -> R.string.android_setting_bluetooth
+        "battery" -> R.string.android_setting_battery
+        "display" -> R.string.android_setting_display
+        "sound" -> R.string.android_setting_sound
+        "notifications" -> R.string.android_setting_notifications
+        "apps" -> R.string.android_setting_apps
+        "storage" -> R.string.android_setting_storage
+        "location" -> R.string.android_setting_location
+        "security" -> R.string.android_setting_security
+        "privacy" -> R.string.android_setting_privacy
+        "accessibility" -> R.string.android_setting_accessibility
+        "mobile" -> R.string.android_setting_mobile
+        "hotspot" -> R.string.android_setting_hotspot
+        "airplane" -> R.string.android_setting_airplane
+        "nfc" -> R.string.android_setting_nfc
+        "datetime" -> R.string.android_setting_datetime
+        "language" -> R.string.android_setting_language
+        "dnd" -> R.string.android_setting_dnd
+        "about" -> R.string.android_setting_about
+        "update" -> R.string.android_setting_update
+        "wallpaper" -> R.string.android_setting_wallpaper
+        "vpn" -> R.string.android_setting_vpn
+        "cast" -> R.string.android_setting_cast
+        else -> R.string.search_android_settings
+    },
+)
 
 @Composable
 private fun SectionHeader(title: String, trailing: String?) {

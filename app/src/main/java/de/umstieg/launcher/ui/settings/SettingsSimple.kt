@@ -228,6 +228,8 @@ fun SimpleOverview(d: LauncherData, vm: SettingsViewModel, actions: SettingsActi
         SimpleRow(stringResource(R.string.simple_glass), stringResource(R.string.simple_glass_info), stringResource(R.string.percent_value, 100 - s.glassTint)) { open(Section.GLASS) }
         CardDivider()
         SwitchRow(stringResource(R.string.simple_badges), stringResource(R.string.simple_badges_info), s.badgesEnabled) { v -> vm.update { it.copy(badgesEnabled = v) } }
+        CardDivider()
+        SwitchRow(stringResource(R.string.setting_search_keyboard), stringResource(R.string.simple_keyboard_info), s.searchKeyboard) { v -> vm.update { it.copy(searchKeyboard = v) } }
     }
     Header(stringResource(R.string.simple_section_more))
     SettingsCard {

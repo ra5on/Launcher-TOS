@@ -28,6 +28,9 @@ sealed interface WidgetTarget {
 
 /** Zustand des Homescreens: Bearbeitungsmodus, Ordner, Overlays, Menüs; Aktionen auf dem Layout. */
 class HomeViewModel(application: Application) : AndroidViewModel(application) {
+    /** Zusätzliche Suchquellen (Kurzbefehle, Kontakte, Dateien). */
+    val searchSources by lazy { de.umstieg.launcher.data.SearchSources(application) }
+
     val controller = (application as TosApplication).controller
     val data = controller.data
     val apps: StateFlow<Map<AppKey, AppInfo>> = controller.appsByKey

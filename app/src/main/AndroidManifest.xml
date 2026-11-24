@@ -13,6 +13,12 @@
         - INTERNET: ausschließlich Updates von GitHub (api.github.com, github.com), abschaltbar
         - REQUEST_INSTALL_PACKAGES: ein geprüftes Update installieren (Android fragt nach)
     -->
+    <!-- Optional für die Suche (Standard aus, Abfrage erst beim Einschalten): Kontakte und Mediendateien. -->
+    <uses-permission android:name="android.permission.READ_CONTACTS" />
+    <uses-permission android:name="android.permission.READ_MEDIA_IMAGES" />
+    <uses-permission android:name="android.permission.READ_MEDIA_VIDEO" />
+    <uses-permission android:name="android.permission.READ_MEDIA_AUDIO" />
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" android:maxSdkVersion="32" />
     <uses-permission android:name="android.permission.EXPAND_STATUS_BAR" />
     <!-- Nur für Updates von GitHub (abschaltbar); keine anderen Verbindungen. -->
     <uses-permission android:name="android.permission.INTERNET" />

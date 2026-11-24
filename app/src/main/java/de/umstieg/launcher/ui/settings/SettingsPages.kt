@@ -594,29 +594,75 @@ fun QuickPage(p: PageEnv) {
 @Composable
 fun SearchPage(p: PageEnv) {
     val s = p.s
+    val context = androidx.compose.ui.platform.LocalContext.current
+    val sources = remember { de.umstieg.launcher.data.SearchSources(context) }
+    // Kontakte/Dateien: Berechtigung erst beim Einschalten erfragen; abgelehnt bleibt der Abschnitt aus.
+    val contactsPerm = androidx.activity.compose.rememberLauncherForActivityResult(androidx.activity.result.contract.ActivityResultContracts.RequestPermission()) { ok ->
+        p.set { it.copy(searchContacts = ok) }
+    }
+    val filesPerm = androidx.activity.compose.rememberLauncherForActivityResult(androidx.activity.result.contract.ActivityResultContracts.RequestMultiplePermissions()) { res ->
+        p.set { it.copy(searchFiles = res.values.any { v -> v }) }
+    }
     SubpageHeader(stringResource(R.string.settings_section_search), p.back)
     SettingsCard {
+        SwitchRow(stringResource(R.string.setting_search_keyboard), checked = s.searchKeyboard) { v -> p.set { it.copy(searchKeyboard = v) } }
+        CardDivider()
         SegmentedRow(
             stringResource(R.string.setting_search_fuzziness),
             listOf(SearchFuzziness.STRICT to stringResource(R.string.fuzzy_strict), SearchFuzziness.NORMAL to stringResource(R.string.fuzzy_normal), SearchFuzziness.GENEROUS to stringResource(R.string.fuzzy_generous)),
             s.searchFuzziness,
         ) { v -> p.set { it.copy(searchFuzziness = v) } }
-        CardDivider()
-        SwitchRow(stringResource(R.string.setting_search_keyboard), checked = s.searchKeyboard) { v -> p.set { it.copy(searchKeyboard = v) } }
-        CardDivider()
-        SwitchRow(stringResource(R.string.setting_search_calculator), checked = s.searchCalculator) { v -> p.set { it.copy(searchCalculator = v) } }
+    }
+    Text(stringResource(R.string.search_sections).uppercase(), style = SummaryStyle.copy(fontWeight = androidx.compose.ui.text.font.FontWeight.SemiBold, color = LocalPanelColors.current.secondary), modifier = Modifier.padding(start = 6.dp, top = 6.dp))
+    SettingsCard {
+        SwitchRow(stringResource(R.string.setting_search_shortcuts), stringResource(R.string.setting_search_shortcuts_summary), s.searchShortcuts) { v -> p.set { it.copy(searchShortcuts = v) } }
         CardDivider()
         SwitchRow(stringResource(R.string.setting_search_settings), checked = s.searchSettings) { v -> p.set { it.copy(searchSettings = v) } }
         CardDivider()
+        SwitchRow(stringResource(R.string.setting_search_android), stringResource(R.string.setting_search_android_summary), s.searchAndroidSettings) { v -> p.set { it.copy(searchAndroidSettings = v) } }
+        CardDivider()
+        SwitchRow(stringResource(R.string.setting_search_calculator), checked = s.searchCalculator) { v -> p.set { it.copy(searchCalculator = v) } }
+        CardDivider()
+        SwitchRow(stringResource(R.string.setting_search_contacts), stringResource(R.string.setting_search_contacts_summary), s.searchContacts && sources.canReadContacts()) { v ->
+            if (v && !sources.canReadContacts()) contactsPerm.launch(android.Manifest.permission.READ_CONTACTS) else p.set { it.copy(searchContacts = v) }
+        }
+        CardDivider()
+        SwitchRow(stringResource(R.string.setting_search_files), stringResource(R.string.setting_search_files_summary), s.searchFiles && sources.canReadFiles()) { v ->
+            if (v && !sources.canReadFiles()) filesPerm.launch(sources.filePermissions()) else p.set { it.copy(searchFiles = v) }
+        }
+        CardDivider()
+        SwitchRow(stringResource(R.string.setting_search_web), stringResource(R.string.setting_search_web_summary), s.searchWeb) { v -> p.set { it.copy(searchWeb = v) } }
+        CardDivider()
         SwitchRow(stringResource(R.string.setting_search_history), stringResource(R.string.setting_search_history_summary), s.searchHistory) { v -> p.set { it.copy(searchHistory = v) } }
-        Note(stringResource(R.string.search_no_contacts))
+    }
+    if (s.searchWeb) {
+        Text(stringResource(R.string.setting_search_engine).uppercase(), style = SummaryStyle.copy(fontWeight = androidx.compose.ui.text.font.FontWeight.SemiBold, color = LocalPanelColors.current.secondary), modifier = Modifier.padding(start = 6.dp, top = 6.dp))
+        Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            de.umstieg.launcher.core.SearchEngine.entries.forEach { e ->
+                OptionCard(
+                    icon = R.drawable.ic_lucide_globe,
+                    title = de.umstieg.launcher.ui.drawer.engineName(e),
+                    info = stringResource(
+                        when (e) {
+                            de.umstieg.launcher.core.SearchEngine.GOOGLE -> R.string.engine_google_info
+                            de.umstieg.launcher.core.SearchEngine.DUCKDUCKGO -> R.string.engine_ddg_info
+                            de.umstieg.launcher.core.SearchEngine.STARTPAGE -> R.string.engine_startpage_info
+                            de.umstieg.launcher.core.SearchEngine.ECOSIA -> R.string.engine_ecosia_info
+                        },
+                    ),
+                    selected = s.searchEngine == e,
+                ) { p.set { it.copy(searchEngine = e) } }
+            }
+        }
     }
     SettingsCard { ActionRow(stringResource(R.string.search_clear_history)) { p.vm.updateData { it.copy(recentQueries = emptyList(), recentApps = emptyList()) } } }
     ResetSection {
         p.set {
             it.copy(
                 searchFuzziness = Defaults.searchFuzziness, searchKeyboard = Defaults.searchKeyboard, searchCalculator = Defaults.searchCalculator,
-                searchSettings = Defaults.searchSettings, searchHistory = Defaults.searchHistory,
+                searchSettings = Defaults.searchSettings, searchHistory = Defaults.searchHistory, searchShortcuts = Defaults.searchShortcuts,
+                searchAndroidSettings = Defaults.searchAndroidSettings, searchContacts = false, searchFiles = false, searchWeb = Defaults.searchWeb,
+                searchEngine = Defaults.searchEngine,
             )
         }
     }
