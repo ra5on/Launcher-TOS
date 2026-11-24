@@ -2,7 +2,6 @@ package de.umstieg.launcher.ui.panels
 
 import android.app.Notification
 import android.service.notification.StatusBarNotification
-import android.text.format.DateUtils
 import androidx.compose.animation.core.Animatable
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -66,6 +65,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import de.umstieg.launcher.R
 import de.umstieg.launcher.core.AppKey
 import de.umstieg.launcher.core.LauncherData
+import de.umstieg.launcher.core.RelativeTime
 import de.umstieg.launcher.data.AppInfo
 import de.umstieg.launcher.data.NotificationCenter
 import de.umstieg.launcher.ui.home.HomeViewModel
@@ -171,6 +171,25 @@ fun NotificationPanel(vm: HomeViewModel, d: LauncherData, apps: Map<AppKey, AppI
     }
 }
 
+/** Lesbarer Name für Pakete ohne Launcher-Eintrag; System-Pakete → null (dann „System“). */
+private fun fallbackAppName(context: android.content.Context, pkg: String): String? {
+    if (pkg == "android" || pkg.startsWith("com.android.")) return null
+    val pm = context.packageManager
+    val label = runCatching { pm.getApplicationLabel(pm.getApplicationInfo(pkg, 0)).toString() }.getOrNull()
+    if (label != null && label != pkg) return label
+    return pkg.substringAfterLast('.').replaceFirstChar { it.uppercase() }
+}
+
+/** Deutsche Zeitangabe unabhängig von der Systemsprache. */
+@Composable
+private fun relativeTimeText(t: RelativeTime): String = when (t) {
+    RelativeTime.Now -> stringResource(R.string.time_now)
+    is RelativeTime.Minutes -> stringResource(R.string.time_minutes, t.n)
+    is RelativeTime.Hours -> stringResource(R.string.time_hours, t.n)
+    RelativeTime.Yesterday -> stringResource(R.string.time_yesterday)
+    is RelativeTime.Date -> t.date.format(java.time.format.DateTimeFormatter.ofPattern("d. MMM", Locale.GERMAN))
+}
+
 /** Erklärt, wofür der Benachrichtigungszugriff dient, und führt zu den Systemeinstellungen. */
 @Composable
 fun ListenerExplanation(onAllow: () -> Unit, onSystem: (() -> Unit)?) {
@@ -221,8 +240,8 @@ private fun NotificationCard(
     val extras = sbn.notification.extras
     val title = extras.getCharSequence(Notification.EXTRA_TITLE)?.toString().orEmpty()
     val text = (extras.getCharSequence(Notification.EXTRA_BIG_TEXT) ?: extras.getCharSequence(Notification.EXTRA_TEXT))?.toString().orEmpty()
-    val appName = app?.label ?: sbn.packageName
-    val time = DateUtils.getRelativeTimeSpanString(sbn.postTime, System.currentTimeMillis(), DateUtils.MINUTE_IN_MILLIS).toString()
+    val appName = app?.label ?: remember(sbn.packageName) { fallbackAppName(context, sbn.packageName) } ?: stringResource(R.string.notifications_system)
+    val time = relativeTimeText(RelativeTime.of(sbn.postTime, System.currentTimeMillis()))
     val large: ImageBitmap? by produceState<ImageBitmap?>(null, sbn.key) {
         value = withContext(Dispatchers.IO) {
             runCatching { sbn.notification.getLargeIcon()?.loadDrawable(context)?.toBitmap(160, 160)?.asImageBitmap() }.getOrNull()

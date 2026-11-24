@@ -100,7 +100,7 @@ sind zwei getrennte Gesten. Der obere Rand ist geteilt (links/Mitte/rechts) oder
 | Zwei-Finger-Zoom | Seitenübersicht | P3 |
 | Oberer Rand geteilt / ungeteilt | geteilt | P2 |
 | Breite der Bereiche links/rechts (geteilt) | 20–50 % je Seite | P2 |
-| Höhe der Randzone | 24–64 dp (Standard 40) | P2 |
+| Höhe der Randzone (beginnt direkt unter der Statusleiste) | 24–64 dp (Standard 56) | P2 |
 
 Vorlagen (Schnellwahl oben auf der Gesten-Seite; einzelne Änderung → „Eigen“):
 

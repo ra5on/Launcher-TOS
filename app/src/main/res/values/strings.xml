@@ -327,9 +327,9 @@
 
     <!-- Einführung -->
     <string name="intro_notifications_title">Wisch von oben links</string>
-    <string name="intro_notifications_text">öffnet die Benachrichtigungen.</string>
+    <string name="intro_notifications_text">knapp unterhalb der Statusleiste beginnen und nach unten wischen: öffnet die Benachrichtigungen. Ein Wisch, der in der Statusleiste selbst beginnt, öffnet die Leiste von Android.</string>
     <string name="intro_quick_title">Wisch von oben rechts</string>
-    <string name="intro_quick_text">öffnet den Schnellzugriff mit Taschenlampe, Lautstärke, Medien und mehr.</string>
+    <string name="intro_quick_text">knapp unterhalb der Statusleiste: öffnet den Schnellzugriff mit Taschenlampe, Lautstärke, Medien und mehr.</string>
     <string name="intro_search_title">Wisch nach unten</string>
     <string name="intro_search_text">in der Mitte öffnet die Suche. Ganz rechts liegt die App-Übersicht, ganz links die Widgets.</string>
     <string name="intro_edit_title">Lange drücken</string>
@@ -485,4 +485,9 @@
     <string name="setting_edge_height">Höhe der Randzone</string>
     <string name="gestures_search_hint">Keine Geste öffnet die Suche – sie bleibt über die Lupe im Seitenindikator erreichbar.</string>
     <string name="gestures_system_note">„System-Benachrichtigungen“ und „System-Schnelleinstellungen“ klappen die Leiste von Android auf. Geht das auf einem Gerät nicht, erscheint ein Hinweis.</string>
+    <string name="time_now">jetzt</string>
+    <string name="time_minutes">vor %1$d Min.</string>
+    <string name="time_hours">vor %1$d Std.</string>
+    <string name="time_yesterday">gestern</string>
+    <string name="notifications_system">System</string>
 </resources>

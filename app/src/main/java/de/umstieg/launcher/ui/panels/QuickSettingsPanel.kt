@@ -9,6 +9,14 @@ import androidx.compose.foundation.gestures.detectHorizontalDragGestures
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.text.BasicText
+import androidx.compose.foundation.text.TextAutoSize
+import androidx.compose.ui.draw.drawWithContent
+import androidx.compose.ui.graphics.drawscope.clipRect
+import androidx.compose.ui.graphics.BlendMode
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.CompositingStrategy
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -216,17 +224,33 @@ fun QuickSettingsPanel(vm: HomeViewModel, layout: QsLayout) {
             }
         } else {
             Row(Modifier.fillMaxWidth().padding(vertical = 12.dp), verticalAlignment = Alignment.CenterVertically) {
-                Row(Modifier.weight(1f).horizontalScroll(rememberScrollState()), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                Row(
+                    Modifier
+                        .weight(1f)
+                        // Am rechten Rand ausblenden, damit erkennbar ist, dass weitere Tabs folgen.
+                        .graphicsLayer(compositingStrategy = CompositingStrategy.Offscreen)
+                        .drawWithContent {
+                            drawContent()
+                            val fade = 40.dp.toPx()
+                            drawRect(
+                                Brush.horizontalGradient(listOf(Color.Black, Color.Transparent), startX = size.width - fade, endX = size.width),
+                                blendMode = BlendMode.DstIn,
+                            )
+                        }
+                        .horizontalScroll(rememberScrollState())
+                        .padding(end = 24.dp),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                ) {
                     layout.pages.forEachIndexed { i, p ->
                         val on = p.id == page.id
                         Text(
                             pageName(p),
-                            style = TextStyle(fontFamily = Inter, fontWeight = FontWeight.SemiBold, fontSize = 17.sp, color = if (on) Color(0xFF10141C) else Tos.Ink),
+                            style = TextStyle(fontFamily = Inter, fontWeight = FontWeight.SemiBold, fontSize = 15.sp, color = if (on) Color(0xFF10141C) else Tos.Ink),
                             modifier = Modifier
                                 .clip(Tos.PillShape)
                                 .background(if (on) Color.White else Tos.GlassControl)
                                 .clickable(role = Role.Tab) { pageIndex = i; selected = null }
-                                .padding(horizontal = 18.dp, vertical = 12.dp),
+                                .padding(horizontal = 14.dp, vertical = 13.dp),
                         )
                     }
                 }
@@ -375,8 +399,8 @@ private fun ToggleTile(item: QsItem, status: TileStatus, act: (QsTile) -> Unit) 
                 contentAlignment = Alignment.Center,
             ) { Icon(painterResource(tileIcon(item.tile)), null, tint = fg, modifier = Modifier.size(30.dp)) }
             Spacer(Modifier.height(6.dp))
-            Text(name, style = Label.copy(color = Tos.Ink), maxLines = 1, overflow = TextOverflow.Ellipsis)
-            if (detail != null) Text(detail, style = Small.copy(color = Tos.Ink2), maxLines = 1)
+            FitText(name, Label.copy(color = Tos.Ink), 14)
+            if (detail != null) FitText(detail, Small.copy(color = Tos.Ink2), 13)
         }
     } else {
         Row(
@@ -389,7 +413,7 @@ private fun ToggleTile(item: QsItem, status: TileStatus, act: (QsTile) -> Unit) 
             Icon(painterResource(tileIcon(item.tile)), null, tint = fg, modifier = Modifier.size(26.dp))
             Spacer(Modifier.width(12.dp))
             Column(Modifier.weight(1f)) {
-                Text(name, style = Label.copy(color = fg, textAlign = TextAlign.Start, fontSize = 16.sp), maxLines = 1)
+                FitText(name, Label.copy(color = fg, textAlign = TextAlign.Start), 16)
                 if (detail != null) Text(detail, style = Small.copy(color = fg.copy(alpha = 0.75f), textAlign = TextAlign.Start))
             }
             Icon(painterResource(R.drawable.ic_lucide_chevron_right), null, tint = fg.copy(alpha = 0.6f), modifier = Modifier.size(18.dp))
@@ -433,14 +457,45 @@ private fun SliderPill(icon: Int, name: String, initial: Float, onChange: (Float
                 }
             },
     ) {
-        Box(Modifier.fillMaxHeight().fillMaxWidth(value.coerceAtLeast(0.18f)).background(Color(0xFFE8EAEE), Tos.PillShape))
-        Row(Modifier.fillMaxSize().padding(horizontal = 22.dp), verticalAlignment = Alignment.CenterVertically) {
-            Icon(painterResource(icon), null, tint = Color(0xFF10141C), modifier = Modifier.size(24.dp))
-            Spacer(Modifier.width(12.dp))
-            Text(name, style = Label.copy(color = Color(0xFF10141C), fontSize = 18.sp), modifier = Modifier.weight(1f))
-            Text("${(value * 100).roundToInt()} %", style = Label.copy(color = Tos.Ink2, fontSize = 17.sp))
-        }
+        val fill = value.coerceAtLeast(0.18f)
+        Box(Modifier.fillMaxHeight().fillMaxWidth(fill).clip(Tos.PillShape).background(Color(0xFFE8EAEE)))
+        // Zwei Ebenen über die ganze Breite: hell rechts der Füllung, dunkel auf der Füllung.
+        SliderLabels(
+            icon, name, value, Tos.Ink,
+            Modifier.fillMaxSize().drawWithContent { clipRect(left = size.width * fill) { this@drawWithContent.drawContent() } },
+        )
+        SliderLabels(
+            icon, name, value, Color(0xFF10141C),
+            Modifier.fillMaxSize().drawWithContent { clipRect(right = size.width * fill) { this@drawWithContent.drawContent() } },
+        )
     }
+}
+
+/** Inhalt der Regler-Pille (Symbol, Name, Prozent) in einer Farbe. */
+@Composable
+private fun SliderLabels(icon: Int, name: String, value: Float, color: Color, modifier: Modifier) {
+    Row(modifier.padding(horizontal = 22.dp), verticalAlignment = Alignment.CenterVertically) {
+        Icon(painterResource(icon), null, tint = color, modifier = Modifier.size(24.dp))
+        Spacer(Modifier.width(12.dp))
+        Text(name, style = Label.copy(color = color, fontSize = 18.sp, textAlign = TextAlign.Start), modifier = Modifier.weight(1f), maxLines = 1)
+        Text("${(value * 100).roundToInt()} %", style = Label.copy(color = color, fontSize = 17.sp))
+    }
+}
+
+/**
+ * Beschriftung ohne Abschneiden: mehrere Wörter dürfen auf zwei Zeilen umbrechen, sonst wird die
+ * Schrift schrittweise verkleinert, bis der Text passt.
+ */
+@Composable
+private fun FitText(text: String, style: TextStyle, maxSp: Int) {
+    BasicText(
+        text = text,
+        style = style,
+        maxLines = if (text.contains(' ')) 2 else 1,
+        softWrap = text.contains(' '),
+        autoSize = TextAutoSize.StepBased(minFontSize = 9.sp, maxFontSize = maxSp.sp, stepSize = 0.5.sp),
+        modifier = Modifier.fillMaxWidth(),
+    )
 }
 
 /** Mediensteuerung: Cover, Titel, Zurück/Play/Weiter, bei L auch Fortschritt und Ausgabe-Auswahl. */

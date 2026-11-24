@@ -202,7 +202,7 @@ data class LauncherSettings(
     /** Oberer Rand geteilt (links/Mitte/rechts) oder eine Zone. */
     val edgeSplit: Boolean = true,
     /** Höhe der Randzone unter der Statusleiste. */
-    val edgeHeightDp: Int = 40,
+    val edgeHeightDp: Int = 56,
     val swipeZoneLeft: Int = 35,
     val swipeZoneRight: Int = 35,
     val badgesEnabled: Boolean = true,

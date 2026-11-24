@@ -256,6 +256,9 @@ fun AzList(
     prefix: LazyListScope.() -> Unit,
 ) {
     val state = rememberLazyListState()
+    // Neue Treffer werden vor der A–Z-Liste eingefügt; die LazyColumn hält sonst den bisher obersten
+    // Eintrag fest und die Treffer lägen unsichtbar darüber. Deshalb bei jeder Eingabe nach oben.
+    LaunchedEffect(query) { state.scrollToItem(0) }
     val groups = remember(list) { list.groupBy { Categories.indexLetter(it.label) }.toSortedMap(compareBy { if (it == '#') '~' else it }) }
     val headerIndex = remember(groups, prefixCount) {
         var i = prefixCount
@@ -359,7 +362,7 @@ fun SearchOverlay(vm: HomeViewModel, d: LauncherData, apps: Map<de.umstieg.launc
         val showRecent = query.isBlank() && s.searchHistory && (d.recentApps.isNotEmpty() || d.recentQueries.isNotEmpty())
         // Anzahl der Einträge vor der A–Z-Liste (Sprungziele der Buchstaben-Leiste).
         val prefixCount = (if (calc != null) 1 else 0) +
-            (if (hits.isNotEmpty()) 2 else if (query.isNotBlank() && calc == null) 1 else 0) +
+            (if (hits.isNotEmpty()) 2 else if (query.isNotBlank() && calc == null && settingHits.isEmpty()) 1 else 0) +
             (if (settingHits.isNotEmpty()) 2 else 0) + (if (showRecent) 1 else 0) + 1
         val prefix: LazyListScope.() -> Unit = {
             if (calc != null) {
@@ -391,7 +394,7 @@ fun SearchOverlay(vm: HomeViewModel, d: LauncherData, apps: Map<de.umstieg.launc
                         }
                     }
                 }
-            } else if (query.isNotBlank() && calc == null) {
+            } else if (query.isNotBlank() && calc == null && settingHits.isEmpty()) {
                 item(key = "none") {
                     Text(stringResource(R.string.search_none), style = TextStyle(fontFamily = Inter, fontSize = 16.sp, color = Tos.Ink2), modifier = Modifier.padding(12.dp))
                 }
