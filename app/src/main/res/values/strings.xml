@@ -649,7 +649,7 @@
     <string name="size_small">Klein</string>
     <string name="size_normal">Normal</string>
     <string name="size_large">Groß</string>
-    <string name="setting_edge_height_info">Wie weit unter der Statusleiste der Wischbereich der Ecken reicht. Ein Wisch aus der Statusleiste selbst öffnet immer Android.</string>
+    <string name="setting_edge_height_info">Wie weit unter der Statusleiste der Wischbereich der Ecken reicht. Ein Wisch aus der Statusleiste selbst öffnet Android – außer mit eingeschalteten systemweiten Wischgesten.</string>
     <string name="gesture_edge_left_info">Wisch nach unten, der oben links knapp unter der Statusleiste beginnt.</string>
     <string name="gesture_edge_center_info">Wisch nach unten, der oben in der Mitte knapp unter der Statusleiste beginnt.</string>
     <string name="gesture_edge_right_info">Wisch nach unten, der oben rechts knapp unter der Statusleiste beginnt.</string>

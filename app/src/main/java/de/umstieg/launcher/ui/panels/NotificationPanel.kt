@@ -121,16 +121,10 @@ fun NotificationPanel(vm: HomeViewModel, d: LauncherData, apps: Map<AppKey, AppI
             .windowInsetsPadding(WindowInsets.systemBars)
             .padding(horizontal = 16.dp),
     ) {
-        Row(Modifier.fillMaxWidth().padding(top = 10.dp, bottom = 10.dp), verticalAlignment = Alignment.Bottom) {
-            Column(Modifier.weight(1f)) {
-                val date = remember { SimpleDateFormat("EEEE, d. MMMM", Locale.GERMAN).format(Date()) }
-                Text(date, style = TextStyle(fontFamily = Inter, fontSize = 12.sp, color = Tos.Ink2))
-                Text(
-                    stringResource(R.string.notifications_title),
-                    style = TextStyle(fontFamily = Inter, fontWeight = FontWeight.Bold, fontSize = 22.sp, color = Tos.Ink),
-                    modifier = Modifier.semantics { heading() },
-                )
-            }
+        // Kopf: Datum und kleine Knöpfe in einer Zeile, darunter der Titel über die ganze Breite.
+        Row(Modifier.fillMaxWidth().padding(top = 10.dp), verticalAlignment = Alignment.CenterVertically) {
+            val date = remember { SimpleDateFormat("EEEE, d. MMMM", Locale.GERMAN).format(Date()) }
+            Text(date, style = TextStyle(fontFamily = Inter, fontSize = 12.sp, color = Tos.Ink2), modifier = Modifier.weight(1f))
             if (granted && visible.isNotEmpty()) {
                 SmallPill(R.drawable.ic_lucide_list_x, stringResource(R.string.notifications_clear_all)) { NotificationCenter.cancelAll() }
                 Spacer(Modifier.width(6.dp))
@@ -141,6 +135,12 @@ fun NotificationPanel(vm: HomeViewModel, d: LauncherData, apps: Map<AppKey, AppI
                 vm.openSystemNotifications()
             }
         }
+        Text(
+            stringResource(R.string.notifications_title),
+            style = TextStyle(fontFamily = Inter, fontWeight = FontWeight.Bold, fontSize = 22.sp, color = Tos.Ink),
+            maxLines = 1,
+            modifier = Modifier.padding(top = 4.dp, bottom = 10.dp).semantics { heading() },
+        )
         if (!granted) {
             ListenerExplanation(onAllow = { vm.requestListenerAccess(context) }, onSystem = {
                 vm.showOverlay(Overlay.NONE)

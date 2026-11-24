@@ -46,9 +46,13 @@ class PermissionHelp(context: Context) {
 
     val fromStore: Boolean get() = SetupLogic.isStore(installer)
 
-    /** AppOps-Status „Eingeschränkte Einstellungen“ (true = freigegeben), null wenn nicht lesbar. */
+    /**
+     * Freigabe „Eingeschränkte Einstellungen“ erteilt? Erst AppOps; ist ein gesperrter Zugriff (Benachrichtigungen
+     * oder Bedienungshilfe) bereits eingeschaltet, war die Freigabe nachweislich erteilt. Null = nicht feststellbar.
+     */
     fun restrictedAllowed(): Boolean? {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) return null
+        if (NotificationCenter.isPermissionGranted(ctx) || EdgeGestureService.isEnabled(ctx)) return true
         return runCatching {
             val ops = ctx.getSystemService(AppOpsManager::class.java)
             ops.unsafeCheckOpNoThrow("android:access_restricted_settings", ctx.applicationInfo.uid, ctx.packageName) == AppOpsManager.MODE_ALLOWED

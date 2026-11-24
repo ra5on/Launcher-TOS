@@ -46,6 +46,7 @@ class EdgeGestureService : AccessibilityService() {
     private var foregroundPackage: String? = null
     private var settings: LauncherSettings? = null
     private var statusBarVisible = true
+    private var insetsReliable = false
 
     override fun onServiceConnected() {
         instance = WeakReference(this)
@@ -135,7 +136,8 @@ class EdgeGestureService : AccessibilityService() {
                     val dy = e.rawY - downY
                     val dx = e.rawX - downX
                     // Nur ein klarer Wisch nach unten löst aus.
-                    if (!fired && dy > slop * 2 && dy > abs(dx) * 1.2f) {
+                    // Früh auslösen: das System übernimmt schnelle Wische am oberen Rand sonst selbst (ACTION_CANCEL).
+                    if (!fired && dy > slop && dy > abs(dx) * 1.2f) {
                         fired = true
                         trigger(gesture)
                     }
@@ -145,7 +147,10 @@ class EdgeGestureService : AccessibilityService() {
         }
         view.setOnApplyWindowInsetsListener { _, insets ->
             // Vollbild (Statusleiste ausgeblendet): Streifen durchlässig, damit Apps oben nicht gestört werden.
-            statusBarVisible = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) insets.isVisible(WindowInsets.Type.statusBars()) else true
+            // Manche Systeme melden für Overlay-Fenster die Statusleiste nie als sichtbar; dann gilt sie als sichtbar.
+            val v = Build.VERSION.SDK_INT < Build.VERSION_CODES.R || insets.isVisible(WindowInsets.Type.statusBars())
+            if (v) insetsReliable = true
+            statusBarVisible = if (insetsReliable) v else true
             updateTouchable()
             insets
         }
