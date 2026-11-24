@@ -922,7 +922,10 @@ fun UpdatesPage(p: PageEnv) {
                         UpdateState.Reason.PACKAGE -> R.string.updates_failed_package
                         UpdateState.Reason.INSTALL -> R.string.updates_failed_install
                     },
-                ) + (st.detail?.let { " ($it)" } ?: "")
+                ) + (
+                    // Prüfsumme/Signatur sind schon klar benannt; bei Netz/Paket/Installation hilft der Grund.
+                    st.detail?.takeIf { st.reason != UpdateState.Reason.CHECKSUM && st.reason != UpdateState.Reason.SIGNATURE }?.let { " ($it)" } ?: ""
+                )
             }
             if (status != null) Text(status, style = SummaryStyle.copy(color = c.secondary))
             val progress = (state as? UpdateState.Downloading)?.let { if (it.total > 0) it.done.toFloat() / it.total else 0f }

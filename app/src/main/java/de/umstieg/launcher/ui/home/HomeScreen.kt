@@ -178,6 +178,7 @@ private fun HomeContent(vm: HomeViewModel, d: LauncherData, isDefault: Boolean, 
     val resizeWidget by vm.resizeWidget.collectAsStateWithLifecycle()
     val setupRequested by vm.setupRequested.collectAsStateWithLifecycle()
     val openCategory by vm.openCategory.collectAsStateWithLifecycle()
+    val peek by vm.peek.collectAsStateWithLifecycle()
     val updateState by vm.controller.updater.state.collectAsStateWithLifecycle()
 
     val map = PageMap(
@@ -499,7 +500,8 @@ private fun HomeContent(vm: HomeViewModel, d: LauncherData, isDefault: Boolean, 
                             val target = peekTarget
                             if (target != null) {
                                 val progress = total.y / (size.height * 0.4f)
-                                if (progress > 0.35f || tracker.calculateVelocity().y > 1200f) {
+                                // Schon ab etwa 70 dp oder einem kurzen, schnellen Wisch öffnen (wie die frühere Auslöseschwelle).
+                                if (progress > 0.18f || tracker.calculateVelocity().y > 700f) {
                                     view.tosHaptic(current.settings)
                                     vm.showOverlay(target)
                                 } else {
@@ -585,11 +587,15 @@ private fun HomeContent(vm: HomeViewModel, d: LauncherData, isDefault: Boolean, 
                     EditTopBar(vm, actions, if (s.widgetsOnHome) ({ vm.showWidgetPicker(WidgetTarget.Grid(map.homeIndex(pagerState.currentPage) ?: 0)) }) else null)
                 }
             }
+            // Pager über die volle Höhe; Punkte und Dock liegen unten darüber. Homeseiten halten deren Platz frei,
+            // App-Übersicht und Widget-Seite nutzen die Fläche bis unten.
+            var bottomHeight by remember { mutableStateOf(0) }
+            val bottomDp = with(density) { bottomHeight.toDp() }
+            Box(Modifier.weight(1f).fillMaxWidth()) {
             HorizontalPager(
                 state = pagerState,
                 modifier = Modifier
-                    .weight(1f)
-                    .fillMaxWidth()
+                    .fillMaxSize()
                     .nestedScroll(wrap)
                     .onGloballyPositioned { pagerBounds = it.boundsInRoot() },
                 userScrollEnabled = !drag.active,
@@ -599,19 +605,18 @@ private fun HomeContent(vm: HomeViewModel, d: LauncherData, isDefault: Boolean, 
                 Box(Modifier.fillMaxSize().pageTransition(pagerState, index, if (tosStyle.reduceMotion) PageTransition.SLIDE else s.pageTransition)) {
                     val home = map.homeIndex(index)
                     when {
-                        home != null -> PageGrid(home, if (drag.active) preview else d.layout, env) { dy, px -> gridMetrics = dy to px }
+                        home != null -> Box(Modifier.padding(bottom = bottomDp)) {
+                            PageGrid(home, if (drag.active) preview else d.layout, env) { dy, px -> gridMetrics = dy to px }
+                        }
                         index == map.drawerIndex -> DrawerPage(vm, d, apps, shape, actions)
                         else -> WidgetPage(vm, d, actions)
                     }
                 }
             }
             val homeNow = map.homeIndex(pagerState.currentPage)
-            // Höhe von Indikator + Dock merken, damit der Pager beim Wechsel zu Widgets/Übersicht nicht springt.
-            var bottomHeight by remember { mutableStateOf(0) }
             if (homeNow == null) {
-                Spacer(Modifier.height(with(density) { bottomHeight.toDp() }))
                 SideEffect { dockGeo = null }
-            } else Column(Modifier.fillMaxWidth().onSizeChanged { bottomHeight = it.height }) {
+            } else Column(Modifier.align(Alignment.BottomCenter).fillMaxWidth().onSizeChanged { bottomHeight = it.height }) {
             if (homeNow != null) {
                 // Feste Höhe, damit Raster und Pager beim Bearbeiten/Ziehen nicht springen; der Hinweis liegt darüber.
                 Box(Modifier.fillMaxWidth().height(INDICATOR_AREA), contentAlignment = Alignment.Center) {
@@ -665,6 +670,7 @@ private fun HomeContent(vm: HomeViewModel, d: LauncherData, isDefault: Boolean, 
                 SideEffect { dockGeo = null }
             }
             }
+            }
         }
 
         // Geöffneter Ordner.
@@ -687,7 +693,7 @@ private fun HomeContent(vm: HomeViewModel, d: LauncherData, isDefault: Boolean, 
             de.umstieg.launcher.core.SetupLogic.open(setupFacts(vm, d, isDefault, context), d.setupDeclined)
         }
         val update = (updateState as? UpdateState.Available)?.release
-        if (!setupVisible && !editMode && overlay == Overlay.NONE && openFolderId == null) {
+        if (!setupVisible && !editMode && overlay == Overlay.NONE && peek == null && openFolderId == null && map.homeIndex(pagerState.currentPage) != null) {
             if (!d.setupCardDismissed && openSteps.isNotEmpty()) {
                 SetupCard(openSteps.size, onOpen = { vm.showSetup(true) }, onDismiss = {
                     vm.controller.updateData { it.copy(setupCardDismissed = true, setupDeclined = it.setupDeclined + openSteps) }

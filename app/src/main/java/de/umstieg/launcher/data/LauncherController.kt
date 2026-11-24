@@ -6,6 +6,7 @@ import android.content.pm.PackageManager
 import android.provider.MediaStore
 import androidx.core.net.toUri
 import de.umstieg.launcher.R
+import de.umstieg.launcher.core.iconOptions
 import de.umstieg.launcher.core.AppKey
 import de.umstieg.launcher.core.AppOverride
 import de.umstieg.launcher.core.AutoAddTarget
@@ -80,8 +81,8 @@ class LauncherController(
         // Icons vorab im Hintergrund dekodieren, damit Seiten, Ordner und Übersicht ohne Nachladen erscheinen.
         scope.launch(kotlinx.coroutines.Dispatchers.Default) {
             apps.apps.filterNotNull().collect { list ->
-                val opts = data.value?.settings?.let { de.umstieg.launcher.core.IconOptions(it.legacyBackground, it.legacyColor, it.themedIcons) }
-                    ?: de.umstieg.launcher.core.IconOptions()
+                // Gleiche Optionen wie beim Zeichnen (iconOptions()), sonst trifft der Cache nicht.
+                val opts = data.value?.settings?.iconOptions() ?: de.umstieg.launcher.core.IconOptions()
                 list.forEach { runCatching { icons.load(it, opts) } }
             }
         }
@@ -109,6 +110,10 @@ class LauncherController(
     }
 
     /** Manuelle Prüfung („Jetzt suchen“). */
+    /** Aktueller Schritt des Einrichtungsassistenten (überlebt das Neuerstellen der Activity). */
+    @Volatile
+    var setupIndex: Int = 0
+
     fun checkForUpdate() {
         updateLayout { it.copy(lastUpdateCheck = System.currentTimeMillis()) }
         scope.launch { updater.check() }

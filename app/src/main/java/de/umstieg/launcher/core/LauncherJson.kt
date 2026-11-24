@@ -5,6 +5,7 @@ import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.booleanOrNull
+import kotlinx.serialization.json.contentOrNull
 import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
 
@@ -29,6 +30,8 @@ object LauncherJson {
         val extra = mutableMapOf<String, JsonElement>()
         if ("drawerSide" !in settings) settings["drawerEnabled"]?.jsonPrimitive?.booleanOrNull?.let { extra["drawerSide"] = JsonPrimitive(if (it) "RIGHT" else "OFF") }
         if ("widgetSide" !in settings) settings["widgetPageEnabled"]?.jsonPrimitive?.booleanOrNull?.let { extra["widgetSide"] = JsonPrimitive(if (it) "LEFT" else "OFF") }
+        // Daten aus 1.0 (noch ohne Seitenwahl): die damalige Standardansicht „Kategorien“ wird zu den neuen Kacheln.
+        if ("drawerSide" !in settings && settings["drawerView"]?.jsonPrimitive?.contentOrNull == "CATEGORIES") extra["drawerView"] = JsonPrimitive("TILES")
         if (extra.isEmpty()) return text
         val newRoot = JsonObject(root + ("settings" to JsonObject(settings + extra)))
         return json.encodeToString(JsonElement.serializer(), newRoot)

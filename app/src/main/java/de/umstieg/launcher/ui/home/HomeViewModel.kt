@@ -78,6 +78,7 @@ class HomeViewModel(application: Application) : AndroidViewModel(application) {
     val setupRequested: StateFlow<Boolean> = _setupRequested.asStateFlow()
 
     fun showSetup(show: Boolean) {
+        if (show) controller.setupIndex = 0
         _setupRequested.value = show
     }
 

@@ -90,7 +90,9 @@ fun SetupWizard(vm: HomeViewModel, d: LauncherData, isDefault: Boolean, actions:
     val context = LocalContext.current
     val help = vm.controller.permissions
     var tick by remember { mutableIntStateOf(0) }
-    var index by remember { mutableIntStateOf(0) }
+    // Fortschritt prozessweit merken: Android startet die Activity neu, wenn Launcher TOS Standard wird.
+    var index by remember { mutableIntStateOf(vm.controller.setupIndex) }
+    androidx.compose.runtime.SideEffect { vm.controller.setupIndex = index }
     var forceHelp by remember { mutableStateOf(false) }
     LifecycleEventEffect(Lifecycle.Event.ON_RESUME) {
         tick++
@@ -109,6 +111,7 @@ fun SetupWizard(vm: HomeViewModel, d: LauncherData, isDefault: Boolean, actions:
     val step = SetupLogic.next(index, facts, d.setupDeclined, includeWelcome = index == 0)
 
     fun finish() {
+        vm.controller.setupIndex = 0
         vm.controller.updateData { it.copy(onboardingDone = true) }
         onClose()
     }
@@ -125,7 +128,7 @@ fun SetupWizard(vm: HomeViewModel, d: LauncherData, isDefault: Boolean, actions:
     Box(
         Modifier
             .fillMaxSize()
-            .background(Color(0xF00B0F16))
+            .background(Color(0xFF0B0F16))
             .clickable(interactionSource = remember { MutableInteractionSource() }, indication = null) {}
             .windowInsetsPadding(WindowInsets.systemBars)
             .padding(horizontal = 24.dp, vertical = 16.dp),
@@ -187,6 +190,7 @@ fun SetupWizard(vm: HomeViewModel, d: LauncherData, isDefault: Boolean, actions:
                     SetupStep.UPDATES -> vm.controller.updateData { it.copy(updateChoiceMade = true, settings = it.settings.copy(autoUpdateCheck = true)) }
                     SetupStep.INSTALL_UNKNOWN -> vm.system.start(context, vm.controller.updater.allowInstallIntent())
                     SetupStep.GESTURES -> {
+                        vm.controller.setupIndex = 0
                         vm.controller.updateData { it.copy(gesturesSeen = true, onboardingDone = true) }
                         onClose()
                     }
@@ -318,7 +322,7 @@ private fun GestureSketch(d: LauncherData) {
         modifier = Modifier.semantics { heading() },
     )
     Spacer(Modifier.height(16.dp))
-    val small = TextStyle(fontFamily = Inter, fontWeight = FontWeight.SemiBold, fontSize = 13.sp, color = Tos.Ink, textAlign = TextAlign.Center)
+    val small = TextStyle(fontFamily = Inter, fontWeight = FontWeight.SemiBold, fontSize = 13.sp, color = Tos.Ink, textAlign = TextAlign.Center, hyphens = androidx.compose.ui.text.style.Hyphens.Auto, lineBreak = androidx.compose.ui.text.style.LineBreak.Paragraph)
     Box(
         Modifier.fillMaxWidth(0.72f).aspectRatio(0.5f).clip(RoundedCornerShape(32.dp)).glass(RoundedCornerShape(32.dp), Color(0xFF14243A), Tos.GlassLine),
     ) {
@@ -335,7 +339,7 @@ private fun GestureSketch(d: LauncherData) {
                         Modifier.weight(1f).fillMaxHeight().padding(4.dp).background(Tos.Accent.copy(alpha = if (i % 2 == 0) 0.30f else 0.20f), RoundedCornerShape(14.dp)),
                         contentAlignment = Alignment.Center,
                     ) {
-                        Text("↓\n" + actionName(GestureClassifier.binding(s, g).action), style = small)
+                        Text("↓\n" + actionName(GestureClassifier.binding(s, g).action), style = small.copy(fontSize = 12.sp), modifier = Modifier.padding(horizontal = 4.dp))
                     }
                 }
             }

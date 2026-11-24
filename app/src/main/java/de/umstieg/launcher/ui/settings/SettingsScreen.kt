@@ -19,6 +19,9 @@ import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.statusBars
+import androidx.compose.foundation.layout.windowInsetsTopHeight
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -126,6 +129,8 @@ fun SettingsScreen(
             }
             Spacer(Modifier.height(24.dp))
         }
+        // Statusleiste abdecken, damit gescrollter Inhalt nicht unter der Uhrzeit liegt.
+        Box(Modifier.fillMaxWidth().windowInsetsTopHeight(WindowInsets.statusBars).background(c.background.copy(alpha = 0.94f)))
     }
 }
 

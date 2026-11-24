@@ -80,7 +80,7 @@ class SettingsViewModel(application: Application) : AndroidViewModel(application
     }
 
     /** Einrichtung zurücksetzen; sie erscheint beim nächsten Homescreen. */
-    fun restartSetup() = controller.updateData {
+    fun restartSetup() = controller.also { it.setupIndex = 0 }.updateData {
         it.copy(onboardingDone = false, setupCardDismissed = false, setupDeclined = emptySet(), gesturesSeen = false)
     }
 

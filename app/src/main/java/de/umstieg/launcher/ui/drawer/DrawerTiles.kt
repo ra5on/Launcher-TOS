@@ -177,21 +177,24 @@ private fun CategoryTile(vm: HomeViewModel, d: LauncherData, cat: AppCategory, a
 private fun MoreSlot(vm: HomeViewModel, d: LauncherData, apps: List<AppInfo>, rest: Int, shape: SuperellipseShape, size: Dp, onClick: () -> Unit) {
     val desc = pluralStringResource(R.plurals.drawer_more_apps, rest, rest)
     Box(
-        Modifier.size(size).background(Color.White.copy(alpha = 0.10f), shape).clickable(onClickLabel = desc, role = Role.Button, onClick = onClick)
+        Modifier.size(size).background(Color.White.copy(alpha = 0.14f), shape).clickable(onClickLabel = desc, role = Role.Button, onClick = onClick)
             .semantics { contentDescription = desc },
         contentAlignment = Alignment.Center,
     ) {
-        Column(verticalArrangement = Arrangement.spacedBy(size * 0.06f)) {
+        // Wie im Entwurf: Mini-Icons füllen die Fläche, darüber eine dunkle Schicht mit „+N“.
+        Column(verticalArrangement = Arrangement.spacedBy(size * 0.05f)) {
             for (r in 0 until 2) {
-                Row(horizontalArrangement = Arrangement.spacedBy(size * 0.06f)) {
+                Row(horizontalArrangement = Arrangement.spacedBy(size * 0.05f)) {
                     for (c in 0 until 2) {
                         val app = apps.getOrNull(r * 2 + c)
-                        if (app != null) AppIconImage(vm.icons, app, d.settings.iconOptions(), shape, size * 0.36f, shadow = Shadow.NONE) else Spacer(Modifier.size(size * 0.36f))
+                        if (app != null) AppIconImage(vm.icons, app, d.settings.iconOptions(), shape, size * 0.38f, shadow = Shadow.NONE) else Spacer(Modifier.size(size * 0.38f))
                     }
                 }
             }
         }
-        Text("+$rest", style = TextStyle(fontFamily = Inter, fontWeight = FontWeight.Bold, fontSize = 20.sp, color = Color.White, shadow = androidx.compose.ui.graphics.Shadow(Color.Black.copy(alpha = 0.6f), blurRadius = 8f)))
+        Box(Modifier.matchParentSize().background(Color(0x730A0E14), shape), contentAlignment = Alignment.Center) {
+            Text("+$rest", style = TextStyle(fontFamily = Inter, fontWeight = FontWeight.Bold, fontSize = 18.sp, color = Color.White))
+        }
     }
 }
 
