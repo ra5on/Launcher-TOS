@@ -1,0 +1,5 @@
+# Baseline Profile (von Hand): die eigenen Klassen von Launcher TOS vorab kompilieren, damit Start,
+# Seitenwechsel, Ordner und App-Übersicht ohne JIT-Aufwärmphase flüssig laufen. Die Profile der
+# Compose-Bibliotheken bringt androidx.profileinstaller selbst mit.
+HSPLde/umstieg/launcher/**->**(**)**
+Lde/umstieg/launcher/**;

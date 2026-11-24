@@ -159,6 +159,16 @@ fun GridPage(p: PageEnv) {
         SegmentedRow(stringResource(R.string.setting_indicator), IndicatorStyle.entries.map { it to indicatorName(it) }, s.indicator) { v -> p.set { it.copy(indicator = v) } }
         CardDivider()
         SegmentedRow(
+            stringResource(R.string.setting_dots_mode),
+            listOf(
+                de.umstieg.launcher.core.DotsMode.SCROLL to stringResource(R.string.dots_scroll),
+                de.umstieg.launcher.core.DotsMode.ALWAYS to stringResource(R.string.dots_always),
+                de.umstieg.launcher.core.DotsMode.OFF to stringResource(R.string.off),
+            ),
+            s.dotsMode,
+        ) { v -> p.set { it.copy(dotsMode = v) } }
+        CardDivider()
+        SegmentedRow(
             stringResource(R.string.setting_page_transition),
             listOf(
                 PageTransition.SLIDE to stringResource(R.string.transition_slide),
@@ -726,9 +736,13 @@ fun DrawerSettingsPage(p: PageEnv) {
         CardDivider()
         SegmentedRow(
             stringResource(R.string.setting_drawer_view),
-            listOf(DrawerView.CATEGORIES to stringResource(R.string.drawer_view_categories), DrawerView.AZ to stringResource(R.string.drawer_view_az), DrawerView.GRID to stringResource(R.string.drawer_view_grid)),
+            listOf(DrawerView.TILES to stringResource(R.string.drawer_view_tiles), DrawerView.CATEGORIES to stringResource(R.string.drawer_view_categories), DrawerView.AZ to stringResource(R.string.drawer_view_az), DrawerView.GRID to stringResource(R.string.drawer_view_grid)),
             s.drawerView,
         ) { v -> p.set { it.copy(drawerView = v) } }
+        if (s.drawerView == DrawerView.TILES) {
+            CardDivider()
+            SegmentedRow(stringResource(R.string.setting_tile_apps), LauncherSettings.TILE_APPS.map { it to "$it" }, s.tileApps) { v -> p.set { it.copy(tileApps = v) } }
+        }
     }
     SettingsCard {
         ActionRow(stringResource(R.string.settings_section_hidden), value = "${p.d.hiddenApps.size}") {
@@ -739,7 +753,7 @@ fun DrawerSettingsPage(p: PageEnv) {
             p.actions.authenticate { p.set { it.copy(hiddenAppsLocked = v) } }
         }
     }
-    ResetSection { p.set { it.copy(drawerSide = Defaults.drawerSide, drawerView = Defaults.drawerView) } }
+    ResetSection { p.set { it.copy(drawerSide = Defaults.drawerSide, drawerView = Defaults.drawerView, tileApps = Defaults.tileApps) } }
 }
 
 @Composable

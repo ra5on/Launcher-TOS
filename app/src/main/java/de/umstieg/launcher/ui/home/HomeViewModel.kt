@@ -91,6 +91,14 @@ class HomeViewModel(application: Application) : AndroidViewModel(application) {
     /** Aufforderung, zur App-Übersicht zu blättern. */
     val toDrawer: SharedFlow<Unit> = _toDrawer.asSharedFlow()
 
+    /** Panel, das gerade per Wisch aufgezogen wird, mit Fortschritt 0..1. */
+    private val _peek = MutableStateFlow<Pair<Overlay, Float>?>(null)
+    val peek: StateFlow<Pair<Overlay, Float>?> = _peek.asStateFlow()
+
+    fun setPeek(o: Overlay?, progress: Float = 0f) {
+        _peek.value = o?.let { it to progress.coerceIn(0f, 1f) }
+    }
+
     fun setEditMode(on: Boolean) {
         _editMode.value = on
         if (!on) {
@@ -99,8 +107,23 @@ class HomeViewModel(application: Application) : AndroidViewModel(application) {
         }
     }
 
-    fun openFolder(id: String?) {
+    /** Herkunft (Fensterkoordinaten) für den Zoom beim Öffnen. */
+    var folderOrigin: androidx.compose.ui.geometry.Rect? = null
+        private set
+
+    fun openFolder(id: String?, origin: androidx.compose.ui.geometry.Rect? = null) {
+        folderOrigin = origin
         _openFolder.value = id
+    }
+
+    /** Geöffnete Kategorie der App-Übersicht (mit Herkunft der Kachel). */
+    data class CategoryOpen(val category: de.umstieg.launcher.core.AppCategory, val origin: androidx.compose.ui.geometry.Rect?)
+
+    private val _openCategory = MutableStateFlow<CategoryOpen?>(null)
+    val openCategory: StateFlow<CategoryOpen?> = _openCategory.asStateFlow()
+
+    fun openCategory(cat: de.umstieg.launcher.core.AppCategory?, origin: androidx.compose.ui.geometry.Rect?) {
+        _openCategory.value = cat?.let { CategoryOpen(it, origin) }
     }
 
     fun showAddSheet(show: Boolean) {
@@ -147,6 +170,7 @@ class HomeViewModel(application: Application) : AndroidViewModel(application) {
         _addSheet.value = false
         _editMode.value = false
         _overlay.value = Overlay.NONE
+        _openCategory.value = null
         _menuApp.value = null
         _customize.value = null
         _widgetPicker.value = null
@@ -163,6 +187,7 @@ class HomeViewModel(application: Application) : AndroidViewModel(application) {
             _widgetPicker.value != null -> _widgetPicker.value = null
             _resizeWidget.value != null -> _resizeWidget.value = null
             _addSheet.value -> _addSheet.value = false
+            _openCategory.value != null -> _openCategory.value = null
             _overlay.value != Overlay.NONE -> _overlay.value = Overlay.NONE
             _openFolder.value != null -> _openFolder.value = null
             _widgetEdit.value -> _widgetEdit.value = false

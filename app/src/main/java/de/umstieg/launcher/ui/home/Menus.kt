@@ -8,6 +8,15 @@ import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
+import kotlinx.coroutines.launch
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.foundation.gestures.detectVerticalDragGestures
+import androidx.compose.animation.core.spring
+import androidx.compose.animation.core.Animatable
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
@@ -71,7 +80,11 @@ import de.umstieg.launcher.ui.theme.LocalTosStyle
 import de.umstieg.launcher.ui.theme.Tos
 import de.umstieg.launcher.ui.theme.glass
 
-/** Vollbild-Panels mit Einblenden/Ausblenden (Dauer folgt der Animationsgeschwindigkeit). */
+/**
+ * Vollbild-Panels. Sie folgen beim Aufziehen dem Finger ([HomeViewModel.peek]), schließen sich per
+ * Gegenwisch nach oben (ebenfalls dem Finger folgend, Abschluss nach Strecke oder Tempo) und öffnen
+ * bzw. schließen mit Federphysik. „Bewegung reduzieren“ schaltet auf sofort um.
+ */
 @Composable
 fun OverlayHost(
     overlay: Overlay,
@@ -83,18 +96,71 @@ fun OverlayHost(
     launch: (AppInfo, Rect) -> Unit,
 ) {
     val style = LocalTosStyle.current
-    val ms = if (style.reduceMotion || style.motionScale == 0f) 0 else (220 / style.motionScale.coerceAtLeast(0.5f)).toInt()
+    val reduce = style.reduceMotion || style.motionScale == 0f
+    val stiffness = 380f * style.motionScale.coerceIn(0.5f, 2f)
+    val peek by vm.peek.collectAsStateWithLifecycle()
+    val scope = rememberCoroutineScope()
     Overlay.entries.filter { it != Overlay.NONE }.forEach { o ->
-        AnimatedVisibility(
-            visible = overlay == o,
-            enter = fadeIn(tween(ms)) + slideInVertically(tween(ms)) { -it / 12 },
-            exit = fadeOut(tween(ms)) + slideOutVertically(tween(ms)) { -it / 12 },
-        ) {
-            when (o) {
-                Overlay.SEARCH -> SearchOverlay(vm, d, apps, shape, actions, launch)
-                Overlay.NOTIFICATIONS -> NotificationPanel(vm, d, apps, shape)
-                Overlay.QUICK_SETTINGS -> QuickSettingsPanel(vm, d.quickSettings)
-                Overlay.NONE -> Unit
+        val anim = remember(o) { Animatable(0f) }
+        val open = overlay == o
+        val peekValue = peek?.takeIf { it.first == o }?.second
+        LaunchedEffect(open, peekValue == null) {
+            if (open) {
+                vm.setPeek(null)
+                if (reduce) anim.snapTo(1f) else anim.animateTo(1f, spring(dampingRatio = 0.86f, stiffness = stiffness))
+            } else if (peekValue == null) {
+                if (reduce) anim.snapTo(0f) else anim.animateTo(0f, spring(dampingRatio = 1f, stiffness = stiffness * 1.3f))
+            }
+        }
+        LaunchedEffect(peekValue) { if (peekValue != null && !open) anim.snapTo(peekValue) }
+        val p = anim.value
+        if (p > 0.001f || open) {
+            var heightPx by remember { mutableStateOf(1) }
+            Box(
+                Modifier
+                    .fillMaxSize()
+                    .graphicsLayer {
+                        heightPx = size.height.toInt().coerceAtLeast(1)
+                        alpha = p.coerceIn(0f, 1f)
+                        translationY = -(1f - p) * size.height * 0.16f
+                        val sc = 0.96f + 0.04f * p
+                        scaleX = sc
+                        scaleY = sc
+                    }
+                    // Gegenwisch nach oben schließt; Listen, die selbst scrollen, haben Vorrang.
+                    .pointerInput(o) {
+                        val tracker = androidx.compose.ui.input.pointer.util.VelocityTracker()
+                        var total = 0f
+                        detectVerticalDragGestures(
+                            onDragStart = {
+                                total = 0f
+                                tracker.resetTracking()
+                            },
+                            onDragEnd = {
+                                val v = tracker.calculateVelocity().y
+                                if (anim.value < 0.7f || v < -1500f) {
+                                    vm.showOverlay(Overlay.NONE)
+                                } else {
+                                    scope.launch { anim.animateTo(1f, spring(dampingRatio = 0.86f, stiffness = stiffness)) }
+                                }
+                            },
+                            onDragCancel = { scope.launch { anim.animateTo(1f) } },
+                        ) { change, dy ->
+                            tracker.addPosition(change.uptimeMillis, change.position)
+                            total += dy
+                            if (total < 0f) {
+                                change.consume()
+                                scope.launch { anim.snapTo((1f + total / (heightPx * 0.45f)).coerceIn(0f, 1f)) }
+                            }
+                        }
+                    },
+            ) {
+                when (o) {
+                    Overlay.SEARCH -> SearchOverlay(vm, d, apps, shape, actions, launch)
+                    Overlay.NOTIFICATIONS -> NotificationPanel(vm, d, apps, shape)
+                    Overlay.QUICK_SETTINGS -> QuickSettingsPanel(vm, d.quickSettings)
+                    Overlay.NONE -> Unit
+                }
             }
         }
     }

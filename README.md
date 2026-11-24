@@ -82,7 +82,7 @@ immer über die Lupe im Seitenindikator erreichbar.
 
 ## Berechtigungen
 
-Kein Internet. Alle Berechtigungen sind optional und in der App unter „Berechtigungen“ erklärt.
+Internet nur für Updates von GitHub (abschaltbar). Alle Berechtigungen sind optional und in der App unter „Berechtigungen“ erklärt; die Einrichtung beim ersten Start führt durch die wichtigsten.
 
 | Berechtigung | Wofür |
 |---|---|
@@ -93,6 +93,17 @@ Kein Internet. Alle Berechtigungen sind optional und in der App unter „Berecht
 | `ACCESS_NETWORK_STATE` | im Schnellzugriff anzeigen, ob WLAN/Mobile Daten verbunden sind |
 | `USE_BIOMETRIC` | versteckte Apps mit der Geräte-Sperre schützen (nur wenn eingeschaltet) |
 | `REQUEST_DELETE_PACKAGES` | „Deinstallieren“ im App-Menü (Android fragt immer nach) |
+| `INTERNET` | ausschließlich die Update-Prüfung bei GitHub (`api.github.com`, Download von `github.com`); abschaltbar |
+| `REQUEST_INSTALL_PACKAGES` („Unbekannte Apps installieren“, vom Nutzer erlaubt) | ein geprüftes Update installieren; Android fragt jedes Mal |
+
+**Updates:** Launcher TOS fragt (wöchentlich, abschaltbar, oder per „Jetzt suchen“) bei GitHub nach der
+neuesten Version. Vor der Installation prüft die App die SHA-256-Prüfsumme gegen `SHA256SUMS` des Releases
+und das Signaturzertifikat gegen den fest hinterlegten Fingerabdruck
+`2142791d…4a063c`; erst dann bekommt Android die Datei.
+
+**„Eingeschränkte Einstellungen“ (Android 13+):** Bei Installation außerhalb eines Stores sperrt Android den
+Benachrichtigungszugriff, bis man in der App-Info über ⋮ „Eingeschränkte Einstellungen zulassen“ wählt. Die
+Einrichtung erkennt das und zeigt den Weg.
 
 Sichtbar sind nur Apps mit Eintrag in der App-Liste und Widget-Anbieter (Manifest-Abfragen);
 beim ersten Start fragt Launcher TOS die Standard-Apps für Telefon, Nachrichten, Browser und Kamera

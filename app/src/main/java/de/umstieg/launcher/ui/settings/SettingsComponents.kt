@@ -55,6 +55,9 @@ import de.umstieg.launcher.ui.theme.LocalPanelColors
 import de.umstieg.launcher.ui.theme.glass
 import kotlin.math.roundToInt
 
+ /** Erklärender Satz je Einstellung (Titel → Satz), bereitgestellt von den Einstellungen. */
+val LocalSettingInfo = androidx.compose.runtime.staticCompositionLocalOf<Map<String, String>> { emptyMap() }
+
 val TitleStyle = TextStyle(fontFamily = Inter, fontWeight = FontWeight.SemiBold, fontSize = 17.sp)
 val SummaryStyle = TextStyle(fontFamily = Inter, fontWeight = FontWeight.Normal, fontSize = 14.sp)
 val ValueStyle = TextStyle(fontFamily = Inter, fontWeight = FontWeight.SemiBold, fontSize = 17.sp)
@@ -142,7 +145,7 @@ fun SwitchRow(title: String, summary: String? = null, checked: Boolean, onChange
     ) {
         Column(Modifier.weight(1f)) {
             Text(title, style = TitleStyle.copy(color = c.content))
-            if (summary != null) Text(summary, style = SummaryStyle.copy(color = c.secondary))
+            (summary ?: LocalSettingInfo.current[title])?.let { Text(it, style = SummaryStyle.copy(color = c.secondary)) }
         }
         Spacer(Modifier.width(12.dp))
         Switch(
@@ -173,7 +176,7 @@ fun ActionRow(title: String, summary: String? = null, value: String? = null, col
     ) {
         Column(Modifier.weight(1f)) {
             Text(title, style = TitleStyle.copy(color = color ?: c.content))
-            if (summary != null) Text(summary, style = SummaryStyle.copy(color = c.secondary))
+            (summary ?: LocalSettingInfo.current[title])?.let { Text(it, style = SummaryStyle.copy(color = c.secondary)) }
         }
         if (value != null) Text(value, style = SummaryStyle.copy(color = c.secondary, fontSize = 16.sp))
         Icon(painterResource(R.drawable.ic_lucide_chevron_right), null, tint = c.secondary, modifier = Modifier.size(20.dp))
@@ -222,6 +225,7 @@ fun SliderBlock(
             Text(title, style = TitleStyle.copy(color = c.content), modifier = Modifier.weight(1f))
             Text(valueText(current), style = ValueStyle.copy(color = Tos.Accent))
         }
+        LocalSettingInfo.current[title]?.let { Text(it, style = SummaryStyle.copy(color = c.secondary)) }
         Row(verticalAlignment = Alignment.CenterVertically) {
             if (start != null) {
                 start()
@@ -260,6 +264,7 @@ fun <T> SegmentedRow(title: String?, options: List<Pair<T, String>>, selected: T
     Column(Modifier.fillMaxWidth().padding(horizontal = 18.dp, vertical = 10.dp)) {
         if (title != null) {
             Text(title, style = TitleStyle.copy(color = c.content))
+            LocalSettingInfo.current[title]?.let { Text(it, style = SummaryStyle.copy(color = c.secondary)) }
             Spacer(Modifier.height(10.dp))
         }
         Row(

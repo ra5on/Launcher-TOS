@@ -2,6 +2,8 @@ package de.umstieg.launcher.ui.home
 
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.foundation.background
+import kotlin.math.abs
+import kotlin.math.roundToInt
 import androidx.compose.foundation.clickable
 import androidx.compose.ui.semantics.Role
 import androidx.compose.foundation.layout.Arrangement
@@ -61,65 +63,69 @@ fun IconLabel(text: String, fontScale: Int, modifier: Modifier = Modifier, color
     )
 }
 
-/** Seitenindikator: Punkte (aktive Seite breiter), Balken, Zahl oder aus. Im Bearbeitungsmodus „+“ für die neue Seite. */
+/**
+ * Seitenindikator: Punkte (die aktive Seite breiter, folgt dem Wisch), Balken, Zahl oder aus. Im
+ * Bearbeitungsmodus „+“ für die neue Seite. [position] ist die Seite mit Bruchteil beim Blättern.
+ * [onSearch]: Tipp auf die Punkte öffnet die Suche.
+ */
 @Composable
 fun PageIndicator(
     style: IndicatorStyle,
     pageCount: Int,
-    current: Int,
+    position: () -> Float,
     hasNewPage: Boolean,
     modifier: Modifier = Modifier,
     onSearch: (() -> Unit)? = null,
 ) {
     if (pageCount <= 0) return
-    val realPages = if (hasNewPage) pageCount - 1 else pageCount
-    val showPages = style != IndicatorStyle.NONE && (realPages > 1 || hasNewPage)
-    if (!showPages && onSearch == null) return
+    // Nur für Text und TalkBack; die Punkte lesen die Position erst beim Zeichnen (kein Neuaufbau je Frame).
+    val current = position().roundToInt().coerceIn(0, pageCount - 1)
     val description = stringResource(R.string.home_page_description, current + 1, pageCount)
+    val searchLabel = stringResource(R.string.search_open)
     Row(
         modifier
-            .semantics { contentDescription = description }
-            .glass(Tos.PillShape, fill = Tos.GlassDark)
-            .padding(horizontal = 14.dp, vertical = if (onSearch != null) 6.dp else 9.dp),
+            .clip(Tos.PillShape)
+            .then(if (onSearch != null) Modifier.clickable(onClickLabel = searchLabel, role = Role.Button, onClick = onSearch) else Modifier)
+            .semantics { contentDescription = if (onSearch != null) "$description, $searchLabel" else description }
+            .background(Tos.GlassDark, Tos.PillShape)
+            .padding(horizontal = 14.dp, vertical = 12.dp),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(8.dp),
     ) {
-        if (onSearch != null) {
-            // 48-dp-Touchfläche, sichtbar bleibt die kleine Lupe.
-            Box(
-                Modifier.size(48.dp).clip(CircleShape).clickable(role = Role.Button, onClick = onSearch),
-                contentAlignment = Alignment.Center,
-            ) {
-                Icon(painterResource(R.drawable.ic_lucide_search), stringResource(R.string.search_open), tint = Tos.Ink, modifier = Modifier.size(18.dp))
-            }
-        }
-        if (showPages) when (style) {
+        when (style) {
             IndicatorStyle.NUMBER -> Text(
                 text = "${current + 1} / $pageCount",
                 style = TextStyle(fontFamily = Inter, fontWeight = FontWeight.SemiBold, fontSize = 13.sp, color = Tos.Ink),
             )
             IndicatorStyle.BAR -> Row(horizontalArrangement = Arrangement.spacedBy(3.dp)) {
                 repeat(pageCount) { i ->
-                    Box(
-                        Modifier.width(18.dp).height(4.dp).clip(Tos.PillShape)
-                            .background(if (i == current) Tos.Ink else Tos.Ink3),
-                    )
+                    Box(Modifier.width(18.dp).height(4.dp).clip(Tos.PillShape).background(if (i == current) Tos.Ink else Tos.Ink3))
                 }
             }
-            else -> repeat(pageCount) { i ->
-                if (hasNewPage && i == pageCount - 1) {
-                    Icon(
-                        painterResource(R.drawable.ic_lucide_plus),
-                        contentDescription = null,
-                        tint = if (i == current) Tos.Ink else Tos.Ink2,
-                        modifier = Modifier.size(12.dp),
-                    )
-                } else {
-                    val w by animateDpAsState(if (i == current) 20.dp else 7.dp, label = "dot")
-                    Box(
-                        Modifier.width(w).height(7.dp).clip(CircleShape)
-                            .background(if (i == current) Tos.Ink else Tos.Ink3),
-                    )
+            else -> {
+                val dots = if (hasNewPage) pageCount - 1 else pageCount
+                val ink = Tos.Ink
+                val ink3 = Tos.Ink3
+                // Breite und Farbe folgen der Wischbewegung stufenlos (gezeichnet, nicht neu zusammengesetzt).
+                androidx.compose.foundation.Canvas(Modifier.width(7.dp * dots + 13.dp + 8.dp * (dots - 1).coerceAtLeast(0)).height(7.dp)) {
+                    val pos = position()
+                    val h = size.height
+                    val gap = 8.dp.toPx()
+                    var x = 0f
+                    for (i in 0 until dots) {
+                        val near = (1f - abs(i - pos)).coerceIn(0f, 1f)
+                        val w = 7.dp.toPx() + 13.dp.toPx() * near
+                        drawRoundRect(
+                            androidx.compose.ui.graphics.lerp(ink3, ink, near),
+                            topLeft = androidx.compose.ui.geometry.Offset(x, 0f),
+                            size = androidx.compose.ui.geometry.Size(w, h),
+                            cornerRadius = androidx.compose.ui.geometry.CornerRadius(h / 2f, h / 2f),
+                        )
+                        x += w + gap
+                    }
+                }
+                if (hasNewPage) {
+                    Icon(painterResource(R.drawable.ic_lucide_plus), contentDescription = null, tint = if (current == pageCount - 1) Tos.Ink else Tos.Ink2, modifier = Modifier.size(12.dp))
                 }
             }
         }

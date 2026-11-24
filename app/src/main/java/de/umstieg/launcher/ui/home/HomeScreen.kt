@@ -177,6 +177,7 @@ private fun HomeContent(vm: HomeViewModel, d: LauncherData, isDefault: Boolean, 
     val quietApp by vm.quietApp.collectAsStateWithLifecycle()
     val resizeWidget by vm.resizeWidget.collectAsStateWithLifecycle()
     val setupRequested by vm.setupRequested.collectAsStateWithLifecycle()
+    val openCategory by vm.openCategory.collectAsStateWithLifecycle()
     val updateState by vm.controller.updater.state.collectAsStateWithLifecycle()
 
     val map = PageMap(
@@ -238,7 +239,7 @@ private fun HomeContent(vm: HomeViewModel, d: LauncherData, isDefault: Boolean, 
     }
     BackHandler(enabled = true) { vm.onBack() }
 
-    val blurOn = overlay != Overlay.NONE || openFolderId != null || menuApp != null || customize != null ||
+    val blurOn = overlay != Overlay.NONE || openFolderId != null || openCategory != null || menuApp != null || customize != null ||
         addSheet || widgetPicker != null
     LaunchedEffect(blurOn) { actions.setWindowBlur(blurOn) }
 
@@ -280,6 +281,14 @@ private fun HomeContent(vm: HomeViewModel, d: LauncherData, isDefault: Boolean, 
     }
 
     fun homePage(): Int? = currentMap.homeIndex(pagerState.currentPage)
+
+    /** Panel zur Gestenaktion, das beim Wischen dem Finger folgt (sonst null: Aktion beim Schwellwert). */
+    fun overlayFor(action: GestureAction): Overlay? = when (action) {
+        GestureAction.NOTIFICATIONS -> if (current.settings.ownNotificationList) Overlay.NOTIFICATIONS else null
+        GestureAction.QUICK_SETTINGS -> Overlay.QUICK_SETTINGS
+        GestureAction.SEARCH -> Overlay.SEARCH
+        else -> null
+    }
 
     fun hitTest(p: Offset): Hit? {
         val layout = current.layout
@@ -480,10 +489,29 @@ private fun HomeContent(vm: HomeViewModel, d: LauncherData, isDefault: Boolean, 
                     val slop = viewConfiguration.touchSlop
                     var total = Offset.Zero
                     var claimed = false
+                    var peekTarget: Overlay? = null
+                    val tracker = androidx.compose.ui.input.pointer.util.VelocityTracker()
                     while (true) {
                         val ev = awaitPointerEvent(PointerEventPass.Initial)
-                        val ch = ev.changes.firstOrNull { it.id == down.id } ?: break
-                        if (!ch.pressed || drag.longPressed || drag.active) break
+                        val ch = ev.changes.firstOrNull { it.id == down.id }
+                        if (ch == null || !ch.pressed) {
+                            // Losgelassen: nach Strecke oder Tempo öffnen, sonst zurückfedern.
+                            val target = peekTarget
+                            if (target != null) {
+                                val progress = total.y / (size.height * 0.4f)
+                                if (progress > 0.35f || tracker.calculateVelocity().y > 1200f) {
+                                    view.tosHaptic(current.settings)
+                                    vm.showOverlay(target)
+                                } else {
+                                    vm.setPeek(null)
+                                }
+                            }
+                            break
+                        }
+                        if (drag.longPressed || drag.active) {
+                            vm.setPeek(null)
+                            break
+                        }
                         total += ch.positionChange()
                         if (!claimed) {
                             if (abs(total.x) > slop && abs(total.x) >= abs(total.y)) break
@@ -492,6 +520,21 @@ private fun HomeContent(vm: HomeViewModel, d: LauncherData, isDefault: Boolean, 
                         if (!claimed) continue
                         ch.consume()
                         val edgeBottom = (statusTop + size.height * current.settings.edgeHeightPercent / 100f) / size.height
+                        // Panels (eigene Benachrichtigungen, Schnellzugriff, Suche) folgen dem Finger.
+                        if (peekTarget == null && total.y > 0f) {
+                            val early = GestureClassifier.classify(
+                                down.position.x / size.width, down.position.y / size.height, total.x / size.height, 1f,
+                                edgeBottom, current.settings.edgeSplit, current.settings.swipeZoneLeft, current.settings.swipeZoneRight,
+                                minDistance = 0f, dominance = 0f,
+                            )
+                            peekTarget = early?.let { overlayFor(GestureClassifier.binding(current.settings, it).action) }
+                        }
+                        val target = peekTarget
+                        if (target != null) {
+                            tracker.addPosition(ch.uptimeMillis, ch.position)
+                            vm.setPeek(target, total.y / (size.height * 0.4f))
+                            continue
+                        }
                         val g = GestureClassifier.classify(
                             down.position.x / size.width, down.position.y / size.height,
                             total.x / size.height, total.y / size.height,
@@ -572,13 +615,39 @@ private fun HomeContent(vm: HomeViewModel, d: LauncherData, isDefault: Boolean, 
             if (homeNow != null) {
                 // Feste Höhe, damit Raster und Pager beim Bearbeiten/Ziehen nicht springen; der Hinweis liegt darüber.
                 Box(Modifier.fillMaxWidth().height(INDICATOR_AREA), contentAlignment = Alignment.Center) {
-                    PageIndicator(
-                        style = s.indicator,
-                        pageCount = map.homePages,
-                        current = homeNow,
-                        hasNewPage = editMode,
-                        onSearch = if (editMode) null else ({ vm.showOverlay(Overlay.SEARCH) }),
+                    // Punkte: im Ruhezustand ausgeblendet, beim Blättern sichtbar (bis 1,5 s danach), im
+                    // Bearbeitungsmodus immer; wenn keine Geste die Suche öffnet, ebenfalls immer (Suche per Tipp).
+                    var recentlyScrolled by remember { mutableStateOf(false) }
+                    LaunchedEffect(pagerState.isScrollInProgress) {
+                        if (pagerState.isScrollInProgress) {
+                            recentlyScrolled = true
+                        } else {
+                            delay(1_500)
+                            recentlyScrolled = false
+                        }
+                    }
+                    val searchByGesture = GestureClassifier.searchReachableByGesture(s)
+                    val dotsShown = editMode || !searchByGesture || when (s.dotsMode) {
+                        de.umstieg.launcher.core.DotsMode.ALWAYS -> true
+                        de.umstieg.launcher.core.DotsMode.SCROLL -> recentlyScrolled
+                        de.umstieg.launcher.core.DotsMode.OFF -> false
+                    }
+                    val dotsAlpha by androidx.compose.animation.core.animateFloatAsState(
+                        if (dotsShown && s.indicator != de.umstieg.launcher.core.IndicatorStyle.NONE) 1f else 0f,
+                        androidx.compose.animation.core.tween(if (tosStyle.reduceMotion) 0 else 260),
+                        label = "dots",
                     )
+                    val maxDot = (map.homePages - 1).toFloat()
+                    if (dotsAlpha > 0f) {
+                        PageIndicator(
+                            style = s.indicator,
+                            pageCount = map.homePages,
+                            position = { ((pagerState.currentPage - map.firstHome) + pagerState.currentPageOffsetFraction).coerceIn(0f, maxDot) },
+                            hasNewPage = editMode,
+                            modifier = Modifier.graphicsLayer { alpha = dotsAlpha },
+                            onSearch = if (editMode || !dotsShown) null else ({ vm.showOverlay(Overlay.SEARCH) }),
+                        )
+                    }
                     if (editMode && drag.active && currentFolder == null) {
                         Text(
                             stringResource(R.string.edit_hint_edge),
@@ -676,6 +745,8 @@ private fun HomeContent(vm: HomeViewModel, d: LauncherData, isDefault: Boolean, 
                 }
             }
         }
+
+        openCategory?.let { oc -> de.umstieg.launcher.ui.drawer.CategoryPanel(vm, d, apps, oc.category, oc.origin, shape) }
 
         // Vollbild-Panels.
         OverlayHost(overlay, vm, d, apps, shape, actions, ::launch)

@@ -103,6 +103,7 @@ fun DrawerPage(vm: HomeViewModel, d: LauncherData, apps: Map<de.umstieg.launcher
     val view = d.settings.drawerView
     val viewName = stringResource(
         when (view) {
+            DrawerView.TILES -> R.string.drawer_view_tiles
             DrawerView.CATEGORIES -> R.string.drawer_view_categories
             DrawerView.AZ -> R.string.drawer_view_az
             DrawerView.GRID -> R.string.drawer_view_grid
@@ -110,7 +111,8 @@ fun DrawerPage(vm: HomeViewModel, d: LauncherData, apps: Map<de.umstieg.launcher
     )
     Column(Modifier.fillMaxSize().wallpaperScrim().padding(horizontal = 16.dp)) {
         FakeSearchField { vm.showOverlay(Overlay.SEARCH) }
-        Row(Modifier.fillMaxWidth().padding(vertical = 14.dp), verticalAlignment = Alignment.Bottom) {
+        if (view == DrawerView.TILES) Spacer(Modifier.height(16.dp))
+        if (view != DrawerView.TILES) Row(Modifier.fillMaxWidth().padding(vertical = 14.dp), verticalAlignment = Alignment.Bottom) {
             Text(
                 stringResource(R.string.drawer_title),
                 style = TextStyle(fontFamily = Inter, fontWeight = FontWeight.Bold, fontSize = 32.sp, color = Tos.Ink),
@@ -129,6 +131,7 @@ fun DrawerPage(vm: HomeViewModel, d: LauncherData, apps: Map<de.umstieg.launcher
             )
         }
         when (view) {
+            DrawerView.TILES -> TileGrid(vm, d, list, shape)
             DrawerView.CATEGORIES -> CategoryList(vm, d, list, shape)
             DrawerView.AZ -> AzList(vm, d, list, shape, Modifier.weight(1f), prefix = {})
             DrawerView.GRID -> AppGrid(vm, d, list, shape)

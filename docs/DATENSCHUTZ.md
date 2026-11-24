@@ -6,9 +6,18 @@ Stand: 24. November 2026
 
 ## Kurzfassung
 
-Launcher TOS erhebt keine personenbezogenen Daten und überträgt nichts. Die App hat keine
-Internet-Berechtigung, enthält keine Werbung, keine Analyse- oder Tracking-Werkzeuge und keine
+Launcher TOS erhebt keine personenbezogenen Daten. Die einzige Verbindung ins Internet ist die
+Update-Prüfung bei GitHub (abschaltbar). Keine Werbung, keine Analyse- oder Tracking-Werkzeuge, keine
 Bibliotheken Dritter, die Daten senden.
+
+## Update-Prüfung (einzige Internetverbindung)
+
+Ist „Automatisch prüfen“ eingeschaltet (höchstens einmal pro Woche) oder tippt man auf „Jetzt suchen“,
+ruft die App `https://api.github.com/repos/ra5on/Launcher-TOS/releases/latest` ab und lädt bei einem Update
+die APK und die Datei `SHA256SUMS` von `github.com`. Dabei werden keine Daten der App gesendet – nur die
+normale Anfrage, die GitHub wie bei jedem Abruf erhält (z. B. IP-Adresse und eine allgemeine
+Programmkennung „LauncherTOS-Updater“); für deren Verarbeitung gilt die Datenschutzerklärung von GitHub.
+Die Prüfung lässt sich unter „Einstellungen → Updates“ abschalten; dann baut die App keine Verbindung auf.
 
 ## Welche Daten die App auf dem Gerät verarbeitet
 

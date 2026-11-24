@@ -4,6 +4,7 @@ import android.content.Context
 import android.content.Intent
 import android.os.Build
 import android.provider.Settings
+import androidx.core.content.edit
 import androidx.core.net.toUri
 import de.umstieg.launcher.core.SetupLogic
 
@@ -18,13 +19,13 @@ class PermissionHelp(context: Context) {
 
     enum class Kind { LISTENER, DND }
 
-    fun markAttempt(kind: Kind) = prefs.edit().putBoolean("attempt_$kind", true).apply()
+    fun markAttempt(kind: Kind) = prefs.edit { putBoolean("attempt_$kind", true) }
     fun attempted(kind: Kind): Boolean = prefs.getBoolean("attempt_$kind", false)
 
     /** App-Info wurde aus der Hilfe geöffnet (bei Rückkehr direkt weiter zur Zugriffs-Einstellung). */
     var appInfoOpenedFor: Kind?
         get() = prefs.getString("appinfo", null)?.let { runCatching { Kind.valueOf(it) }.getOrNull() }
-        set(v) = prefs.edit().putString("appinfo", v?.name).apply()
+        set(v) = prefs.edit { putString("appinfo", v?.name) }
 
     val installer: String? = runCatching {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {

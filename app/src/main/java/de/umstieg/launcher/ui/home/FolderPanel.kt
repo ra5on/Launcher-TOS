@@ -42,6 +42,7 @@ import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.boundsInRoot
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalConfiguration
@@ -84,6 +85,8 @@ fun FolderOverlay(folder: FolderItem, env: GridEnv, onGeometry: (Rect, GridGeome
     val ink = if (c.dark) Tos.Ink else c.content
     var panelBounds by remember { mutableStateOf(Rect.Zero) }
     val maxPanel = (LocalConfiguration.current.screenHeightDp * 0.62f).dp
+    val zoom = de.umstieg.launcher.ui.drawer.rememberZoomFrom(vm.folderOrigin)
+    fun close() = zoom.close { vm.openFolder(null) }
     val bg = when (settings.folderBackground) {
         FolderBackground.GLASS -> if (c.dark) Color.White.copy(alpha = 0.14f) else Color.White.copy(alpha = 0.95f)
         FolderBackground.SOLID -> if (c.dark) Color(0xF2182233) else Color(0xFAF2F4F7)
@@ -92,14 +95,15 @@ fun FolderOverlay(folder: FolderItem, env: GridEnv, onGeometry: (Rect, GridGeome
     Box(
         Modifier
             .fillMaxSize()
+            .graphicsLayer { alpha = zoom.progress() }
             .background(c.scrim)
-            .clickable(interactionSource = remember { MutableInteractionSource() }, indication = null) { vm.openFolder(null) }
+            .clickable(interactionSource = remember { MutableInteractionSource() }, indication = null) { close() }
             .windowInsetsPadding(WindowInsets.systemBars),
         contentAlignment = Alignment.Center,
     ) {
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
             Column(
-                Modifier
+                zoom.modifier
                     .padding(horizontal = 24.dp)
                     .fillMaxWidth()
                     .onGloballyPositioned { panelBounds = it.boundsInRoot() }

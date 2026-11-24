@@ -100,8 +100,9 @@ fun SettingsScreen(
         ) {
             val back = { section = Section.OVERVIEW }
             val p = PageEnv(vm, d, apps, actions, back) { section = it }
+            androidx.compose.runtime.CompositionLocalProvider(LocalSettingInfo provides settingInfoMap()) {
             when (section) {
-                Section.OVERVIEW -> Overview(d, isDefault, versionName, actions) { section = it }
+                Section.OVERVIEW -> Overview(d, isDefault, versionName, actions, vm) { section = it }
                 Section.GRID -> GridPage(p)
                 Section.ICONS -> IconsPage(p)
                 Section.LABELS -> LabelsPage(p)
@@ -121,6 +122,7 @@ fun SettingsScreen(
                 Section.BACKUP -> BackupPage(p)
                 Section.ABOUT -> AboutPage(p, versionName, licenses)
                 Section.UPDATES -> UpdatesPage(p)
+            }
             }
             Spacer(Modifier.height(24.dp))
         }
@@ -156,7 +158,7 @@ fun themeName(t: ThemeMode) = when (t) {
 }
 
 @Composable
-private fun Overview(d: LauncherData, isDefault: Boolean, versionName: String, actions: SettingsActions, open: (Section) -> Unit) {
+private fun Overview(d: LauncherData, isDefault: Boolean, versionName: String, actions: SettingsActions, vm: SettingsViewModel, open: (Section) -> Unit) {
     val s = d.settings
     val c = LocalPanelColors.current
     val context = LocalContext.current
@@ -166,6 +168,17 @@ private fun Overview(d: LauncherData, isDefault: Boolean, versionName: String, a
         style = TextStyle(fontFamily = Inter, fontWeight = FontWeight.Bold, fontSize = 34.sp, color = c.content),
         modifier = Modifier.padding(top = 18.dp, bottom = 4.dp).semantics { heading() },
     )
+    Text(
+        stringResource(if (s.settingsSimple) R.string.settings_simple_intro else R.string.settings_all_intro),
+        style = SummaryStyle.copy(color = c.secondary, fontSize = 16.sp),
+    )
+    SegmentedRow(null, listOf(true to stringResource(R.string.settings_simple), false to stringResource(R.string.settings_all)), s.settingsSimple) { v ->
+        vm.update { it.copy(settingsSimple = v) }
+    }
+    if (s.settingsSimple) {
+        SimpleOverview(d, vm, actions, open)
+        return
+    }
     // Suche über alle Einstellungen.
     val hint = stringResource(R.string.settings_search_hint)
     Row(

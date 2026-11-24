@@ -116,7 +116,11 @@ enum class BadgeColor { RED, ACCENT, ICON }
 enum class SearchFuzziness { STRICT, NORMAL, GENEROUS }
 
 @Serializable
-enum class DrawerView { CATEGORIES, AZ, GRID }
+enum class DrawerView { TILES, CATEGORIES, AZ, GRID }
+
+/** Seitenpunkte: nur beim Blättern (Standard), immer oder aus. */
+@Serializable
+enum class DotsMode { SCROLL, ALWAYS, OFF }
 
 @Serializable
 enum class AppOpenAnimation { ZOOM, FADE, NONE }
@@ -221,7 +225,9 @@ data class LauncherSettings(
     val searchHistory: Boolean = true,
     /** App-Übersicht: links, rechts oder aus. */
     val drawerSide: PageSide = PageSide.RIGHT,
-    val drawerView: DrawerView = DrawerView.CATEGORIES,
+    val drawerView: DrawerView = DrawerView.TILES,
+    /** Sichtbare Apps je Kachel der App-Übersicht: 4, 6 oder 9. */
+    val tileApps: Int = 4,
     val hiddenAppsLocked: Boolean = false,
     /** Widget-Seite: links, rechts oder aus. */
     val widgetSide: PageSide = PageSide.OFF,
@@ -234,6 +240,9 @@ data class LauncherSettings(
     // ---------- 1.1 ----------
     /** Wöchentlich auf GitHub nach einer neuen Version suchen. */
     val autoUpdateCheck: Boolean = true,
+    val dotsMode: DotsMode = DotsMode.SCROLL,
+    /** Einstellungen in der einfachen Ansicht öffnen. */
+    val settingsSimple: Boolean = true,
 ) {
     val grid: GridSpec get() = GridSpec(columns, rows)
 
@@ -260,6 +269,7 @@ data class LauncherSettings(
         swipeZoneLeft = swipeZoneLeft.coerceIn(SWIPE_ZONE),
         swipeZoneRight = swipeZoneRight.coerceIn(SWIPE_ZONE),
         edgeHeightPercent = edgeHeightPercent.coerceIn(EDGE_HEIGHT),
+        tileApps = if (tileApps in TILE_APPS) tileApps else 4,
         animationSpeed = animationSpeed.coerceIn(0, 200),
         gestures = DEFAULT_GESTURES + gestures,
     )
@@ -281,6 +291,7 @@ data class LauncherSettings(
         val FOLDER_COLUMNS = 3..5
         val SWIPE_ZONE = 20..50
         val EDGE_HEIGHT = 5..40
+        val TILE_APPS = listOf(4, 6, 9)
 
         /** Vorlage „Launcher TOS“ (Standard). */
         val DEFAULT_GESTURES: Map<Gesture, GestureBinding> = mapOf(

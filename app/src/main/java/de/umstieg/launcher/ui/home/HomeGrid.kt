@@ -190,7 +190,7 @@ fun ItemCell(
                 is AppItem -> apps[item.app]?.let { app ->
                     if (env.editMode) vm.showCustomize(app) else (onLaunchOverride ?: env.onLaunch)(app, bounds[0])
                 }
-                is FolderItem -> vm.openFolder(item.folderId)
+                is FolderItem -> vm.openFolder(item.folderId, bounds[0])
                 else -> Unit
             }
         },

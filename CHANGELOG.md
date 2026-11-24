@@ -1,5 +1,23 @@
 # Änderungen
 
+## 1.1.0 (versionCode 110)
+
+- **Einrichtung beim ersten Start:** Standard-Startbildschirm, Benachrichtigungen (mit Hilfe zu „Eingeschränkten
+  Einstellungen“), Nicht stören, Helligkeit/Drehsperre, Updates, Gesten; erledigte Schritte werden übersprungen,
+  Karte „Einrichtung fortsetzen“, „Einrichtung erneut starten“.
+- **Updates über GitHub:** wöchentliche Prüfung (abschaltbar), Prüfsumme und Signatur werden vor der Installation
+  geprüft, Versionshinweise in den Einstellungen. Dafür neu: Internet (nur GitHub) und „Unbekannte Apps installieren“.
+- **Gesten:** Wisch nach unten funktioniert überall auf dem Raster, auch auf Icons; Panels folgen dem Finger und
+  schließen per Gegenwisch; Randzone oben 25 % (einstellbar); eigene Benachrichtigungen auch ohne Zugriff mit
+  Erklärkarte.
+- **Seitenpunkte:** im Ruhezustand ausgeblendet, beim Blättern sichtbar, Tipp öffnet die Suche.
+- **App-Übersicht als Kacheln** (4/6/9 Apps je Kachel, „+N“ öffnet die Kategorie mit Zoom), alte Ansichten bleiben wählbar.
+- **Seiten links/rechts/aus** für App-Übersicht und Widget-Seite (Widget-Seite neu standardmäßig aus).
+- **Einstellungen „Einfach / Alle“**, jede Einstellung mit erklärendem Satz und verständlicheren Namen.
+- **Kontrast auf hellen Fotos**, stärker getöntes Glas als Standard.
+- **Bewegung:** Ordner und Kategorien öffnen mit Zoom aus der Herkunft, Icons drücken sich ein, weicheres Wackeln,
+  Baseline Profile für flüssigeren Start.
+
 ## 1.0.0 (versionCode 100)
 
 - Umbenennung in „Launcher TOS“.

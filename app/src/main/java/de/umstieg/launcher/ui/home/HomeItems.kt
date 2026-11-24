@@ -11,6 +11,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -120,10 +121,16 @@ fun Modifier.wobble(active: Boolean, seed: String): Modifier {
     if (!active || LocalTosStyle.current.reduceMotion) return this
     val h = abs(seed.hashCode())
     val transition = rememberInfiniteTransition(label = "wobble")
+    // Geschmeidig (Sinus-ähnliche Kurve) und je Icon leicht anders: Dauer, Ausschlag und Startphase.
+    val duration = 230 + h % 90
     val angle by transition.animateFloat(
-        initialValue = -1.6f,
-        targetValue = 1.6f,
-        animationSpec = infiniteRepeatable(tween(durationMillis = 120 + h % 50, easing = LinearEasing), RepeatMode.Reverse),
+        initialValue = -1.2f - (h % 5) * 0.12f,
+        targetValue = 1.2f + (h % 7) * 0.1f,
+        animationSpec = infiniteRepeatable(
+            tween(durationMillis = duration, easing = androidx.compose.animation.core.FastOutSlowInEasing),
+            RepeatMode.Reverse,
+            initialStartOffset = androidx.compose.animation.core.StartOffset(h % duration),
+        ),
         label = "wobbleAngle",
     )
     val dir = if (h % 2 == 0) 1f else -1f
@@ -274,12 +281,23 @@ fun HomeItemView(
         base
     }
     val editLabel = stringResource(R.string.edit_start_action)
-    val scale by animateFloatAsState(if (highlighted) 1.12f else 1f, label = "hoverScale")
+    val interaction = remember { MutableInteractionSource() }
+    val pressed by interaction.collectIsPressedAsState()
+    // Antippen drückt das Icon leicht ein (Federphysik); Ordner-Ziel beim Ziehen vergrößert.
+    val scale by animateFloatAsState(
+        when {
+            highlighted -> 1.12f
+            pressed && !LocalTosStyle.current.reduceMotion -> 0.9f
+            else -> 1f
+        },
+        androidx.compose.animation.core.spring(dampingRatio = 0.6f, stiffness = 700f),
+        label = "iconScale",
+    )
     Column(
         modifier
             .graphicsLayer { alpha = if (hidden) 0f else 1f }
             .clickable(
-                interactionSource = remember { MutableInteractionSource() },
+                interactionSource = interaction,
                 indication = null,
                 onClickLabel = label,
                 role = Role.Button,

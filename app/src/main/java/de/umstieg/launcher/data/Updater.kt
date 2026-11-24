@@ -10,6 +10,7 @@ import android.content.pm.PackageManager
 import android.os.Build
 import android.provider.Settings
 import android.util.Log
+import androidx.core.content.pm.PackageInfoCompat
 import androidx.core.net.toUri
 import de.umstieg.launcher.BuildConfig
 import de.umstieg.launcher.core.ReleaseInfo
@@ -55,7 +56,7 @@ class Updater(context: Context, private val scope: CoroutineScope) {
     val state: StateFlow<UpdateState> = _state.asStateFlow()
 
     val installedName: String = runCatching { ctx.packageManager.getPackageInfo(ctx.packageName, 0).versionName }.getOrNull().orEmpty()
-    private val installedCode: Long = runCatching { ctx.packageManager.getPackageInfo(ctx.packageName, 0).longVersionCode }.getOrDefault(0L)
+    private val installedCode: Long = runCatching { PackageInfoCompat.getLongVersionCode(ctx.packageManager.getPackageInfo(ctx.packageName, 0)) }.getOrDefault(0L)
 
     /** In Debug-Builds lässt sich die Adresse für Tests überschreiben (Datei files/update-url.txt). */
     private fun apiUrl(): String {
@@ -180,8 +181,8 @@ class Updater(context: Context, private val scope: CoroutineScope) {
         val info: PackageInfo = pm.getPackageArchiveInfo(apk.path, flags)
             ?: throw UpdateException(UpdateState.Reason.PACKAGE, "keine gültige APK")
         if (info.packageName != ctx.packageName) throw UpdateException(UpdateState.Reason.PACKAGE, "Paket ${info.packageName}")
-        if (info.longVersionCode <= installedCode || info.longVersionCode != release.version.code.toLong()) {
-            throw UpdateException(UpdateState.Reason.PACKAGE, "Version ${info.longVersionCode}")
+        if (PackageInfoCompat.getLongVersionCode(info) <= installedCode || PackageInfoCompat.getLongVersionCode(info) != release.version.code.toLong()) {
+            throw UpdateException(UpdateState.Reason.PACKAGE, "Version ${PackageInfoCompat.getLongVersionCode(info)}")
         }
         val certs: List<ByteArray> = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
             val si = info.signingInfo
@@ -233,7 +234,8 @@ class Updater(context: Context, private val scope: CoroutineScope) {
         private const val TAG = "TosUpdate"
         const val API_URL = "https://api.github.com/repos/ra5on/Launcher-TOS/releases/latest"
 
-        /** Prozessweite Instanz für den Empfänger (gesetzt von der Anwendung). */
+        /** Prozessweite Instanz für den Empfänger (gesetzt von der Anwendung; hält nur den App-Kontext). */
+        @android.annotation.SuppressLint("StaticFieldLeak")
         @Volatile
         var instance: Updater? = null
     }

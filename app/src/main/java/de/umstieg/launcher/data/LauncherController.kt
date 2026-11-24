@@ -77,6 +77,14 @@ class LauncherController(
                 .collect { (list, unavailable) -> reconcile(list, unavailable) }
         }
         scope.launch { apps.changedPackages.collect { icons.invalidate(it) } }
+        // Icons vorab im Hintergrund dekodieren, damit Seiten, Ordner und Übersicht ohne Nachladen erscheinen.
+        scope.launch(kotlinx.coroutines.Dispatchers.Default) {
+            apps.apps.filterNotNull().collect { list ->
+                val opts = data.value?.settings?.let { de.umstieg.launcher.core.IconOptions(it.legacyBackground, it.legacyColor, it.themedIcons) }
+                    ?: de.umstieg.launcher.core.IconOptions()
+                list.forEach { runCatching { icons.load(it, opts) } }
+            }
+        }
         media.start()
         // Nicht mehr genutzte Widget-IDs beim Host freigeben.
         scope.launch {
