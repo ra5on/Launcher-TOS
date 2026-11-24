@@ -222,8 +222,10 @@ fun FolderIcon(folder: FolderItem, apps: Map<AppKey, AppInfo>, style: IconStyle,
 /** Beschriftungs-Textstil aus [LabelLook]. */
 @Composable
 fun labelTextStyle(look: LabelLook, override: Color?): TextStyle {
+    // „Automatisch“: auf hellen Hintergrundbildern dunkle Schrift (mit hellem Schein), sonst helle.
     val color = override ?: when (look.color) {
-        LabelColor.AUTO, LabelColor.LIGHT -> Tos.Ink
+        LabelColor.AUTO -> if (LocalTosStyle.current.lightWallpaper) Color(0xFF10141C) else Tos.Ink
+        LabelColor.LIGHT -> Tos.Ink
         LabelColor.DARK -> Color(0xFF10141C)
     }
     val weight = when (look.weight) {

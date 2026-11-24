@@ -3,6 +3,8 @@ package de.umstieg.launcher.ui.panels
 import android.content.Intent
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.ui.layout.positionInParent
+import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.foundation.gestures.awaitFirstDown
 import androidx.compose.foundation.gestures.awaitEachGesture
 import androidx.compose.ui.draw.drawBehind
@@ -265,6 +267,12 @@ fun QuickSettingsPanel(vm: HomeViewModel, layout: QsLayout) {
                         if (ended == null) {
                             view.performHapticFeedback(android.view.HapticFeedbackConstants.LONG_PRESS)
                             editing = true
+                            // Restliche Geste verbrauchen, damit die Kachel beim Loslassen nicht zusätzlich auslöst.
+                            while (true) {
+                                val ev = awaitPointerEvent(androidx.compose.ui.input.pointer.PointerEventPass.Initial)
+                                ev.changes.forEach { it.consume() }
+                                if (ev.changes.none { it.pressed }) break
+                            }
                         }
                     }
                 },
@@ -493,6 +501,8 @@ private fun ToggleTile(item: QsItem, status: TileStatus, act: (QsTile) -> Unit) 
 private fun SliderPill(icon: Int, name: String, initial: Float, onChange: (Float) -> Unit) {
     var value by remember { mutableFloatStateOf(initial) }
     var width by remember { mutableIntStateOf(1) }
+    var labelEnd by remember { mutableFloatStateOf(0f) }
+    val startPadPx = with(androidx.compose.ui.platform.LocalDensity.current) { 14.dp.toPx() }
     val shape = RoundedCornerShape(16.dp)
     Box(
         Modifier
@@ -528,9 +538,9 @@ private fun SliderPill(icon: Int, name: String, initial: Float, onChange: (Float
             .drawBehind {
                 val x = size.width * value
                 drawRect(Color.White.copy(alpha = 0.20f), size = androidx.compose.ui.geometry.Size(x, size.height))
-                // Knopf: schmaler, heller Balken an der Kante der Füllung.
+                // Knopf: schmaler, heller Balken an der Kante der Füllung – nicht über Symbol und Name.
                 val kx = x.coerceIn(6.dp.toPx(), size.width - 6.dp.toPx())
-                drawRoundRect(
+                if (kx > labelEnd + 6.dp.toPx() || labelEnd == 0f) drawRoundRect(
                     Color.White,
                     topLeft = androidx.compose.ui.geometry.Offset(kx - 2.dp.toPx(), 11.dp.toPx()),
                     size = androidx.compose.ui.geometry.Size(4.dp.toPx(), size.height - 22.dp.toPx()),
@@ -541,7 +551,12 @@ private fun SliderPill(icon: Int, name: String, initial: Float, onChange: (Float
         Row(Modifier.fillMaxSize().padding(start = 14.dp, end = 14.dp), verticalAlignment = Alignment.CenterVertically) {
             Icon(painterResource(icon), null, tint = Tos.Ink, modifier = Modifier.size(18.dp))
             Spacer(Modifier.width(10.dp))
-            Text(name, style = Label.copy(color = Tos.Ink, fontSize = 13.sp, textAlign = TextAlign.Start), modifier = Modifier.weight(1f), maxLines = 1)
+            Text(
+                name, style = Label.copy(color = Tos.Ink, fontSize = 13.sp, textAlign = TextAlign.Start), maxLines = 1,
+                // Rechte Kante des Namens im Regler (Zeilen-Innenabstand 14 dp eingerechnet).
+                modifier = Modifier.onGloballyPositioned { c -> labelEnd = c.positionInParent().x + c.size.width + startPadPx },
+            )
+            Spacer(Modifier.weight(1f))
             Text("${(value * 100).roundToInt()} %", style = Label.copy(color = Tos.Ink2, fontSize = 12.sp))
         }
     }
@@ -558,7 +573,7 @@ private fun FitText(text: String, style: TextStyle, maxSp: Int) {
         style = style,
         maxLines = if (text.contains(' ')) 2 else 1,
         softWrap = text.contains(' '),
-        autoSize = TextAutoSize.StepBased(minFontSize = 9.sp, maxFontSize = maxSp.sp, stepSize = 0.5.sp),
+        autoSize = TextAutoSize.StepBased(minFontSize = 6.sp, maxFontSize = maxSp.sp, stepSize = 0.5.sp),
         modifier = Modifier.fillMaxWidth(),
     )
 }

@@ -205,6 +205,7 @@ fun GesturesPage(p: PageEnv) {
                 listOf(false to stringResource(R.string.system_gesture_home_only), true to stringResource(R.string.system_gesture_everywhere)),
                 s.systemGesturesEverywhere,
             ) { v -> p.set { it.copy(systemGesturesEverywhere = v) } }
+            Note(stringResource(R.string.system_gestures_where_note))
         }
     }
     if (!GestureClassifier.searchReachableByGesture(s)) SettingsCard { Note(stringResource(R.string.gestures_search_hint)) }

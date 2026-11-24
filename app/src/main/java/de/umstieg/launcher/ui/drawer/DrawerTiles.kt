@@ -171,7 +171,7 @@ private fun CategoryTile(vm: HomeViewModel, d: LauncherData, cat: AppCategory, a
         Spacer(Modifier.height(8.dp))
         Text(
             name,
-            style = labelTextStyle(LabelLook(d.settings.fontScale, d.settings.labelWeight, 1, true, d.settings.labelColor), null).copy(fontSize = 16.sp),
+            style = labelTextStyle(LabelLook(d.settings.fontScale, d.settings.labelWeight, 1, true, d.settings.labelColor), Tos.Ink).copy(fontSize = 16.sp),
             maxLines = 1,
             overflow = TextOverflow.Ellipsis,
             modifier = Modifier.clickable(onClickLabel = openLabel, role = Role.Button) { vm.openCategory(cat, bounds) }.padding(horizontal = 8.dp, vertical = 4.dp),

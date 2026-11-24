@@ -195,7 +195,7 @@ private fun AppTile(vm: HomeViewModel, d: LauncherData, app: AppInfo, shape: Sup
         Spacer(Modifier.height(6.dp))
         Text(
             app.label,
-            style = labelTextStyle(LabelLook(d.settings.fontScale, d.settings.labelWeight, 1, d.settings.labelShadow, d.settings.labelColor), null),
+            style = labelTextStyle(LabelLook(d.settings.fontScale, d.settings.labelWeight, 1, d.settings.labelShadow, d.settings.labelColor), Tos.Ink),
             maxLines = 1,
             overflow = TextOverflow.Ellipsis,
             modifier = Modifier.width(size * 1.4f),

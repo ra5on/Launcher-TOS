@@ -28,10 +28,18 @@ class WallpaperActivity : Activity() {
             p.shader = RadialGradient(w * cx, h * cy, max(w, h) * r, color, color and 0x00FFFFFF, Shader.TileMode.CLAMP)
             c.drawRect(0f, 0f, w.toFloat(), h.toFloat(), p)
         }
-        blob(0.18f, 0.12f, 0.42f, 0xD9F0A86A.toInt())
-        blob(0.90f, 0.30f, 0.40f, 0xD97A4BA8.toInt())
-        blob(0.20f, 0.70f, 0.42f, 0xD910656A.toInt())
-        blob(0.85f, 0.92f, 0.36f, 0xD9E0697A.toInt())
+        if (intent.getBooleanExtra("bright", false)) {
+            // Helles „Foto“ (Himmel, Dunst, Sand) zum Prüfen der Lesbarkeit auf hellen Hintergründen.
+            p.shader = LinearGradient(0f, 0f, 0f, h.toFloat(), intArrayOf(0xFF9CCBF2.toInt(), 0xFFE8F2FA.toInt(), 0xFFF4E6CC.toInt(), 0xFFE9D3AA.toInt()), null, Shader.TileMode.CLAMP)
+            c.drawRect(0f, 0f, w.toFloat(), h.toFloat(), p)
+            blob(0.75f, 0.18f, 0.30f, 0xCCFFFFFF.toInt())
+            blob(0.20f, 0.55f, 0.35f, 0x99FFFFFF.toInt())
+        } else {
+            blob(0.18f, 0.12f, 0.42f, 0xD9F0A86A.toInt())
+            blob(0.90f, 0.30f, 0.40f, 0xD97A4BA8.toInt())
+            blob(0.20f, 0.70f, 0.42f, 0xD910656A.toInt())
+            blob(0.85f, 0.92f, 0.36f, 0xD9E0697A.toInt())
+        }
         WallpaperManager.getInstance(this).setBitmap(b)
         setContentView(TextView(this).apply { text = getString(R.string.wallpaper_done) })
         finish()

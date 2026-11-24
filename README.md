@@ -95,7 +95,7 @@ Internet nur für Updates von GitHub (abschaltbar). Alle Berechtigungen sind opt
 | `REQUEST_DELETE_PACKAGES` | „Deinstallieren“ im App-Menü (Android fragt immer nach) |
 | `INTERNET` | ausschließlich die Update-Prüfung bei GitHub (`api.github.com`, Download von `github.com`); abschaltbar |
 | `REQUEST_INSTALL_PACKAGES` („Unbekannte Apps installieren“, vom Nutzer erlaubt) | ein geprüftes Update installieren; Android fragt jedes Mal |
-| Bedienungshilfe „Systemweite Wischgesten“ (optional, vom Nutzer in den Bedienungshilfen eingeschaltet) | schmale Streifen auf der Statusleiste: Wisch nach unten öffnet die eigenen Panels, auch in anderen Apps; Android-Leiste öffnen, Bildschirm sperren. Liest keine Fensterinhalte und keine Eingaben, erfährt nur den Paketnamen der App im Vordergrund (für „nur auf dem Homescreen“) |
+| Bedienungshilfe „Systemweite Wischgesten“ (optional, vom Nutzer in den Bedienungshilfen eingeschaltet) | schmale Streifen auf der Statusleiste: Wisch nach unten öffnet die eigenen Panels, auch in anderen Apps; Android-Leiste öffnen, Bildschirm sperren. Liest keine Fensterinhalte und keine Eingaben, wertet nur den Paketnamen der App im Vordergrund aus (für „nur auf dem Homescreen“). Grenzen: Tipps auf die Streifen gehen nicht an die Statusleiste, in Vollbild-Apps können die Streifen Berührungen oben links/rechts abfangen, ein Panel aus einer anderen App holt Launcher TOS nach vorn |
 | `READ_CONTACTS` (optional, Standard aus) | Kontakte in der Suche finden |
 | `READ_MEDIA_IMAGES`/`_VIDEO`/`_AUDIO` bzw. `READ_EXTERNAL_STORAGE` bis Android 12 (optional, Standard aus) | Mediendateien in der Suche nach Namen finden |
 

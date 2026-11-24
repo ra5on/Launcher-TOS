@@ -686,7 +686,7 @@
     <string name="notifications_send">Senden</string>
     <string name="a11y_service_label">Launcher TOS: Systemweite Wischgesten</string>
     <string name="a11y_service_summary">Wisch von ganz oben (auf der Statusleiste) öffnet die Panels von Launcher TOS.</string>
-    <string name="a11y_service_description">Legt schmale, unsichtbare Streifen auf den linken und rechten Teil der Statusleiste. Ein Wisch nach unten dort öffnet die eigenen Benachrichtigungen bzw. den Schnellzugriff von Launcher TOS, auf Wunsch auch in anderen Apps. Die Mitte bleibt für Android frei. Der Dienst liest keine Bildschirminhalte und keine Eingaben; er erfährt nur, welche App gerade im Vordergrund ist (für „nur auf dem Homescreen“). Optional kann er die Android-Leiste öffnen und den Bildschirm sperren.</string>
+    <string name="a11y_service_description">Legt schmale, unsichtbare Streifen auf den linken und rechten Teil der Statusleiste. Ein Wisch nach unten dort öffnet die eigenen Benachrichtigungen bzw. den Schnellzugriff von Launcher TOS, auf Wunsch auch in anderen Apps. Die Mitte bleibt für Android frei. Der Dienst liest keine Bildschirminhalte und keine Eingaben; von Fensterwechseln wertet er nur aus, welche App gerade im Vordergrund ist (für „nur auf dem Homescreen“). Optional kann er die Android-Leiste öffnen und den Bildschirm sperren.</string>
     <string name="action_lock_screen">Bildschirm sperren</string>
     <string name="gestures_summary">Links: %1$s · Rechts: %2$s</string>
     <string name="gestures_tap_zone">Zone antippen, um die Aktion zu wählen</string>
@@ -785,4 +785,5 @@
     <string name="glass_balanced_info">Standard: gut lesbar und trotzdem durchscheinend.</string>
     <string name="glass_strong">Kräftig</string>
     <string name="glass_strong_info">Dunkles Glas – am besten auf hellen Fotos.</string>
+    <string name="system_gestures_where_note">Überall: In Vollbild-Apps (z. B. Videos, Spiele) können die Streifen Berührungen oben links und rechts abfangen, und Tipps auf die Statusleiste gehen dort nicht an Android. Ein Panel aus einer anderen App holt Launcher TOS nach vorn. Stört das, „Nur Homescreen“ wählen.</string>
 </resources>

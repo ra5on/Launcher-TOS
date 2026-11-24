@@ -37,9 +37,9 @@ Die Prüfung lässt sich unter „Einstellungen → Updates“ abschalten; dann 
 
 Nur wenn der Nutzer sie selbst in den Android-Bedienungshilfen einschaltet. Der Dienst legt schmale,
 unsichtbare Streifen auf die Statusleiste und erkennt dort einen Wisch nach unten. Er liest keine
-Bildschirminhalte (`canRetrieveWindowContent` ist aus), keine Eingaben und keine Tastenereignisse. Er erfährt
-nur den Paketnamen der App im Vordergrund, um auf Wunsch nur auf dem Homescreen aktiv zu sein. Nichts davon
-wird gespeichert oder übertragen.
+Bildschirminhalte (`canRetrieveWindowContent` ist aus), keine Eingaben und keine Tastenereignisse. Von den
+Fensterwechsel-Ereignissen, die Android ihm zustellt, wertet er nur den Paketnamen der App im Vordergrund aus,
+um auf Wunsch nur auf dem Homescreen aktiv zu sein. Nichts davon wird gespeichert oder übertragen.
 
 ## Suche in Kontakten und Dateien (optional)
 

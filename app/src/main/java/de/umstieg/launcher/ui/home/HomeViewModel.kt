@@ -103,12 +103,16 @@ class HomeViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     /** Aktion von außen (Bedienungshilfe), ausgeführt vom Homescreen. */
-    private val _actions = kotlinx.coroutines.flow.MutableSharedFlow<de.umstieg.launcher.core.GestureAction>(extraBufferCapacity = 4)
+    // Mit Wiederholung, damit eine Aktion beim Kaltstart nicht verloren geht (wird nach dem Ausführen gelöscht).
+    private val _actions = kotlinx.coroutines.flow.MutableSharedFlow<de.umstieg.launcher.core.GestureAction>(replay = 1, extraBufferCapacity = 4)
     val externalActions: kotlinx.coroutines.flow.SharedFlow<de.umstieg.launcher.core.GestureAction> = _actions
 
     fun requestAction(action: de.umstieg.launcher.core.GestureAction) {
         _actions.tryEmit(action)
     }
+
+    @OptIn(kotlinx.coroutines.ExperimentalCoroutinesApi::class)
+    fun actionHandled() = _actions.resetReplayCache()
 
     fun showSetup(show: Boolean) {
         if (show) controller.setupOnly = null

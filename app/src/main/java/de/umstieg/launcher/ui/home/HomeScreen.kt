@@ -284,6 +284,7 @@ private fun HomeContent(vm: HomeViewModel, d: LauncherData, isDefault: Boolean, 
             val edge = listOf(de.umstieg.launcher.core.Gesture.EDGE_LEFT, de.umstieg.launcher.core.Gesture.EDGE_RIGHT, de.umstieg.launcher.core.Gesture.EDGE)
                 .map { GestureClassifier.binding(current.settings, it) }.firstOrNull { it.action == a }
             perform(a, edge)
+            vm.actionHandled()
         }
     }
 

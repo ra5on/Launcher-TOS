@@ -62,13 +62,20 @@ class EdgeGestureService : AccessibilityService() {
     override fun onAccessibilityEvent(event: AccessibilityEvent?) {
         if (event?.eventType == AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED) {
             // Nur der Paketname (für „nur auf dem Homescreen“), keine Inhalte.
-            event.packageName?.toString()?.let {
+            event.packageName?.toString()?.takeIf { !isTransient(it) }?.let {
                 if (it != foregroundPackage) {
                     foregroundPackage = it
                     updateTouchable()
                 }
             }
         }
+    }
+
+    /** Tastatur und Systemleiste sind keine „App im Vordergrund“ (sonst bliebe „nur Homescreen“ hängen). */
+    private fun isTransient(pkg: String): Boolean {
+        if (pkg == "com.android.systemui" || pkg == "android") return true
+        val ime = Settings.Secure.getString(contentResolver, Settings.Secure.DEFAULT_INPUT_METHOD)?.substringBefore('/')
+        return pkg == ime
     }
 
     override fun onInterrupt() = Unit
@@ -107,7 +114,8 @@ class EdgeGestureService : AccessibilityService() {
         val width = resources.displayMetrics.widthPixels
         val height = statusBarHeight()
         if (s.systemGestureFull) {
-            addStrip(0, width, height, Gesture.EDGE)
+            // Ganze Breite: die Zone ergibt sich aus der Startposition (links/Mitte/rechts wie eingestellt).
+            addStrip(0, width, height, null)
         } else {
             val left = (width * s.swipeZoneLeft / 100f).toInt()
             val right = (width * s.swipeZoneRight / 100f).toInt()
@@ -118,7 +126,7 @@ class EdgeGestureService : AccessibilityService() {
     }
 
     @SuppressLint("ClickableViewAccessibility")
-    private fun addStrip(x: Int, w: Int, h: Int, gesture: Gesture) {
+    private fun addStrip(x: Int, w: Int, h: Int, fixed: Gesture?) {
         if (w <= 0) return
         val view = View(this)
         val slop = ViewConfiguration.get(this).scaledTouchSlop
@@ -139,7 +147,7 @@ class EdgeGestureService : AccessibilityService() {
                     // Früh auslösen: das System übernimmt schnelle Wische am oberen Rand sonst selbst (ACTION_CANCEL).
                     if (!fired && dy > slop && dy > abs(dx) * 1.2f) {
                         fired = true
-                        trigger(gesture)
+                        trigger(fixed ?: zoneAt(downX))
                     }
                 }
             }
@@ -187,6 +195,18 @@ class EdgeGestureService : AccessibilityService() {
                 lp.flags = flags
                 runCatching { wm().updateViewLayout(v, lp) }
             }
+        }
+    }
+
+    /** Zone nach der Startposition (für „Ganze Breite“), wie auf der Gesten-Seite eingestellt. */
+    private fun zoneAt(rawX: Float): Gesture {
+        val s = settings ?: return Gesture.EDGE
+        if (!s.edgeSplit) return Gesture.EDGE
+        val f = rawX / resources.displayMetrics.widthPixels
+        return when {
+            f <= s.swipeZoneLeft / 100f -> Gesture.EDGE_LEFT
+            f >= 1f - s.swipeZoneRight / 100f -> Gesture.EDGE_RIGHT
+            else -> Gesture.EDGE_CENTER
         }
     }
 
