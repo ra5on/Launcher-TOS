@@ -1,6 +1,6 @@
 # Datenschutzerklärung – Launcher TOS
 
-Stand: 24. November 2026
+Stand: 24. November 2026 (Version 1.2.0)
 
 **Verantwortlich:** ra5on (https://github.com/ra5on)
 
@@ -33,6 +33,21 @@ Die Prüfung lässt sich unter „Einstellungen → Updates“ abschalten; dann 
 - **Geräte-Sperre** (optional, für versteckte Apps): die Prüfung übernimmt Android; die App erhält
   keine biometrischen Daten.
 
+## Bedienungshilfe „Systemweite Wischgesten“ (optional)
+
+Nur wenn der Nutzer sie selbst in den Android-Bedienungshilfen einschaltet. Der Dienst legt schmale,
+unsichtbare Streifen auf die Statusleiste und erkennt dort einen Wisch nach unten. Er liest keine
+Bildschirminhalte (`canRetrieveWindowContent` ist aus), keine Eingaben und keine Tastenereignisse. Er erfährt
+nur den Paketnamen der App im Vordergrund, um auf Wunsch nur auf dem Homescreen aktiv zu sein. Nichts davon
+wird gespeichert oder übertragen.
+
+## Suche in Kontakten und Dateien (optional)
+
+Standardmäßig aus. Schaltet der Nutzer „Kontakte“ bzw. „Dateien“ in den Sucheinstellungen ein, fragt Android
+nach der Berechtigung. Gesucht wird nur auf dem Gerät, während man tippt; Ergebnisse werden nicht
+gespeichert. Ein Treffer in „Im Web suchen“ öffnet den Browser erst beim Antippen; dabei erhält die gewählte
+Suchmaschine den Suchbegriff.
+
 ## Export
 
 Beim Exportieren schreibt die App das Layout als JSON-Datei an einen Ort, den der Nutzer selbst
@@ -42,7 +57,8 @@ auswählt. Weitere Weitergabe findet nicht statt.
 
 Alle Berechtigungen sind optional und in der App unter „Einstellungen → Berechtigungen“ erklärt
 (Benachrichtigungszugriff, „Nicht stören“, Systemeinstellungen ändern, Statusleiste aufklappen,
-Netzwerkstatus lesen, Geräte-Sperre, Deinstallation anfragen). Keine davon erlaubt Internetzugriff.
+Netzwerkstatus lesen, Geräte-Sperre, Deinstallation anfragen, Bedienungshilfe, Kontakte, Mediendateien).
+Internet nutzt die App nur für die Update-Prüfung bei GitHub (siehe oben).
 
 ## Kontakt
 

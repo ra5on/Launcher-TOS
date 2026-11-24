@@ -90,7 +90,8 @@ class EdgeGestureService : AccessibilityService() {
         val m = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
             wm().currentWindowMetrics.windowInsets.getInsetsIgnoringVisibility(WindowInsets.Type.statusBars()).top
         } else {
-            @SuppressLint("DiscouragedApi", "InternalInsetsTypeUsage")
+            // Nur vor Android 11 (ohne WindowMetrics): Höhe aus der System-Ressource.
+            @SuppressLint("DiscouragedApi", "InternalInsetResource")
             val id = resources.getIdentifier("status_bar_height", "dimen", "android")
             if (id > 0) resources.getDimensionPixelSize(id) else 0
         }
@@ -158,7 +159,11 @@ class EdgeGestureService : AccessibilityService() {
             gravity = Gravity.TOP or Gravity.START
             this.x = x
             y = 0
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) layoutInDisplayCutoutMode = WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_ALWAYS
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+                layoutInDisplayCutoutMode = WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_ALWAYS
+            } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+                layoutInDisplayCutoutMode = WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_SHORT_EDGES
+            }
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) setFitInsetsTypes(0)
             title = "LauncherTOS-Wischstreifen"
         }

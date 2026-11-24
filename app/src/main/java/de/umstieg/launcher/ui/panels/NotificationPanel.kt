@@ -351,8 +351,12 @@ private fun NotificationCard(
             runCatching {
                 @Suppress("DEPRECATION")
                 val bmp = extras.getParcelable<android.graphics.Bitmap>(Notification.EXTRA_PICTURE)
-                bmp?.asImageBitmap() ?: if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.S) {
+                bmp?.asImageBitmap() ?: if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.TIRAMISU) {
                     extras.getParcelable(Notification.EXTRA_PICTURE_ICON, android.graphics.drawable.Icon::class.java)
+                        ?.loadDrawable(context)?.toBitmap(720, 400)?.asImageBitmap()
+                } else if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.S) {
+                    @Suppress("DEPRECATION")
+                    extras.getParcelable<android.graphics.drawable.Icon>(Notification.EXTRA_PICTURE_ICON)
                         ?.loadDrawable(context)?.toBitmap(720, 400)?.asImageBitmap()
                 } else {
                     null

@@ -95,14 +95,17 @@ Internet nur für Updates von GitHub (abschaltbar). Alle Berechtigungen sind opt
 | `REQUEST_DELETE_PACKAGES` | „Deinstallieren“ im App-Menü (Android fragt immer nach) |
 | `INTERNET` | ausschließlich die Update-Prüfung bei GitHub (`api.github.com`, Download von `github.com`); abschaltbar |
 | `REQUEST_INSTALL_PACKAGES` („Unbekannte Apps installieren“, vom Nutzer erlaubt) | ein geprüftes Update installieren; Android fragt jedes Mal |
+| Bedienungshilfe „Systemweite Wischgesten“ (optional, vom Nutzer in den Bedienungshilfen eingeschaltet) | schmale Streifen auf der Statusleiste: Wisch nach unten öffnet die eigenen Panels, auch in anderen Apps; Android-Leiste öffnen, Bildschirm sperren. Liest keine Fensterinhalte und keine Eingaben, erfährt nur den Paketnamen der App im Vordergrund (für „nur auf dem Homescreen“) |
+| `READ_CONTACTS` (optional, Standard aus) | Kontakte in der Suche finden |
+| `READ_MEDIA_IMAGES`/`_VIDEO`/`_AUDIO` bzw. `READ_EXTERNAL_STORAGE` bis Android 12 (optional, Standard aus) | Mediendateien in der Suche nach Namen finden |
 
 **Updates:** Launcher TOS fragt (wöchentlich, abschaltbar, oder per „Jetzt suchen“) bei GitHub nach der
 neuesten Version. Vor der Installation prüft die App die SHA-256-Prüfsumme gegen `SHA256SUMS` des Releases
 und das Signaturzertifikat gegen den fest hinterlegten Fingerabdruck
 `2142791d…4a063c`; erst dann bekommt Android die Datei.
 
-**„Eingeschränkte Einstellungen“ (Android 13+):** Bei Installation außerhalb eines Stores sperrt Android den
-Benachrichtigungszugriff, bis man in der App-Info über ⋮ „Eingeschränkte Einstellungen zulassen“ wählt. Die
+**„Eingeschränkte Einstellungen“ (Android 13+):** Bei Installation aus einer heruntergeladenen Datei sperrt Android
+Benachrichtigungszugriff und Bedienungshilfen, bis man in der App-Info über ⋮ „Eingeschränkte Einstellungen zulassen“ wählt. Die
 Einrichtung erkennt das und zeigt den Weg.
 
 Sichtbar sind nur Apps mit Eintrag in der App-Liste und Widget-Anbieter (Manifest-Abfragen);

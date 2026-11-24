@@ -6,7 +6,6 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -278,7 +277,7 @@ fun GesturesPage(p: PageEnv) {
 private fun PhoneZones(s: LauncherSettings, onStatusBar: Boolean, onZone: (Gesture) -> Unit) {
     val w = 220.dp
     val h = 400.dp
-    BoxWithConstraints(
+    Box(
         Modifier.size(w, h).clip(RoundedCornerShape(32.dp))
             .background(androidx.compose.ui.graphics.Brush.verticalGradient(listOf(Color(0xFF1B2A4A), Color(0xFF14243A), Color(0xFF2A1E3A))))
             .border(2.dp, Color.White.copy(alpha = 0.22f), RoundedCornerShape(32.dp)),

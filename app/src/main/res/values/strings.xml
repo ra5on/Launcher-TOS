@@ -243,10 +243,7 @@
     <!-- Benachrichtigungen -->
     <string name="notifications_title">Benachrichtigungen</string>
     <string name="notifications_clear_all">Alle löschen</string>
-    <string name="notifications_new">Neu</string>
-    <string name="notifications_earlier">Früher</string>
     <string name="notifications_empty">Keine Benachrichtigungen</string>
-    <string name="notifications_more">+ %1$d weitere</string>
     <string name="notifications_remove">Entfernen</string>
     <string name="listener_title">Benachrichtigungszugriff</string>
     <string name="listener_text">Damit zeigt Launcher TOS Zahlen an den Icons, eine eigene Benachrichtigungsliste und die Mediensteuerung. Alles bleibt auf dem Gerät – Launcher TOS hat keinen Internetzugriff. Du kannst den Zugriff jederzeit in den Android-Einstellungen widerrufen.</string>
@@ -491,7 +488,6 @@
     <string name="side_right">Rechts</string>
     <string name="setting_widget_side">Widget-Seite</string>
     <string name="setting_drawer_side">App-Übersicht</string>
-    <string name="setting_edge_height_summary">Wie weit unterhalb der Statusleiste ein Wisch noch als „von oben“ zählt. Ein Wisch, der in der Statusleiste selbst beginnt, öffnet immer die Leiste von Android.</string>
 
     <string name="settings_section_updates">Updates</string>
     <string name="summary_updates_auto">Wöchentlich automatisch prüfen</string>
@@ -641,7 +637,6 @@
     <string name="simple_corners">Ecken der Icons</string>
     <string name="simple_corners_info">Von eckig bis kreisrund – mit Vorschau.</string>
     <string name="simple_edge">Wischen von oben</string>
-    <string name="simple_edge_info">Was passiert, wenn du oben nach unten wischst.</string>
     <string name="simple_middle">In der Mitte nach unten</string>
     <string name="simple_middle_info">Was ein Wisch nach unten mitten auf dem Bildschirm öffnet.</string>
     <string name="simple_theme">Hell oder dunkel</string>

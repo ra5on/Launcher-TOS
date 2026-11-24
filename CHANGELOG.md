@@ -1,5 +1,24 @@
 # Änderungen
 
+## 1.2.0 (versionCode 120)
+
+- **Ordner per Ziehen repariert:** Ziel ist die Mitte des gezogenen Icons, nach kurzem Verweilen (400 ms)
+  erscheint die Ordner-Vorschau mit Glasrahmen; währenddessen weicht nichts mehr aus.
+- **Benachrichtigungszugriff bei eingeschränkten Einstellungen:** eindeutige Erkennung über die Paketquelle,
+  immer zuerst die Hilfe (Schritt 1/2) und die App-Info, danach der Zugriff – auch aus Einstellungen und Panels.
+- **Schnellzugriff neu:** kompakt, Seiten untereinander und senkrecht blätterbar mit Punkten rechts,
+  flache Regler, kompakte Medienzeile.
+- **Benachrichtigungen neu:** nach App gestapelt, Wisch links entfernt, rechts/lange Optionen, Aktionen und
+  Direktantwort, große Bilder, Medienkarte oben.
+- **Gesten:** interaktives Handy-Bild mit allen Zonen und Auswahlkarten; optionale Bedienungshilfe für Wische
+  direkt auf der Statusleiste (links+rechts oder ganze Breite, nur Homescreen oder überall), Bildschirm sperren.
+- **Suche:** Kurzbefehle der Apps, Android-Einstellungen, optional Kontakte und Dateien, Websuche mit wählbarer
+  Suchmaschine, Play Store, Adressen öffnen, Enter öffnet den ersten Treffer.
+- **App-Übersicht:** quadratische Kacheln, feinere Kategorien (Finanzen, Browser, KI, Werkzeuge, Einkaufen,
+  Smart Home, Auto & Verkehr, Gesundheit), „Kategorie ändern“ im App-Menü; Namen im Kategorie-Panel zweizeilig.
+- **Glas:** der Standard 50 % ist jetzt deutlich sichtbar, auf hellen Fotos kräftiger; Vorlagen Klar/Ausgewogen/Kräftig.
+- Auswahlseiten mit Karten und Vorschau, Einrichtung um „Von ganz oben wischen“ ergänzt.
+
 ## 1.1.0 (versionCode 110)
 
 - **Einrichtung beim ersten Start:** Standard-Startbildschirm, Benachrichtigungen (mit Hilfe zu „Eingeschränkten

@@ -11,5 +11,4 @@
     android:canRetrieveWindowContent="false"
     android:notificationTimeout="200"
     android:description="@string/a11y_service_description"
-    android:summary="@string/a11y_service_summary"
-    android:isAccessibilityTool="false" />
+    android:summary="@string/a11y_service_summary" />

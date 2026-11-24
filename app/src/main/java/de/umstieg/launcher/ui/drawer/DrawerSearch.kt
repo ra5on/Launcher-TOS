@@ -5,6 +5,7 @@ import android.content.ClipboardManager
 import android.widget.Toast
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
+import androidx.core.net.toUri
 import androidx.compose.runtime.produceState
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -349,7 +350,7 @@ fun SearchOverlay(vm: HomeViewModel, d: LauncherData, apps: Map<de.umstieg.launc
     val url = remember(query) { de.umstieg.launcher.core.SearchExtras.asUrl(query) }
     fun openUri(uri: String) {
         vm.showOverlay(Overlay.NONE)
-        runCatching { context.startActivity(android.content.Intent(android.content.Intent.ACTION_VIEW, android.net.Uri.parse(uri)).addFlags(android.content.Intent.FLAG_ACTIVITY_NEW_TASK)) }
+        runCatching { context.startActivity(android.content.Intent(android.content.Intent.ACTION_VIEW, uri.toUri()).addFlags(android.content.Intent.FLAG_ACTIVITY_NEW_TASK)) }
     }
     fun webSearch() {
         vm.controller.recordSearch(query, null)
