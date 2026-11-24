@@ -7,6 +7,7 @@ import android.provider.MediaStore
 import androidx.core.net.toUri
 import de.umstieg.launcher.R
 import de.umstieg.launcher.core.AppKey
+import de.umstieg.launcher.core.AutoAddTarget
 import de.umstieg.launcher.core.DropTarget
 import de.umstieg.launcher.core.FolderItem
 import de.umstieg.launcher.core.HomeLayout
@@ -66,8 +67,8 @@ class LauncherController(
                 val layout = LayoutOps.initialLayout(installed, defaultDockApps(list), s.grid, s.dockCapacity)
                 d.copy(layout = layout, knownApps = installed.toSet(), initialized = true)
             } else {
-                val r = LayoutOps.reconcile(d.layout, d.knownApps, installed, unavailable, s.grid, s.autoAdd)
-                val layout = LayoutOps.normalize(r.layout, s.grid, s.dockCapacity)
+                val r = LayoutOps.reconcile(d.layout, d.knownApps, installed, unavailable, s.grid, s.autoAdd, s.autoAddTarget == AutoAddTarget.LAST_PAGE)
+                val layout = LayoutOps.normalize(r.layout, s.grid, s.dockCapacity, s.minPages)
                 if (layout == d.layout && r.known == d.knownApps) d else d.copy(layout = layout, knownApps = r.known)
             }
         }
@@ -103,12 +104,12 @@ class LauncherController(
         val l = LayoutOps.drop(d.layout, s.grid, s.dockCapacity, from, target, s.folderByDrag) { a, b ->
             FolderItem(UUID.randomUUID().toString(), name, listOf(a, b))
         }
-        d.copy(layout = LayoutOps.normalize(l, s.grid, s.dockCapacity))
+        d.copy(layout = LayoutOps.normalize(l, s.grid, s.dockCapacity, s.minPages))
     }
 
     fun removeFromHome(slot: Slot) = updateLayout { d ->
         val s = d.settings
-        d.copy(layout = LayoutOps.normalize(LayoutOps.removeFromHome(d.layout, s.grid, slot), s.grid, s.dockCapacity))
+        d.copy(layout = LayoutOps.normalize(LayoutOps.removeFromHome(d.layout, s.grid, slot), s.grid, s.dockCapacity, s.minPages))
     }
 
     fun addApp(app: AppKey, startPage: Int) = updateLayout { d ->
@@ -132,7 +133,7 @@ class LauncherController(
     /** Ändert Einstellungen; das Layout passt sich an (Raster verkleinert → nichts geht verloren). */
     fun updateSettings(block: (LauncherSettings) -> LauncherSettings) = updateLayout { d ->
         val s = block(d.settings).sanitized()
-        d.copy(settings = s, layout = LayoutOps.normalize(d.layout, s.grid, s.dockCapacity))
+        d.copy(settings = s, layout = LayoutOps.normalize(d.layout, s.grid, s.dockCapacity, s.minPages))
     }
 
     // ---------- Sichern ----------

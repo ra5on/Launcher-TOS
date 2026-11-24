@@ -33,6 +33,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import de.umstieg.launcher.R
 import de.umstieg.launcher.core.LauncherSettings
+import de.umstieg.launcher.core.iconOptions
 import de.umstieg.launcher.data.AppInfo
 import de.umstieg.launcher.data.IconLoader
 import de.umstieg.launcher.ui.home.BASE_ICON_DP
@@ -70,7 +71,7 @@ fun IconRowPreview(apps: List<AppInfo>, loader: IconLoader, s: LauncherSettings,
             Row(Modifier.fillMaxWidth().height(110.dp), horizontalArrangement = Arrangement.SpaceEvenly, verticalAlignment = Alignment.CenterVertically) {
                 apps.take(4).forEach { app ->
                     Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.width(80.dp)) {
-                        AppIconImage(loader, app, s.legacyBackground, shape, (BASE_ICON_DP * s.iconSize / 100f).dp.coerceAtMost(76.dp))
+                        AppIconImage(loader, app, s.iconOptions(), shape, (BASE_ICON_DP * s.iconSize / 100f).dp.coerceAtMost(76.dp))
                         if (s.labelsHome) {
                             Spacer(Modifier.height(6.dp))
                             IconLabel(app.label, s.fontScale)
@@ -108,7 +109,7 @@ fun GridPreview(apps: List<AppInfo>, loader: IconLoader, s: LauncherSettings) {
                 val app = apps.getOrNull(i)
                 Box(Modifier.offset(cellW * x, cellH * y).size(cellW, cellH), contentAlignment = Alignment.Center) {
                     if (app != null) {
-                        AppIconImage(loader, app, s.legacyBackground, shape, icon)
+                        AppIconImage(loader, app, s.iconOptions(), shape, icon)
                     } else {
                         Box(Modifier.size(icon).border(1.dp, Color.White.copy(alpha = 0.25f), shape))
                     }
@@ -122,7 +123,7 @@ fun GridPreview(apps: List<AppInfo>, loader: IconLoader, s: LauncherSettings) {
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
                     apps.drop(s.columns * s.rows).take(s.dockCount).forEach { app ->
-                        AppIconImage(loader, app, s.legacyBackground, shape, minOf(icon, 32.dp))
+                        AppIconImage(loader, app, s.iconOptions(), shape, minOf(icon, 32.dp))
                     }
                 }
             }

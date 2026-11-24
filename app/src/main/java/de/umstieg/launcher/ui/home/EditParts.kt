@@ -44,6 +44,7 @@ import de.umstieg.launcher.R
 import de.umstieg.launcher.core.AppKey
 import de.umstieg.launcher.core.LauncherData
 import de.umstieg.launcher.core.LayoutOps
+import de.umstieg.launcher.core.iconOptions
 import de.umstieg.launcher.data.AppInfo
 import de.umstieg.launcher.ui.icons.AppIconImage
 import de.umstieg.launcher.ui.icons.SuperellipseShape
@@ -211,7 +212,7 @@ fun AddAppsSheet(d: LauncherData, apps: Map<AppKey, AppInfo>, shape: Superellips
                             .padding(horizontal = 20.dp, vertical = 8.dp),
                         verticalAlignment = Alignment.CenterVertically,
                     ) {
-                        AppIconImage(vm.icons, app, d.settings.legacyBackground, shape, 44.dp)
+                        AppIconImage(vm.icons, app, d.settings.iconOptions(), shape, 44.dp)
                         Spacer(Modifier.width(14.dp))
                         Text(app.label, style = TextStyle(fontFamily = Inter, fontWeight = FontWeight.Medium, fontSize = 16.sp, color = c.content), modifier = Modifier.weight(1f))
                         Box(Modifier.size(36.dp).background(Tos.Accent, CircleShape), contentAlignment = Alignment.Center) {

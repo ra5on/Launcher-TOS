@@ -19,13 +19,13 @@ import androidx.compose.ui.graphics.asAndroidPath
 import androidx.compose.ui.graphics.drawscope.translate
 import androidx.compose.ui.graphics.nativeCanvas
 import androidx.compose.ui.unit.Dp
-import de.umstieg.launcher.core.LegacyBackground
+import de.umstieg.launcher.core.IconOptions
 import de.umstieg.launcher.data.AppInfo
 import de.umstieg.launcher.data.IconLoader
 
 /** Lädt das Icon asynchron (Cache zuerst, sonst im Hintergrund). */
 @Composable
-fun rememberAppIcon(loader: IconLoader, app: AppInfo, legacy: LegacyBackground): ImageBitmap? {
+fun rememberAppIcon(loader: IconLoader, app: AppInfo, legacy: IconOptions): ImageBitmap? {
     val icon by produceState(loader.cached(app, legacy), app.key, legacy, loader.generation) {
         value = loader.load(app, legacy)
     }
@@ -67,7 +67,7 @@ fun Modifier.squircleBitmap(bitmap: ImageBitmap?, shape: SuperellipseShape, plac
 
 /** Reines Icon (ohne Beschriftung) in der Größe [size]. */
 @Composable
-fun AppIconImage(loader: IconLoader, app: AppInfo, legacy: LegacyBackground, shape: SuperellipseShape, size: Dp, modifier: Modifier = Modifier) {
+fun AppIconImage(loader: IconLoader, app: AppInfo, legacy: IconOptions, shape: SuperellipseShape, size: Dp, modifier: Modifier = Modifier) {
     val bitmap = rememberAppIcon(loader, app, legacy)
     Box(modifier.size(size).squircleBitmap(bitmap, shape))
 }

@@ -56,6 +56,7 @@ import de.umstieg.launcher.core.AppItem
 import de.umstieg.launcher.core.AppKey
 import de.umstieg.launcher.core.FolderItem
 import de.umstieg.launcher.core.LauncherSettings
+import de.umstieg.launcher.core.iconOptions
 import de.umstieg.launcher.core.Slot
 import de.umstieg.launcher.data.AppInfo
 import de.umstieg.launcher.ui.icons.SuperellipseShape
@@ -117,7 +118,7 @@ fun FolderOverlay(
                     val labelSpace = if (settings.labelsFolder) (labelHeight(settings.fontScale).value * density.fontScale).dp + 6.dp else 0.dp
                     val iconSize = iconDp(settings.iconSize, cellW * 0.78f)
                     val cellH = iconSize + labelSpace + 18.dp
-                    val style = IconStyle(vm.icons, settings.legacyBackground, shape, iconSize, settings.fontScale, settings.largeTouch)
+                    val style = IconStyle(vm.icons, settings.iconOptions(), shape, iconSize, settings.fontScale, settings.largeTouch)
                     val iconPx = with(density) { iconSize.toPx() }
                     val dy = with(density) { -(labelSpace.toPx() / 2f) }
                     Box(

@@ -24,8 +24,44 @@ object LayoutOps {
 
     // ---------- Abfragen ----------
 
-    fun itemAt(layout: HomeLayout, page: Int, x: Int, y: Int): HomeItem? =
-        layout.pages.getOrNull(page)?.firstOrNull { it.x == x && it.y == y }?.item
+    /** Zellen, die ein Element belegt (Widgets mehrere, sonst eine). */
+    fun spanOf(item: HomeItem): Pair<Int, Int> = when (item) {
+        is WidgetItem -> item.spanX.coerceAtLeast(1) to item.spanY.coerceAtLeast(1)
+        else -> 1 to 1
+    }
+
+    fun covers(p: Placed, x: Int, y: Int): Boolean {
+        val (w, h) = spanOf(p.item)
+        return x >= p.x && x < p.x + w && y >= p.y && y < p.y + h
+    }
+
+    fun placedAt(layout: HomeLayout, page: Int, x: Int, y: Int): Placed? =
+        layout.pages.getOrNull(page)?.firstOrNull { covers(it, x, y) }
+
+    fun itemAt(layout: HomeLayout, page: Int, x: Int, y: Int): HomeItem? = placedAt(layout, page, x, y)?.item
+
+    /** Ist der Bereich frei und innerhalb des Rasters? [ignoreId] zählt nicht als belegt. */
+    fun isAreaFree(page: List<Placed>, spec: GridSpec, x: Int, y: Int, w: Int, h: Int, ignoreId: String? = null): Boolean {
+        if (x < 0 || y < 0 || x + w > spec.columns || y + h > spec.rows) return false
+        return page.none { p ->
+            if (p.item.id == ignoreId) return@none false
+            val (pw, ph) = spanOf(p.item)
+            p.x < x + w && x < p.x + pw && p.y < y + h && y < p.y + ph
+        }
+    }
+
+    /** Nächster freier Bereich w × h ab [startPage]; sonst neue Seite. */
+    fun findFreeArea(layout: HomeLayout, spec: GridSpec, w: Int, h: Int, startPage: Int = 0): Slot.Grid {
+        val from = startPage.coerceAtLeast(0)
+        for (p in from until layout.pages.size) {
+            for (cell in 0 until spec.cellsPerPage) {
+                val x = cell % spec.columns
+                val y = cell / spec.columns
+                if (isAreaFree(layout.pages[p], spec, x, y, w, h)) return Slot.Grid(p, x, y)
+            }
+        }
+        return Slot.Grid(maxOf(layout.pages.size, from), 0, 0)
+    }
 
     fun itemAt(layout: HomeLayout, slot: Slot): HomeItem? = when (slot) {
         is Slot.Grid -> itemAt(layout, slot.page, slot.x, slot.y)
@@ -44,6 +80,7 @@ object LayoutOps {
     fun appsOf(item: HomeItem): List<AppKey> = when (item) {
         is AppItem -> listOf(item.app)
         is FolderItem -> item.apps
+        is WidgetItem -> emptyList()
     }
 
     /** Position eines Elements im Raster oder Dock. */
@@ -57,31 +94,26 @@ object LayoutOps {
     }
 
     /** Nächste freie Zelle ab [startPage] (zeilenweise); ist alles voll, die erste Zelle einer neuen Seite. */
-    fun findFreeCell(layout: HomeLayout, spec: GridSpec, startPage: Int = 0): Slot.Grid {
-        val from = startPage.coerceAtLeast(0)
-        for (p in from until layout.pages.size) {
-            val used = layout.pages[p].mapTo(HashSet()) { it.y * spec.columns + it.x }
-            for (cell in 0 until spec.cellsPerPage) {
-                if (cell !in used) return Slot.Grid(p, cell % spec.columns, cell / spec.columns)
-            }
-        }
-        return Slot.Grid(maxOf(layout.pages.size, from), 0, 0)
-    }
+    fun findFreeCell(layout: HomeLayout, spec: GridSpec, startPage: Int = 0): Slot.Grid = findFreeArea(layout, spec, 1, 1, startPage)
 
     // ---------- Grundoperationen ----------
 
-    /** Setzt [item] auf die Zelle (überschreibt einen evtl. vorhandenen Eintrag), legt fehlende Seiten an. */
+    /** Setzt [item] ab der Zelle (verdrängt, was den Bereich überlappt), legt fehlende Seiten an. */
     fun setAt(layout: HomeLayout, page: Int, x: Int, y: Int, item: HomeItem): HomeLayout {
         val pages = layout.pages.toMutableList()
         while (pages.size <= page) pages.add(emptyList())
-        pages[page] = pages[page].filterNot { it.x == x && it.y == y } + Placed(x, y, item)
+        val (w, h) = spanOf(item)
+        pages[page] = pages[page].filterNot { p ->
+            val (pw, ph) = spanOf(p.item)
+            p.x < x + w && x < p.x + pw && p.y < y + h && y < p.y + ph
+        } + Placed(x, y, item)
         return layout.copy(pages = pages)
     }
 
     private fun clearCell(layout: HomeLayout, page: Int, x: Int, y: Int): HomeLayout {
         if (page !in layout.pages.indices) return layout
         val pages = layout.pages.toMutableList()
-        pages[page] = pages[page].filterNot { it.x == x && it.y == y }
+        pages[page] = pages[page].filterNot { covers(it, x, y) }
         return layout.copy(pages = pages)
     }
 
@@ -127,8 +159,11 @@ object LayoutOps {
      * - leere Zelle: verschieben
      * - mittig auf App/Ordner (merge) und Ordner erlaubt: Ordner bilden bzw. App hinzufügen
      *   (keine verschachtelten Ordner: ein Ordner wird nie in einen Ordner gelegt)
-     * - sonst belegt: tauschen (aus einem Ordner heraus weicht das Ziel auf die nächste freie Stelle aus)
-     * - Dock: einfügen, solange Platz ist; voll: tauschen.
+     * - sonst belegt: einschieben – die folgenden Icons rücken eine Zelle weiter (Widgets bleiben stehen),
+     *   was nicht mehr auf die Seite passt, rückt auf die nächste freie Stelle der folgenden Seiten
+     * - Dock: einschieben; ist es voll, wird das letzte Dock-Element ins Raster verdrängt
+     *   (auf die frei gewordene Zelle, sonst die nächste freie Stelle)
+     * - Widgets: nur auf einen freien Bereich im Raster, nie ins Dock oder in Ordner.
      */
     fun drop(
         layout: HomeLayout,
@@ -152,47 +187,81 @@ object LayoutOps {
         // App aus einem Ordner auf den eigenen Ordner gezogen: nichts tun.
         if (from is Slot.InFolder && targetItem is FolderItem && targetItem.folderId == from.folderId) return layout
 
-        if (target.merge && allowFolders && dragged is AppItem && targetItem != null && targetItem.id != dragged.id) {
+        if (dragged is WidgetItem) {
+            if (target !is DropTarget.Grid || from !is Slot.Grid) return layout
+            val (w, h) = spanOf(dragged)
+            val tx = target.x.coerceIn(0, (spec.columns - w).coerceAtLeast(0))
+            val ty = target.y.coerceIn(0, (spec.rows - h).coerceAtLeast(0))
+            val page = layout.pages.getOrNull(target.page).orEmpty()
+            if (!isAreaFree(page, spec, tx, ty, w, h, ignoreId = dragged.id)) return layout
+            return setAt(removeFrom(layout, from), target.page, tx, ty, dragged)
+        }
+
+        if (target.merge && allowFolders && dragged is AppItem && targetItem != null && targetItem !is WidgetItem &&
+            targetItem.id != dragged.id
+        ) {
             val merged = when (targetItem) {
                 is AppItem -> newFolder(targetItem.app, dragged.app)
                 is FolderItem -> targetItem.copy(apps = targetItem.apps + dragged.app)
+                is WidgetItem -> return layout
             }
             return replaceById(removeFrom(layout, from), targetItem.id, merged)
         }
 
         return when (target) {
-            is DropTarget.Grid -> dropOnGrid(layout, spec, from, target, dragged, targetItem)
-            is DropTarget.Dock -> dropOnDock(layout, spec, dockCapacity, from, target, dragged, targetItem)
+            is DropTarget.Grid -> dropOnGrid(layout, spec, from, target, dragged)
+            is DropTarget.Dock -> dropOnDock(layout, spec, dockCapacity, from, target, dragged)
         }
     }
 
-    private fun dropOnGrid(
-        layout: HomeLayout,
-        spec: GridSpec,
-        from: Slot,
-        target: DropTarget.Grid,
-        dragged: HomeItem,
-        targetItem: HomeItem?,
-    ): HomeLayout {
-        if (targetItem == null) {
-            return setAt(removeFrom(layout, from), target.page, target.x, target.y, dragged)
+    private fun dropOnGrid(layout: HomeLayout, spec: GridSpec, from: Slot, target: DropTarget.Grid, dragged: HomeItem): HomeLayout {
+        val occupant = itemAt(layout, target.page, target.x, target.y)
+        if (from is Slot.Grid && from.page == target.page && occupant != null && occupant !is WidgetItem) {
+            return reorderWithinPage(layout, spec, target.page, from.y * spec.columns + from.x, target.y * spec.columns + target.x, dragged)
         }
-        return when (from) {
-            is Slot.Grid -> {
-                val l = setAt(layout, from.page, from.x, from.y, targetItem)
-                setAt(l, target.page, target.x, target.y, dragged)
-            }
-            is Slot.Dock -> {
-                val dock = layout.dock.toMutableList().apply { set(from.index, targetItem) }
-                setAt(layout.copy(dock = dock), target.page, target.x, target.y, dragged)
-            }
-            is Slot.InFolder -> {
-                var l = removeFrom(layout, from)
-                l = setAt(l, target.page, target.x, target.y, dragged)
-                val free = findFreeCell(l, spec, target.page)
-                setAt(l, free.page, free.x, free.y, targetItem)
-            }
+        return insertAt(removeFrom(layout, from), spec, target.page, target.x, target.y, dragged)
+    }
+
+    /**
+     * Umsortieren auf derselben Seite: die Zellen zwischen Start und Ziel rücken um eine Zelle
+     * in Richtung der frei gewordenen Startzelle (Widgets bleiben stehen), das Element landet am Ziel.
+     */
+    private fun reorderWithinPage(layout: HomeLayout, spec: GridSpec, page: Int, fromIdx: Int, toIdx: Int, dragged: HomeItem): HomeLayout {
+        var l = removeFrom(layout, Slot.Grid(page, fromIdx % spec.columns, fromIdx / spec.columns))
+        val range = if (fromIdx < toIdx) fromIdx..toIdx else toIdx..fromIdx
+        val cells = range.filter { c -> itemAt(l, page, c % spec.columns, c / spec.columns) !is WidgetItem }
+        val contents = cells.map { c -> itemAt(l, page, c % spec.columns, c / spec.columns) }
+        cells.forEach { c -> l = clearCell(l, page, c % spec.columns, c / spec.columns) }
+        val rotated: List<HomeItem?> = if (fromIdx < toIdx) contents.drop(1) + dragged else listOf<HomeItem?>(dragged) + contents.dropLast(1)
+        cells.zip(rotated).forEach { (c, item) -> if (item != null) l = setAt(l, page, c % spec.columns, c / spec.columns, item) }
+        return l
+    }
+
+    /**
+     * Fügt [item] (1 × 1) an der Zelle ein. Ist sie belegt, rücken die folgenden Elemente in
+     * Lesereihenfolge je eine Zelle weiter bis zur nächsten Lücke; Widgets werden übersprungen.
+     * Was am Seitenende übrig bleibt, wandert auf die nächste freie Stelle ab der Folgeseite.
+     */
+    fun insertAt(layout: HomeLayout, spec: GridSpec, page: Int, x: Int, y: Int, item: HomeItem): HomeLayout {
+        var l = layout
+        val start = y * spec.columns + x
+        val onWidget = placedAt(l, page, x, y)?.item is WidgetItem
+        if (onWidget) {
+            val free = findFreeCell(l, spec, page)
+            return setAt(l, free.page, free.x, free.y, item)
         }
+        var carry = item
+        for (cell in start until spec.cellsPerPage) {
+            val cx = cell % spec.columns
+            val cy = cell / spec.columns
+            val occupant = placedAt(l, page, cx, cy)
+            if (occupant?.item is WidgetItem) continue
+            l = setAt(clearCell(l, page, cx, cy), page, cx, cy, carry)
+            if (occupant == null) return l
+            carry = occupant.item
+        }
+        val free = findFreeCell(l, spec, page + 1)
+        return setAt(l, free.page, free.x, free.y, carry)
     }
 
     private fun dropOnDock(
@@ -202,34 +271,27 @@ object LayoutOps {
         from: Slot,
         target: DropTarget.Dock,
         dragged: HomeItem,
-        targetItem: HomeItem?,
     ): HomeLayout {
+        if (dockCapacity <= 0) return layout
         if (from is Slot.Dock) {
             val dock = layout.dock.toMutableList()
             val item = dock.removeAt(from.index)
             dock.add(target.index.coerceIn(0, dock.size), item)
             return layout.copy(dock = dock)
         }
-        if (layout.dock.size < dockCapacity) {
-            val l = removeFrom(layout, from)
-            val dock = l.dock.toMutableList()
-            dock.add(target.index.coerceIn(0, dock.size), dragged)
-            return l.copy(dock = dock)
-        }
-        if (targetItem == null) return layout
-        return when (from) {
-            is Slot.Grid -> {
-                val l = setAt(layout, from.page, from.x, from.y, targetItem)
-                l.copy(dock = l.dock.toMutableList().apply { set(target.index, dragged) })
-            }
-            is Slot.InFolder -> {
-                var l = removeFrom(layout, from)
-                val idx = l.dock.indexOfFirst { it.id == targetItem.id }
-                l = l.copy(dock = l.dock.toMutableList().apply { set(idx, dragged) })
-                val free = findFreeCell(l, spec, 0)
-                setAt(l, free.page, free.x, free.y, targetItem)
-            }
-            is Slot.Dock -> layout
+        var l = removeFrom(layout, from)
+        val dock = l.dock.toMutableList()
+        dock.add(target.index.coerceIn(0, dock.size), dragged)
+        if (dock.size <= dockCapacity) return l.copy(dock = dock)
+        // Voll: das letzte Element wird ins Raster verdrängt.
+        val pushed = dock.removeAt(dock.lastIndex)
+        l = l.copy(dock = dock)
+        val freed = from as? Slot.Grid
+        return if (freed != null && itemAt(l, freed.page, freed.x, freed.y) == null) {
+            setAt(l, freed.page, freed.x, freed.y, pushed)
+        } else {
+            val free = findFreeCell(l, spec, 0)
+            setAt(l, free.page, free.x, free.y, pushed)
         }
     }
 
@@ -242,6 +304,7 @@ object LayoutOps {
     fun removeFromHome(layout: HomeLayout, spec: GridSpec, slot: Slot): HomeLayout {
         val item = itemAt(layout, slot) ?: return layout
         if (item !is FolderItem || slot is Slot.InFolder) return removeFrom(layout, slot)
+        // Ordner auflösen: Apps bleiben erhalten.
         val first = AppItem(item.apps.first())
         var l = replaceById(layout, item.id, first)
         val startPage = (slot as? Slot.Grid)?.page ?: 0
@@ -257,6 +320,22 @@ object LayoutOps {
         if (app in placedApps(layout)) return layout
         val free = findFreeCell(layout, spec, startPage)
         return setAt(layout, free.page, free.x, free.y, AppItem(app))
+    }
+
+    /** Widget auf den nächsten freien Bereich ab [startPage] legen. */
+    fun addWidget(layout: HomeLayout, spec: GridSpec, widget: WidgetItem, startPage: Int = 0): HomeLayout {
+        val w = widget.copy(spanX = widget.spanX.coerceIn(1, spec.columns), spanY = widget.spanY.coerceIn(1, spec.rows))
+        val free = findFreeArea(layout, spec, w.spanX, w.spanY, startPage)
+        return setAt(layout, free.page, free.x, free.y, w)
+    }
+
+    /** Widget-Größe ändern, sofern der neue Bereich frei ist. */
+    fun resizeWidget(layout: HomeLayout, spec: GridSpec, widgetId: Int, spanX: Int, spanY: Int): HomeLayout {
+        val slot = locate(layout, "widget:$widgetId") as? Slot.Grid ?: return layout
+        val w = itemAt(layout, slot) as? WidgetItem ?: return layout
+        val resized = w.copy(spanX = spanX.coerceIn(1, spec.columns), spanY = spanY.coerceIn(1, spec.rows))
+        if (!isAreaFree(layout.pages[slot.page], spec, slot.x, slot.y, resized.spanX, resized.spanY, w.id)) return layout
+        return replaceById(layout, w.id, resized)
     }
 
     fun renameFolder(layout: HomeLayout, folderId: String, name: String): HomeLayout {
@@ -279,6 +358,7 @@ object LayoutOps {
         fun clean(item: HomeItem): HomeItem? = when (item) {
             is AppItem -> if (remove(item.app)) null else item
             is FolderItem -> collapse(item.copy(apps = item.apps.filterNot(remove)))
+            is WidgetItem -> item
         }
         return HomeLayout(
             pages = layout.pages.map { page -> page.mapNotNull { p -> clean(p.item)?.let { p.copy(item = it) } } },
@@ -306,13 +386,14 @@ object LayoutOps {
         keepPackages: Set<String>,
         spec: GridSpec,
         autoAdd: Boolean,
+        addToLastPage: Boolean = false,
     ): ReconcileResult {
         val installedSet = installed.toSet()
         fun keep(k: AppKey) = k in installedSet || k.packageName in keepPackages
         var l = removeApps(layout) { !keep(it) }
         val placed = placedApps(l)
         val added = installed.filter { it !in known && it !in placed }
-        if (autoAdd) added.forEach { l = addApp(l, spec, it, 0) }
+        if (autoAdd) added.forEach { l = addApp(l, spec, it, if (addToLastPage) l.pages.lastIndex else 0) }
         val newKnown = installedSet + known.filter { it.packageName in keepPackages }
         return ReconcileResult(l, newKnown, if (autoAdd) added else emptyList())
     }
@@ -333,24 +414,30 @@ object LayoutOps {
      * (z. B. nach dem Verkleinern) und überzählige Dock-Elemente auf die nächste freie Stelle bzw.
      * neue Seiten legen (nichts geht verloren), leere Seiten am Ende entfernen (Seite 1 bleibt).
      */
-    fun normalize(layout: HomeLayout, spec: GridSpec, dockCapacity: Int): HomeLayout {
+    fun normalize(layout: HomeLayout, spec: GridSpec, dockCapacity: Int, minPages: Int = 1): HomeLayout {
         val seen = HashSet<AppKey>()
+        val seenWidgets = HashSet<Int>()
         fun dedupe(item: HomeItem): HomeItem? = when (item) {
             is AppItem -> if (seen.add(item.app)) item else null
             is FolderItem -> collapse(item.copy(apps = item.apps.filter { seen.add(it) }))
+            is WidgetItem -> if (seenWidgets.add(item.widgetId)) {
+                item.copy(spanX = item.spanX.coerceIn(1, spec.columns), spanY = item.spanY.coerceIn(1, spec.rows))
+            } else {
+                null
+            }
         }
 
-        val dockItems = layout.dock.mapNotNull { dedupe(it) }
+        // Widgets gehören nicht ins Dock.
+        val dockItems = layout.dock.mapNotNull { dedupe(it) }.filterNot { it is WidgetItem }
         val overflow = mutableListOf<Pair<Int, HomeItem>>()
         dockItems.drop(dockCapacity.coerceAtLeast(0)).forEach { overflow += 0 to it }
 
         val pages = layout.pages.mapIndexed { p, page ->
-            val used = HashSet<Int>()
             val kept = mutableListOf<Placed>()
             page.sortedWith(compareBy({ it.y }, { it.x })).forEach { placed ->
                 val item = dedupe(placed.item) ?: return@forEach
-                val inside = placed.x in 0 until spec.columns && placed.y in 0 until spec.rows
-                if (inside && used.add(placed.y * spec.columns + placed.x)) {
+                val (w, h) = spanOf(item)
+                if (isAreaFree(kept, spec, placed.x, placed.y, w, h)) {
                     kept += placed.copy(item = item)
                 } else {
                     overflow += p to item
@@ -361,16 +448,19 @@ object LayoutOps {
 
         var l = HomeLayout(pages = pages.ifEmpty { listOf(emptyList()) }, dock = dockItems.take(dockCapacity.coerceAtLeast(0)))
         for ((page, item) in overflow) {
-            val free = findFreeCell(l, spec, page)
+            val (w, h) = spanOf(item)
+            val free = findFreeArea(l, spec, w, h, page)
             l = setAt(l, free.page, free.x, free.y, item)
         }
-        return trimTrailingEmptyPages(l)
+        return trimTrailingEmptyPages(l, minPages)
     }
 
-    fun trimTrailingEmptyPages(layout: HomeLayout): HomeLayout {
+    /** Leere Seiten am Ende entfernen; mindestens [minPages] Seiten bleiben (feste Seitenanzahl). */
+    fun trimTrailingEmptyPages(layout: HomeLayout, minPages: Int = 1): HomeLayout {
+        val keep = minPages.coerceAtLeast(1)
         val pages = layout.pages.toMutableList()
-        while (pages.size > 1 && pages.last().isEmpty()) pages.removeAt(pages.lastIndex)
-        if (pages.isEmpty()) pages.add(emptyList())
+        while (pages.size > keep && pages.last().isEmpty()) pages.removeAt(pages.lastIndex)
+        while (pages.size < keep) pages.add(emptyList())
         return layout.copy(pages = pages)
     }
 }

@@ -56,7 +56,7 @@ class LayoutOpsTest {
     }
 
     @Test
-    fun drop_onOccupiedCellWithoutMerge_swaps() {
+    fun drop_onOccupiedCellSamePage_reorders() {
         val l = layoutOf(app("a"), app("b"))
         val r = LayoutOps.drop(l, spec, 4, Slot.Grid(0, 0, 0), DropTarget.Grid(0, 1, 0), true, folderFactory)
         assertEquals(AppItem(app("b")), LayoutOps.itemAt(r, 0, 0, 0))
@@ -80,7 +80,7 @@ class LayoutOpsTest {
     }
 
     @Test
-    fun drop_gridIntoFullDock_swaps() {
+    fun drop_gridIntoFullDock_pushesLastIntoGrid() {
         val l = layoutOf(app("a"), dock = listOf(app("d1"), app("d2")))
         val r = LayoutOps.drop(l, spec, 2, Slot.Grid(0, 0, 0), DropTarget.Dock(1), true, folderFactory)
         assertEquals(listOf(AppItem(app("d1")), AppItem(app("a"))), r.dock)
@@ -114,7 +114,7 @@ class LayoutOpsTest {
     }
 
     @Test
-    fun drop_appOnApp_withFoldersDisabled_swaps() {
+    fun drop_appOnApp_withFoldersDisabled_reorders() {
         val l = layoutOf(app("a"), app("b"))
         val r = LayoutOps.drop(l, spec, 4, Slot.Grid(0, 1, 0), DropTarget.Grid(0, 0, 0, merge = true), false, folderFactory)
         assertEquals(AppItem(app("b")), LayoutOps.itemAt(r, 0, 0, 0))
@@ -135,7 +135,8 @@ class LayoutOpsTest {
         l = LayoutOps.drop(l, spec, 4, Slot.Grid(0, 1, 0), DropTarget.Grid(0, 0, 0, merge = true), true, folderFactory)
         val r = LayoutOps.drop(l, spec, 4, Slot.Grid(0, 0, 0), DropTarget.Grid(0, 0, 1, merge = true), true, folderFactory)
         assertTrue(LayoutOps.itemAt(r, 0, 0, 1) is FolderItem)
-        assertEquals(AppItem(app("c")), LayoutOps.itemAt(r, 0, 0, 0))
+        assertEquals(AppItem(app("c")), LayoutOps.itemAt(r, 0, 1, 0))
+        assertEquals(1, LayoutOps.allItems(r).count { it is FolderItem })
     }
 
     @Test

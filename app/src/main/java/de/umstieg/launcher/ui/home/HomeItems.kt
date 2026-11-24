@@ -47,7 +47,8 @@ import de.umstieg.launcher.core.AppItem
 import de.umstieg.launcher.core.AppKey
 import de.umstieg.launcher.core.FolderItem
 import de.umstieg.launcher.core.HomeItem
-import de.umstieg.launcher.core.LegacyBackground
+import de.umstieg.launcher.core.WidgetItem
+import de.umstieg.launcher.core.IconOptions
 import de.umstieg.launcher.data.AppInfo
 import de.umstieg.launcher.data.IconLoader
 import de.umstieg.launcher.ui.icons.AppIconImage
@@ -59,7 +60,7 @@ import kotlin.math.abs
 @Immutable
 data class IconStyle(
     val loader: IconLoader,
-    val legacy: LegacyBackground,
+    val legacy: IconOptions,
     val shape: SuperellipseShape,
     val iconSize: Dp,
     val fontScale: Int,
@@ -166,10 +167,12 @@ fun HomeItemView(
     val label = when (item) {
         is AppItem -> app!!.label
         is FolderItem -> item.name
+        is WidgetItem -> ""
     }
     val description = when (item) {
         is AppItem -> if (app!!.isWorkProfile) stringResource(R.string.work_app_description, label) else label
         is FolderItem -> stringResource(R.string.folder_description, item.name, item.apps.size)
+        is WidgetItem -> ""
     }
     val editLabel = stringResource(R.string.edit_start_action)
     val scale by animateFloatAsState(if (highlighted) 1.12f else 1f, label = "hoverScale")
@@ -204,6 +207,7 @@ fun HomeItemView(
             when (item) {
                 is AppItem -> AppIconImage(style.loader, app!!, style.legacy, style.shape, style.iconSize)
                 is FolderItem -> FolderIcon(item, apps, style)
+                is WidgetItem -> Unit
             }
             if (app?.isWorkProfile == true) {
                 Box(

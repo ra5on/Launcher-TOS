@@ -19,7 +19,7 @@ object LauncherJson {
         val settings = raw.settings.sanitized()
         return raw.copy(
             settings = settings,
-            layout = LayoutOps.normalize(raw.layout, settings.grid, settings.dockCapacity),
+            layout = LayoutOps.normalize(raw.layout, settings.grid, settings.dockCapacity, settings.minPages),
         )
     }
 }

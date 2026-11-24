@@ -69,8 +69,10 @@ import de.umstieg.launcher.core.AppKey
 import de.umstieg.launcher.core.DropTarget
 import de.umstieg.launcher.core.FolderItem
 import de.umstieg.launcher.core.HomeItem
+import de.umstieg.launcher.core.WidgetItem
 import de.umstieg.launcher.core.LauncherData
 import de.umstieg.launcher.core.LayoutOps
+import de.umstieg.launcher.core.iconOptions
 import de.umstieg.launcher.core.Slot
 import de.umstieg.launcher.data.AppInfo
 import de.umstieg.launcher.ui.components.tosHaptic
@@ -375,7 +377,7 @@ private fun HomeContent(vm: HomeViewModel, d: LauncherData, apps: Map<AppKey, Ap
         drag.item?.let { item ->
             val geo = gridGeo
             val iconDp = with(density) { (geo?.iconPx ?: 150f).toDp() }
-            val style = IconStyle(vm.icons, s.legacyBackground, shape, iconDp, s.fontScale, s.largeTouch)
+            val style = IconStyle(vm.icons, s.iconOptions(), shape, iconDp, s.fontScale, s.largeTouch)
             val half = (geo?.iconPx ?: 150f) / 2f
             Box(
                 Modifier
@@ -415,7 +417,7 @@ private fun PageGrid(
         val cellH = maxHeight / s.rows
         val labelSpace = if (s.labelsHome) (labelHeight(s.fontScale).value * density.fontScale).dp + 6.dp else 0.dp
         val iconSize = iconDp(s.iconSize, minOf(cellW * 0.86f, cellH - labelSpace - 4.dp))
-        val style = IconStyle(vm.icons, s.legacyBackground, shape, iconSize, s.fontScale, s.largeTouch)
+        val style = IconStyle(vm.icons, s.iconOptions(), shape, iconSize, s.fontScale, s.largeTouch)
         val iconPx = with(density) { iconSize.toPx() }
         val dy = with(density) { -labelSpace.toPx() / 2f }
         SideEffect { onMetrics(dy, iconPx) }
@@ -465,6 +467,7 @@ internal fun ItemCell(
     val label = when (item) {
         is AppItem -> apps[item.app]?.label.orEmpty()
         is FolderItem -> item.name
+        is WidgetItem -> ""
     }
     val removeDescription = when {
         item is FolderItem -> stringResource(R.string.edit_remove_folder, label)
@@ -487,6 +490,7 @@ internal fun ItemCell(
                 // Loslassen nach langem Drücken ist kein Tipp.
                 is AppItem -> if (!editMode && !drag.longPressed) apps[item.app]?.let { onLaunch(it, bounds[0]) }
                 is FolderItem -> if (!drag.longPressed) vm.openFolder(item.folderId)
+                is WidgetItem -> Unit
             }
         },
         onRemove = { vm.remove(slot) },
@@ -521,7 +525,7 @@ private fun Dock(
     ) {
         val slotW = maxWidth / s.dockCount
         val iconSize = iconDp(s.iconSize, slotW * 0.86f)
-        val style = IconStyle(vm.icons, s.legacyBackground, shape, iconSize, s.fontScale, s.largeTouch)
+        val style = IconStyle(vm.icons, s.iconOptions(), shape, iconSize, s.fontScale, s.largeTouch)
         val labelSpace = if (s.labelsDock) (labelHeight(s.fontScale).value * density.fontScale).dp + 6.dp else 0.dp
         val iconPx = with(density) { iconSize.toPx() }
         val target = drag.target

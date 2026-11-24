@@ -6,6 +6,7 @@ import android.graphics.Canvas
 import android.graphics.Color
 import android.graphics.drawable.AdaptiveIconDrawable
 import android.graphics.drawable.Drawable
+import android.os.Build
 import android.util.LruCache
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
@@ -13,6 +14,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.core.graphics.createBitmap
+import de.umstieg.launcher.core.IconOptions
 import de.umstieg.launcher.core.LegacyBackground
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.sync.Semaphore
@@ -45,11 +47,11 @@ class IconLoader(context: Context) {
     // Höchstens vier Icons gleichzeitig rendern.
     private val permits = Semaphore(4)
 
-    private fun cacheKey(app: AppInfo, legacy: LegacyBackground) = "${app.key.id}|$legacy"
+    private fun cacheKey(app: AppInfo, legacy: IconOptions) = "${app.key.id}|$legacy"
 
-    fun cached(app: AppInfo, legacy: LegacyBackground): ImageBitmap? = cache.get(cacheKey(app, legacy))
+    fun cached(app: AppInfo, legacy: IconOptions): ImageBitmap? = cache.get(cacheKey(app, legacy))
 
-    suspend fun load(app: AppInfo, legacy: LegacyBackground): ImageBitmap {
+    suspend fun load(app: AppInfo, legacy: IconOptions): ImageBitmap {
         val key = cacheKey(app, legacy)
         cache.get(key)?.let { return it }
         return withContext(Dispatchers.Default) {
@@ -65,21 +67,34 @@ class IconLoader(context: Context) {
         generation++
     }
 
-    private fun render(app: AppInfo, legacy: LegacyBackground): ImageBitmap {
+    private fun render(app: AppInfo, legacy: IconOptions): ImageBitmap {
         val s = sizePx
         val bitmap = createBitmap(s, s)
         val canvas = Canvas(bitmap)
         val drawable: Drawable? = runCatching { app.activityInfo.getIcon(density) }.getOrNull()?.mutate()
-        when (drawable) {
-            null -> canvas.drawColor(Color.GRAY)
-            is AdaptiveIconDrawable -> {
+        val mono = if (legacy.themed && Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            (drawable as? AdaptiveIconDrawable)?.monochrome
+        } else {
+            null
+        }
+        when {
+            drawable == null -> canvas.drawColor(Color.GRAY)
+            mono != null -> {
+                // Themen-Icon: einfarbige Ebene auf ruhigem Hintergrund.
+                canvas.drawColor(if (legacy.themeDark) THEMED_BG_DARK else THEMED_BG_LIGHT)
+                mono.setTint(if (legacy.themeDark) THEMED_FG_DARK else THEMED_FG_LIGHT)
+                mono.setBounds(-s / 4, -s / 4, s * 5 / 4, s * 5 / 4)
+                mono.draw(canvas)
+            }
+            drawable is AdaptiveIconDrawable -> {
                 drawable.background?.let { it.setBounds(-s / 4, -s / 4, s * 5 / 4, s * 5 / 4); it.draw(canvas) }
                 drawable.foreground?.let { it.setBounds(-s / 4, -s / 4, s * 5 / 4, s * 5 / 4); it.draw(canvas) }
             }
             else -> {
-                val bg = when (legacy) {
+                val bg = when (legacy.legacy) {
                     LegacyBackground.WHITE -> Color.WHITE
                     LegacyBackground.DOMINANT -> dominantColor(drawable)
+                    LegacyBackground.CUSTOM -> legacy.legacyColor.toInt()
                 }
                 canvas.drawColor(bg)
                 val inset = (s * LEGACY_INSET).roundToInt()
@@ -122,5 +137,9 @@ class IconLoader(context: Context) {
     companion object {
         private const val MAX_ICON_DP = 80f
         private const val LEGACY_INSET = 0.15f
+        private const val THEMED_BG_DARK = 0xFF1E2A33.toInt()
+        private const val THEMED_FG_DARK = 0xFFB8EDE1.toInt()
+        private const val THEMED_BG_LIGHT = 0xFFE3F4EF.toInt()
+        private const val THEMED_FG_LIGHT = 0xFF1B5E52.toInt()
     }
 }
