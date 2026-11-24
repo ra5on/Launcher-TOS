@@ -102,6 +102,9 @@ Voraussetzungen: JDK 17 oder neuer, Android SDK mit Plattform 37 (`local.propert
 
 ## Veröffentlichen (Google Play)
 
+Alle Texte, Antworten und Grafiken für die Play Console stehen in [`docs/PLAY-STORE.md`](docs/PLAY-STORE.md).
+Fertige APKs gibt es unter [Releases](https://github.com/ra5on/Launcher-TOS/releases).
+
 Für Play wird ein App Bundle (AAB) mit dem **Upload-Schlüssel** signiert; den eigentlichen
 App-Signaturschlüssel verwaltet Google („Play App Signing“). Upload-Schlüssel einmalig anlegen –
 **außerhalb des Repos** aufbewahren (Keystores sind per `.gitignore` ausgeschlossen):

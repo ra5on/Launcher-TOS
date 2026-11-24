@@ -37,4 +37,4 @@ Netzwerkstatus lesen, Geräte-Sperre, Deinstallation anfragen). Keine davon erla
 
 ## Kontakt
 
-[PLATZHALTER – Kontaktadresse bitte vom Inhaber eintragen]
+Fragen zum Datenschutz: https://github.com/ra5on/Launcher-TOS/issues

@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="18 18 72 72">
+  <!-- Play-Store-Icon (512 × 512, volle Fläche; Google rundet selbst ab). Motiv wie ic_launcher_foreground. -->
+  <rect x="18" y="18" width="72" height="72" fill="#14243A"/>
+  <path fill="#2EC4A6" d="M39,33h8a6,6 0 0,1 6,6v8a6,6 0 0,1 -6,6h-8a6,6 0 0,1 -6,-6v-8a6,6 0 0,1 6,-6Z"/>
+  <path fill="#2EC4A6" d="M61,33h8a6,6 0 0,1 6,6v8a6,6 0 0,1 -6,6h-8a6,6 0 0,1 -6,-6v-8a6,6 0 0,1 6,-6Z"/>
+  <path fill="#2EC4A6" d="M39,55h8a6,6 0 0,1 6,6v8a6,6 0 0,1 -6,6h-8a6,6 0 0,1 -6,-6v-8a6,6 0 0,1 6,-6Z"/>
+  <path fill="#2EC4A6" fill-opacity="0.7" d="M61,55h8a6,6 0 0,1 6,6v8a6,6 0 0,1 -6,6h-8a6,6 0 0,1 -6,-6v-8a6,6 0 0,1 6,-6Z"/>
+</svg>
