@@ -293,7 +293,7 @@
     <string name="qs_alarm">Wecker</string>
     <string name="qs_qr">QR-Scanner</string>
     <string name="qs_system">System</string>
-    <string name="qs_media_none">Gerade wird nichts abgespielt</string>
+    <string name="qs_media_none">Nichts wird abgespielt</string>
     <string name="qs_media_no_access">Für die Mediensteuerung Benachrichtigungszugriff erlauben</string>
     <string name="qs_media_output">Ausgabe wählen</string>
     <string name="qs_media_play">Abspielen</string>
@@ -679,4 +679,6 @@
     <string name="category_smart_home">Smart Home</string>
     <string name="category_health">Gesundheit &amp; Fitness</string>
     <string name="menu_change_category">Kategorie ändern</string>
+    <string name="qs_header">Schnellzugriff · %1$s</string>
+    <string name="qs_add_page">Seite hinzufügen</string>
 </resources>

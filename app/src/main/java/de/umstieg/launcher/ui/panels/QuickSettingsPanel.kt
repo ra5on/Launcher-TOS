@@ -3,6 +3,12 @@ package de.umstieg.launcher.ui.panels
 import android.content.Intent
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.gestures.awaitFirstDown
+import androidx.compose.foundation.gestures.awaitEachGesture
+import androidx.compose.ui.draw.drawBehind
+import kotlinx.coroutines.launch
+import androidx.compose.foundation.layout.navigationBars
+import androidx.compose.foundation.layout.windowInsetsBottomHeight
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectHorizontalDragGestures
@@ -173,7 +179,6 @@ private fun detailText(s: TileStatus): String? = when (s.detail) {
 @Composable
 fun QuickSettingsPanel(vm: HomeViewModel, layout: QsLayout) {
     val context = LocalContext.current
-    var pageIndex by remember { mutableIntStateOf(0) }
     var editing by remember { mutableStateOf(false) }
     var managePages by remember { mutableStateOf(false) }
     var addItem by remember { mutableStateOf(false) }
@@ -187,7 +192,11 @@ fun QuickSettingsPanel(vm: HomeViewModel, layout: QsLayout) {
             tick++
         }
     }
-    val page = layout.pages.getOrElse(pageIndex.coerceIn(0, layout.pages.lastIndex)) { layout.pages.first() }
+    // Seiten liegen untereinander und werden senkrecht geblättert; die letzte (leere) Seite fügt eine neue hinzu.
+    val pager = androidx.compose.foundation.pager.rememberPagerState { layout.pages.size + 1 }
+    val pageIndex = pager.currentPage.coerceIn(0, layout.pages.lastIndex)
+    val page = layout.pages.getOrElse(pageIndex) { layout.pages.first() }
+    val scope = androidx.compose.runtime.rememberCoroutineScope()
     val sys = vm.system
     val media by vm.media.sessions.collectAsStateWithLifecycle()
     val torch by sys.torch.collectAsStateWithLifecycle()
@@ -215,83 +224,135 @@ fun QuickSettingsPanel(vm: HomeViewModel, layout: QsLayout) {
             .padding(horizontal = 16.dp),
     ) {
         if (editing) {
-            Row(Modifier.fillMaxWidth().padding(vertical = 12.dp), verticalAlignment = Alignment.CenterVertically) {
+            Row(Modifier.fillMaxWidth().padding(vertical = 10.dp), verticalAlignment = Alignment.CenterVertically) {
                 Column(Modifier.weight(1f)) {
-                    Text(stringResource(R.string.qs_edit_title, pageName(page)), style = TextStyle(fontFamily = Inter, fontWeight = FontWeight.Bold, fontSize = 26.sp, color = Tos.Ink), modifier = Modifier.semantics { heading() })
-                    Text(stringResource(R.string.qs_edit_hint), style = TextStyle(fontFamily = Inter, fontSize = 15.sp, color = Tos.Ink2))
+                    Text(stringResource(R.string.qs_edit_title, pageName(page)), style = TextStyle(fontFamily = Inter, fontWeight = FontWeight.Bold, fontSize = 20.sp, color = Tos.Ink), modifier = Modifier.semantics { heading() })
+                    Text(stringResource(R.string.qs_edit_hint), style = TextStyle(fontFamily = Inter, fontSize = 13.sp, color = Tos.Ink2))
                 }
                 PillButton(stringResource(R.string.qs_pages), accent = false) { managePages = true }
             }
         } else {
-            Row(Modifier.fillMaxWidth().padding(vertical = 12.dp), verticalAlignment = Alignment.CenterVertically) {
-                Row(
-                    Modifier
-                        .weight(1f)
-                        // Am rechten Rand ausblenden, damit erkennbar ist, dass weitere Tabs folgen.
-                        .graphicsLayer(compositingStrategy = CompositingStrategy.Offscreen)
-                        .drawWithContent {
-                            drawContent()
-                            val fade = 40.dp.toPx()
-                            drawRect(
-                                Brush.horizontalGradient(listOf(Color.Black, Color.Transparent), startX = size.width - fade, endX = size.width),
-                                blendMode = BlendMode.DstIn,
-                            )
-                        }
-                        .horizontalScroll(rememberScrollState())
-                        .padding(end = 24.dp),
-                    horizontalArrangement = Arrangement.spacedBy(8.dp),
-                ) {
-                    layout.pages.forEachIndexed { i, p ->
-                        val on = p.id == page.id
-                        Text(
-                            pageName(p),
-                            style = TextStyle(fontFamily = Inter, fontWeight = FontWeight.SemiBold, fontSize = 15.sp, color = if (on) Color(0xFF10141C) else Tos.Ink),
-                            modifier = Modifier
-                                .clip(Tos.PillShape)
-                                .background(if (on) Color.White else Tos.GlassControl)
-                                .clickable(role = Role.Tab) { pageIndex = i; selected = null }
-                                .padding(horizontal = 14.dp, vertical = 13.dp),
-                        )
-                    }
-                }
-                Spacer(Modifier.width(8.dp))
+            // Klein und ruhig: Seitenname links, Stift rechts. Keine Tabs.
+            Row(Modifier.fillMaxWidth().padding(top = 10.dp, bottom = 6.dp), verticalAlignment = Alignment.CenterVertically) {
+                Text(
+                    stringResource(R.string.qs_header, pageName(page)),
+                    style = TextStyle(fontFamily = Inter, fontWeight = FontWeight.SemiBold, fontSize = 13.sp, color = Tos.Ink2),
+                    modifier = Modifier.weight(1f).semantics { heading() },
+                )
                 Box(
-                    Modifier.size(48.dp).clip(CircleShape).background(Tos.GlassControl).clickable(role = Role.Button) { editing = true },
+                    Modifier.size(36.dp).clip(CircleShape).background(Tos.GlassControl).clickable(role = Role.Button) { editing = true },
                     contentAlignment = Alignment.Center,
-                ) { Icon(painterResource(R.drawable.ic_lucide_pencil), stringResource(R.string.qs_edit), tint = Tos.Ink) }
+                ) { Icon(painterResource(R.drawable.ic_lucide_pencil), stringResource(R.string.qs_edit), tint = Tos.Ink, modifier = Modifier.size(16.dp)) }
             }
         }
 
-        Column(Modifier.weight(1f).verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(14.dp)) {
-            var index = 0
-            QsOps.packRows(page.items).forEach { row ->
-                Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-                    row.forEach { item ->
-                        val i = index++
-                        Box(Modifier.weight(item.size.units.toFloat())) {
-                            val status = remember(tick, item.tile, torch) { sys.status(item.tile) }
-                            QsItemView(item, status, media, vm, ::act) { needs = it }
-                            if (editing) {
-                                Box(
-                                    Modifier.matchParentSize()
-                                        .border(2.dp, if (selected == i) Tos.Accent else Color.Transparent, RoundedCornerShape(26.dp))
-                                        .pointerInput(i) { detectTapGestures { selected = if (selected == i) null else i } },
-                                )
-                                MinusBadge(stringResource(R.string.qs_remove, tileName(item.tile)), false, onClick = {
-                                    vm.controller.updateQuickSettings { QsOps.removeItem(it, page.id, i) }
-                                    selected = null
-                                }, Modifier.offset((-14).dp, (-14).dp))
+        val view = androidx.compose.ui.platform.LocalView.current
+        Box(
+            Modifier.weight(1f).fillMaxWidth()
+                // Langes Drücken irgendwo auf der Seite startet das Bearbeiten (wie der Stift).
+                .pointerInput(editing) {
+                    if (editing) return@pointerInput
+                    awaitEachGesture {
+                        val down = awaitFirstDown(requireUnconsumed = false, pass = androidx.compose.ui.input.pointer.PointerEventPass.Initial)
+                        val ended = withTimeoutOrNull(viewConfiguration.longPressTimeoutMillis) {
+                            while (true) {
+                                val ev = awaitPointerEvent(androidx.compose.ui.input.pointer.PointerEventPass.Initial)
+                                val c = ev.changes.firstOrNull { it.id == down.id } ?: break
+                                if (!c.pressed || (c.position - down.position).getDistance() > viewConfiguration.touchSlop) break
                             }
+                            true
+                        }
+                        if (ended == null) {
+                            view.performHapticFeedback(android.view.HapticFeedbackConstants.LONG_PRESS)
+                            editing = true
                         }
                     }
-                    val used = row.sumOf { it.size.units }
-                    if (used < QsOps.ROW_UNITS) Spacer(Modifier.weight((QsOps.ROW_UNITS - used).toFloat()))
+                },
+        ) {
+            androidx.compose.foundation.pager.VerticalPager(
+                state = pager,
+                modifier = Modifier.fillMaxSize().padding(end = 22.dp),
+                userScrollEnabled = !editing,
+                key = { it },
+            ) { pi ->
+                val pg = layout.pages.getOrNull(pi)
+                if (pg == null) {
+                    // Leere Seite am Ende: neue Seite anlegen.
+                    Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                        Row(
+                            Modifier.fillMaxWidth().height(96.dp).glass(RoundedCornerShape(22.dp), Tos.Glass, Tos.GlassLine)
+                                .clickable(role = Role.Button) {
+                                    vm.controller.updateQuickSettings { QsOps.addPage(it, java.util.UUID.randomUUID().toString(), "") }
+                                    editing = true
+                                },
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.Center,
+                        ) {
+                            Icon(painterResource(R.drawable.ic_lucide_plus), null, tint = Tos.Ink2, modifier = Modifier.size(18.dp))
+                            Spacer(Modifier.width(8.dp))
+                            Text(stringResource(R.string.qs_add_page), style = Label.copy(color = Tos.Ink2))
+                        }
+                    }
+                    return@VerticalPager
+                }
+                // Kein inneres Scrollen: senkrechte Wische gehören dem Seiten-Pager.
+                Column(Modifier.fillMaxSize(), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                    var index = 0
+                    QsOps.packRows(pg.items).forEach { row ->
+                        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(10.dp), verticalAlignment = Alignment.Top) {
+                            row.forEach { item ->
+                                val i = index++
+                                Box(Modifier.weight(item.size.units.toFloat()), contentAlignment = Alignment.TopCenter) {
+                                    val status = remember(tick, item.tile, torch) { sys.status(item.tile) }
+                                    QsItemView(item, status, media, vm, ::act) { needs = it }
+                                    if (editing && pg.id == page.id) {
+                                        Box(
+                                            Modifier.matchParentSize()
+                                                .border(2.dp, if (selected == i) Tos.Accent else Color.Transparent, RoundedCornerShape(20.dp))
+                                                .pointerInput(i) { detectTapGestures { selected = if (selected == i) null else i } },
+                                        )
+                                        MinusBadge(stringResource(R.string.qs_remove, tileName(item.tile)), false, onClick = {
+                                            vm.controller.updateQuickSettings { QsOps.removeItem(it, pg.id, i) }
+                                            selected = null
+                                        }, Modifier.offset((-10).dp, (-10).dp))
+                                    }
+                                }
+                            }
+                            val used = row.sumOf { it.size.units }
+                            if (used < QsOps.ROW_UNITS) Spacer(Modifier.weight((QsOps.ROW_UNITS - used).toFloat()))
+                        }
+                    }
+                    if (!editing) {
+                        Text(stringResource(R.string.qs_system_hint), style = TextStyle(fontFamily = Inter, fontSize = 11.sp, lineHeight = 15.sp, color = Tos.Ink3), modifier = Modifier.padding(horizontal = 4.dp))
+                    }
+                    // Unten frei bis über die Gestenleiste (Hinweis nicht abschneiden).
+                    Spacer(Modifier.height(24.dp))
+                    Spacer(Modifier.windowInsetsBottomHeight(WindowInsets.navigationBars))
                 }
             }
-            if (!editing) {
-                Text(stringResource(R.string.qs_system_hint), style = TextStyle(fontFamily = Inter, fontSize = 13.sp, color = Tos.Ink3), modifier = Modifier.padding(6.dp))
+            // Punkte rechts: eine pro Seite, dazu „+“; antippen springt zur Seite.
+            Column(
+                Modifier.align(Alignment.CenterEnd).width(16.dp),
+                verticalArrangement = Arrangement.spacedBy(7.dp),
+                horizontalAlignment = Alignment.CenterHorizontally,
+            ) {
+                for (i in 0..layout.pages.size) {
+                    val on = i == pager.currentPage
+                    val desc = if (i < layout.pages.size) pageName(layout.pages[i]) else stringResource(R.string.qs_add_page)
+                    Box(
+                        Modifier.size(width = 16.dp, height = if (on) 24.dp else 14.dp)
+                            .clickable(role = Role.Tab, onClickLabel = desc) { scope.launch { pager.animateScrollToPage(i) } },
+                        contentAlignment = Alignment.Center,
+                    ) {
+                        if (i < layout.pages.size) {
+                            val h by androidx.compose.animation.core.animateDpAsState(if (on) 18.dp else 6.dp, label = "qsDot")
+                            Box(Modifier.size(width = 6.dp, height = h).clip(Tos.PillShape).background(if (on) Color.White else Tos.Ink3))
+                        } else {
+                            Icon(painterResource(R.drawable.ic_lucide_plus), desc, tint = if (on) Color.White else Tos.Ink3, modifier = Modifier.size(10.dp))
+                        }
+                    }
+                }
             }
-            Spacer(Modifier.height(24.dp))
         }
 
         if (editing) {
@@ -364,9 +425,9 @@ fun QuickSettingsPanel(vm: HomeViewModel, layout: QsLayout) {
 }
 
 @Composable
-private fun IconAction(icon: Int, description: String, onClick: () -> Unit) {
-    Box(Modifier.size(48.dp).clip(CircleShape).clickable(role = Role.Button, onClick = onClick), contentAlignment = Alignment.Center) {
-        Icon(painterResource(icon), description, tint = Tos.Ink)
+private fun IconAction(icon: Int, description: String, small: Boolean = false, onClick: () -> Unit) {
+    Box(Modifier.size(if (small) 40.dp else 48.dp).clip(CircleShape).clickable(role = Role.Button, onClick = onClick), contentAlignment = Alignment.Center) {
+        Icon(painterResource(icon), description, tint = Tos.Ink, modifier = Modifier.size(if (small) 17.dp else 24.dp))
     }
 }
 
@@ -393,45 +454,53 @@ private fun ToggleTile(item: QsItem, status: TileStatus, act: (QsTile) -> Unit) 
     val fg = if (active) Tos.AccentInk else Tos.Ink
     val description = listOfNotNull(name, detail).joinToString(", ")
     if (item.size == QsSize.S) {
-        Column(Modifier.fillMaxWidth().semantics(mergeDescendants = true) { contentDescription = description }, horizontalAlignment = Alignment.CenterHorizontally) {
+        // Kompakt: 64-dp-Kachel, kleine Beschriftung darunter.
+        Column(Modifier.width(72.dp).semantics(mergeDescendants = true) { contentDescription = description }, horizontalAlignment = Alignment.CenterHorizontally) {
             Box(
-                Modifier.fillMaxWidth().aspectRatio(1f).clip(RoundedCornerShape(26.dp)).background(bg).clickable(role = Role.Button) { act(item.tile) },
+                Modifier.size(64.dp).clip(RoundedCornerShape(20.dp)).background(bg).border(1.dp, Tos.GlassLine, RoundedCornerShape(20.dp))
+                    .clickable(role = Role.Button) { act(item.tile) },
                 contentAlignment = Alignment.Center,
-            ) { Icon(painterResource(tileIcon(item.tile)), null, tint = fg, modifier = Modifier.size(30.dp)) }
-            Spacer(Modifier.height(6.dp))
-            FitText(name, Label.copy(color = Tos.Ink), 14)
-            if (detail != null) FitText(detail, Small.copy(color = Tos.Ink2), 13)
+            ) { Icon(painterResource(tileIcon(item.tile)), null, tint = fg, modifier = Modifier.size(22.dp)) }
+            Spacer(Modifier.height(5.dp))
+            FitText(name, Label.copy(color = Tos.Ink, fontSize = 11.sp), 11)
+            if (detail != null) FitText(detail, Small.copy(color = Tos.Ink3, fontSize = 10.sp), 10)
         }
     } else {
         Row(
-            Modifier.fillMaxWidth().defaultMinSize(minHeight = 72.dp).clip(RoundedCornerShape(26.dp)).background(bg)
+            Modifier.fillMaxWidth().height(56.dp).clip(RoundedCornerShape(18.dp)).background(bg)
+                .border(1.dp, Tos.GlassLine, RoundedCornerShape(18.dp))
                 .clickable(role = Role.Button) { act(item.tile) }
                 .semantics(mergeDescendants = true) { contentDescription = description }
-                .padding(horizontal = 16.dp, vertical = 12.dp),
+                .padding(horizontal = 14.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            Icon(painterResource(tileIcon(item.tile)), null, tint = fg, modifier = Modifier.size(26.dp))
-            Spacer(Modifier.width(12.dp))
+            Icon(painterResource(tileIcon(item.tile)), null, tint = fg, modifier = Modifier.size(20.dp))
+            Spacer(Modifier.width(10.dp))
             Column(Modifier.weight(1f)) {
-                FitText(name, Label.copy(color = fg, textAlign = TextAlign.Start), 16)
-                if (detail != null) Text(detail, style = Small.copy(color = fg.copy(alpha = 0.75f), textAlign = TextAlign.Start))
+                FitText(name, Label.copy(color = fg, textAlign = TextAlign.Start, fontSize = 13.sp), 13)
+                if (detail != null) Text(detail, style = Small.copy(color = fg.copy(alpha = 0.75f), textAlign = TextAlign.Start, fontSize = 11.sp), maxLines = 1)
             }
-            Icon(painterResource(R.drawable.ic_lucide_chevron_right), null, tint = fg.copy(alpha = 0.6f), modifier = Modifier.size(18.dp))
+            Icon(painterResource(R.drawable.ic_lucide_chevron_right), null, tint = fg.copy(alpha = 0.6f), modifier = Modifier.size(16.dp))
         }
     }
 }
 
-/** Regler als breite Pille (Helligkeit, Lautstärke); Ziehen oder Tippen setzt den Wert. */
+/**
+ * Flacher Regler (48 dp, Helligkeit, Lautstärke): dezente Füllung mit schmalem Knopf an der Kante.
+ * Symbol, Name und Prozent bleiben immer lesbar (nie vom Füllbereich oder Knopf überdeckt).
+ */
 @Composable
 private fun SliderPill(icon: Int, name: String, initial: Float, onChange: (Float) -> Unit) {
     var value by remember { mutableFloatStateOf(initial) }
     var width by remember { mutableIntStateOf(1) }
+    val shape = RoundedCornerShape(16.dp)
     Box(
         Modifier
             .fillMaxWidth()
-            .height(68.dp)
-            .clip(Tos.PillShape)
+            .height(48.dp)
+            .clip(shape)
             .background(Color.White.copy(alpha = 0.10f))
+            .border(1.dp, Tos.GlassLine, shape)
             .pointerInput(Unit) {
                 width = size.width
                 detectTapGestures { p ->
@@ -455,30 +524,26 @@ private fun SliderPill(icon: Int, name: String, initial: Float, onChange: (Float
                     onChange(value)
                     true
                 }
+            }
+            .drawBehind {
+                val x = size.width * value
+                drawRect(Color.White.copy(alpha = 0.20f), size = androidx.compose.ui.geometry.Size(x, size.height))
+                // Knopf: schmaler, heller Balken an der Kante der Füllung.
+                val kx = x.coerceIn(6.dp.toPx(), size.width - 6.dp.toPx())
+                drawRoundRect(
+                    Color.White,
+                    topLeft = androidx.compose.ui.geometry.Offset(kx - 2.dp.toPx(), 11.dp.toPx()),
+                    size = androidx.compose.ui.geometry.Size(4.dp.toPx(), size.height - 22.dp.toPx()),
+                    cornerRadius = androidx.compose.ui.geometry.CornerRadius(2.dp.toPx()),
+                )
             },
     ) {
-        val fill = value.coerceAtLeast(0.18f)
-        Box(Modifier.fillMaxHeight().fillMaxWidth(fill).clip(Tos.PillShape).background(Color(0xFFE8EAEE)))
-        // Zwei Ebenen über die ganze Breite: hell rechts der Füllung, dunkel auf der Füllung.
-        SliderLabels(
-            icon, name, value, Tos.Ink,
-            Modifier.fillMaxSize().drawWithContent { clipRect(left = size.width * fill) { this@drawWithContent.drawContent() } },
-        )
-        SliderLabels(
-            icon, name, value, Color(0xFF10141C),
-            Modifier.fillMaxSize().drawWithContent { clipRect(right = size.width * fill) { this@drawWithContent.drawContent() } },
-        )
-    }
-}
-
-/** Inhalt der Regler-Pille (Symbol, Name, Prozent) in einer Farbe. */
-@Composable
-private fun SliderLabels(icon: Int, name: String, value: Float, color: Color, modifier: Modifier) {
-    Row(modifier.padding(horizontal = 22.dp), verticalAlignment = Alignment.CenterVertically) {
-        Icon(painterResource(icon), null, tint = color, modifier = Modifier.size(24.dp))
-        Spacer(Modifier.width(12.dp))
-        Text(name, style = Label.copy(color = color, fontSize = 18.sp, textAlign = TextAlign.Start), modifier = Modifier.weight(1f), maxLines = 1)
-        Text("${(value * 100).roundToInt()} %", style = Label.copy(color = color, fontSize = 17.sp))
+        Row(Modifier.fillMaxSize().padding(start = 14.dp, end = 14.dp), verticalAlignment = Alignment.CenterVertically) {
+            Icon(painterResource(icon), null, tint = Tos.Ink, modifier = Modifier.size(18.dp))
+            Spacer(Modifier.width(10.dp))
+            Text(name, style = Label.copy(color = Tos.Ink, fontSize = 13.sp, textAlign = TextAlign.Start), modifier = Modifier.weight(1f), maxLines = 1)
+            Text("${(value * 100).roundToInt()} %", style = Label.copy(color = Tos.Ink2, fontSize = 12.sp))
+        }
     }
 }
 
@@ -498,64 +563,66 @@ private fun FitText(text: String, style: TextStyle, maxSp: Int) {
     )
 }
 
-/** Mediensteuerung: Cover, Titel, Zurück/Play/Weiter, bei L auch Fortschritt und Ausgabe-Auswahl. */
+/**
+ * Mediensteuerung kompakt: ohne Wiedergabe eine Zeile („Nichts wird abgespielt“, Play für die letzte
+ * Sitzung, falls vorhanden); mit Wiedergabe Cover links, Titel, Steuerung. L zeigt zusätzlich den Fortschritt.
+ */
 @Composable
 private fun MediaCard(info: MediaInfo?, large: Boolean, vm: HomeViewModel, onNoAccess: () -> Unit) {
     val context = LocalContext.current
     val granted = NotificationCenter.isPermissionGranted(context)
-    Column(Modifier.fillMaxWidth().glass(RoundedCornerShape(30.dp), Tos.Glass, Tos.GlassLine).padding(18.dp)) {
-        if (!granted || info == null) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Icon(painterResource(R.drawable.ic_lucide_music), null, tint = Tos.Ink2, modifier = Modifier.size(28.dp))
-                Spacer(Modifier.width(12.dp))
-                Text(
-                    stringResource(if (!granted) R.string.qs_media_no_access else R.string.qs_media_none),
-                    style = TextStyle(fontFamily = Inter, fontSize = 16.sp, color = Tos.Ink2),
-                    modifier = Modifier.weight(1f).clickable(enabled = !granted, onClick = onNoAccess),
-                )
-            }
-            return@Column
+    val shape = RoundedCornerShape(18.dp)
+    if (!granted || info == null) {
+        Row(
+            Modifier.fillMaxWidth().height(44.dp).glass(shape, Tos.Glass, Tos.GlassLine)
+                .clickable(enabled = !granted, onClick = onNoAccess).padding(horizontal = 12.dp),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Icon(painterResource(R.drawable.ic_lucide_music), null, tint = Tos.Ink2, modifier = Modifier.size(18.dp))
+            Spacer(Modifier.width(10.dp))
+            Text(
+                stringResource(if (!granted) R.string.qs_media_no_access else R.string.qs_media_none),
+                style = TextStyle(fontFamily = Inter, fontSize = 12.5.sp, color = Tos.Ink2),
+                maxLines = 1, overflow = TextOverflow.Ellipsis, modifier = Modifier.weight(1f),
+            )
         }
-        val art = remember(info.art) { info.art?.asImageBitmap() }
-        if (large && art != null) {
-            Image(art, null, contentScale = ContentScale.Crop, modifier = Modifier.fillMaxWidth().aspectRatio(1.4f).clip(RoundedCornerShape(24.dp)))
-            Spacer(Modifier.height(14.dp))
-        }
+        return
+    }
+    val art = remember(info.art) { info.art?.asImageBitmap() }
+    Column(Modifier.fillMaxWidth().glass(shape, Tos.Glass, Tos.GlassLine).padding(horizontal = 8.dp, vertical = 8.dp)) {
         Row(verticalAlignment = Alignment.CenterVertically) {
-            if (!large && art != null) {
-                Image(art, null, contentScale = ContentScale.Crop, modifier = Modifier.size(72.dp).clip(RoundedCornerShape(18.dp)))
-                Spacer(Modifier.width(14.dp))
+            if (art != null) {
+                Image(art, null, contentScale = ContentScale.Crop, modifier = Modifier.size(40.dp).clip(RoundedCornerShape(11.dp)))
+            } else {
+                Box(Modifier.size(40.dp).clip(RoundedCornerShape(11.dp)).background(Color.White.copy(alpha = 0.12f)), contentAlignment = Alignment.Center) {
+                    Icon(painterResource(R.drawable.ic_lucide_music), null, tint = Tos.Ink2, modifier = Modifier.size(18.dp))
+                }
             }
+            Spacer(Modifier.width(10.dp))
             Column(Modifier.weight(1f)) {
-                Text(info.title, style = TextStyle(fontFamily = Inter, fontWeight = FontWeight.Bold, fontSize = if (large) 24.sp else 18.sp, color = Tos.Ink), maxLines = 1, overflow = TextOverflow.Ellipsis)
-                Text(listOf(info.artist, info.album).filter { it.isNotBlank() }.joinToString(" · "), style = TextStyle(fontFamily = Inter, fontSize = 15.sp, color = Tos.Ink2), maxLines = 1, overflow = TextOverflow.Ellipsis)
+                Text(info.title, style = TextStyle(fontFamily = Inter, fontWeight = FontWeight.SemiBold, fontSize = 13.sp, color = Tos.Ink), maxLines = 1, overflow = TextOverflow.Ellipsis)
+                Text(listOf(info.artist, info.album).filter { it.isNotBlank() }.joinToString(" · "), style = TextStyle(fontFamily = Inter, fontSize = 11.sp, color = Tos.Ink2), maxLines = 1, overflow = TextOverflow.Ellipsis)
             }
+            IconAction(R.drawable.ic_lucide_skip_back, stringResource(R.string.qs_media_previous), small = true) { info.previous() }
             Box(
-                Modifier.size(48.dp).clip(RoundedCornerShape(14.dp)).background(Color.White.copy(alpha = 0.12f)).clickable { vm.media.showOutputSwitcher(context) },
-                contentAlignment = Alignment.Center,
-            ) { Icon(painterResource(R.drawable.ic_lucide_cast), stringResource(R.string.qs_media_output), tint = Tos.Ink, modifier = Modifier.size(20.dp)) }
-        }
-        if (large && info.durationMs > 0) {
-            Spacer(Modifier.height(12.dp))
-            val fraction = (info.positionMs.toFloat() / info.durationMs).coerceIn(0f, 1f)
-            Box(Modifier.fillMaxWidth().height(6.dp).clip(Tos.PillShape).background(Color.White.copy(alpha = 0.2f))) {
-                Box(Modifier.fillMaxHeight().fillMaxWidth(fraction).background(Color.White, Tos.PillShape))
-            }
-        }
-        Spacer(Modifier.height(10.dp))
-        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceEvenly, verticalAlignment = Alignment.CenterVertically) {
-            IconAction(R.drawable.ic_lucide_skip_back, stringResource(R.string.qs_media_previous)) { info.previous() }
-            Box(
-                Modifier.size(if (large) 72.dp else 56.dp).clip(CircleShape).background(Color.White).clickable(role = Role.Button) { info.playPause() },
+                Modifier.size(34.dp).clip(CircleShape).background(Color.White).clickable(role = Role.Button) { info.playPause() },
                 contentAlignment = Alignment.Center,
             ) {
                 Icon(
                     painterResource(if (info.playing) R.drawable.ic_lucide_pause else R.drawable.ic_lucide_play),
                     stringResource(if (info.playing) R.string.qs_media_pause else R.string.qs_media_play),
-                    tint = Color(0xFF10141C),
+                    tint = Color(0xFF10141C), modifier = Modifier.size(15.dp),
                 )
             }
-            IconAction(R.drawable.ic_lucide_skip_forward, stringResource(R.string.qs_media_next)) { info.next() }
+            IconAction(R.drawable.ic_lucide_skip_forward, stringResource(R.string.qs_media_next), small = true) { info.next() }
+            if (large) IconAction(R.drawable.ic_lucide_cast, stringResource(R.string.qs_media_output), small = true) { vm.media.showOutputSwitcher(context) }
+        }
+        if (large && info.durationMs > 0) {
+            Spacer(Modifier.height(8.dp))
+            val fraction = (info.positionMs.toFloat() / info.durationMs).coerceIn(0f, 1f)
+            Box(Modifier.fillMaxWidth().padding(horizontal = 4.dp).height(3.dp).clip(Tos.PillShape).background(Color.White.copy(alpha = 0.2f))) {
+                Box(Modifier.fillMaxHeight().fillMaxWidth(fraction).background(Color.White, Tos.PillShape))
+            }
         }
     }
 }
