@@ -182,7 +182,7 @@ private fun Overview(d: LauncherData, isDefault: Boolean, versionName: String, a
         }
     }
     if (query.isNotBlank()) {
-        val titled = SettingsIndex.entries.map { it to context.getString(it.title) }
+        val titled = SettingsIndex.entries.map { it to stringResource(it.title) }
         val hits = FuzzySearch.rank(titled, { it.second }, query).distinctBy { it.item.second }.take(12)
         SettingsCard {
             if (hits.isEmpty()) Text(stringResource(R.string.search_none), style = SummaryStyle.copy(color = c.secondary), modifier = Modifier.padding(18.dp))

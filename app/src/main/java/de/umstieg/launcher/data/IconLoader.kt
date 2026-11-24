@@ -14,6 +14,8 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.core.graphics.createBitmap
+import androidx.core.graphics.get
+import androidx.core.graphics.scale
 import de.umstieg.launcher.core.IconOptions
 import de.umstieg.launcher.core.LegacyBackground
 import kotlinx.coroutines.Dispatchers
@@ -137,12 +139,12 @@ class IconLoader(context: Context) {
 
     /** Mittlere Farbe eines inneren Ausschnitts (kräftig genug für ein Badge). */
     private fun averageColor(b: Bitmap): Int {
-        val small = Bitmap.createScaledBitmap(b, 8, 8, true)
+        val small = b.scale(8, 8)
         var r = 0
         var g = 0
         var bl = 0
         for (x in 1 until 7) for (y in 1 until 7) {
-            val p = small.getPixel(x, y)
+            val p = small[x, y]
             r += Color.red(p)
             g += Color.green(p)
             bl += Color.blue(p)

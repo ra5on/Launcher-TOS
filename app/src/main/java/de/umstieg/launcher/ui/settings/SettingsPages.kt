@@ -762,7 +762,7 @@ fun HapticsPage(p: PageEnv) {
         val off = stringResource(R.string.off)
         SliderBlock(
             stringResource(R.string.setting_animation_speed), s.animationSpeed, 0..200,
-            { if (it == 0) off else String.format("%.1f×", it / 100f).replace('.', ',') },
+            { if (it == 0) off else String.format(java.util.Locale.GERMAN, "%.1f×", it / 100f) },
             onPreview = {}, onCommit = { v -> p.set { it.copy(animationSpeed = v) } }, stepSize = 25,
         )
         CardDivider()

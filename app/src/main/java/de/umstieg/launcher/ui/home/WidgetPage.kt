@@ -171,7 +171,7 @@ fun WidgetPicker(vm: HomeViewModel, target: WidgetTarget, actions: HomeActions) 
 @Composable
 private fun ProviderRow(info: AppWidgetProviderInfo, pm: android.content.pm.PackageManager, onPick: () -> Unit) {
     val context = LocalContext.current
-    val density = context.resources.displayMetrics.density
+    val density = androidx.compose.ui.platform.LocalDensity.current.density
     val preview: ImageBitmap? by produceState<ImageBitmap?>(null, info.provider) {
         value = withContext(Dispatchers.IO) {
             runCatching {

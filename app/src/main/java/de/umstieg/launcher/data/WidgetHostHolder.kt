@@ -5,7 +5,6 @@ import android.appwidget.AppWidgetManager
 import android.appwidget.AppWidgetProviderInfo
 import android.content.ComponentName
 import android.content.Context
-import android.os.Build
 import android.os.Bundle
 import android.util.Log
 
@@ -44,10 +43,8 @@ class WidgetHostHolder(context: Context) {
 
     /** IDs, die der Host kennt, das Layout aber nicht mehr nutzt, freigeben. */
     fun cleanup(used: Set<Int>) {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            runCatching { host.appWidgetIds.filter { it !in used }.forEach { delete(it) } }
-                .onFailure { Log.w("TosWidgets", "Aufräumen fehlgeschlagen", it) }
-        }
+        runCatching { host.appWidgetIds.filter { it !in used }.forEach { delete(it) } }
+            .onFailure { Log.w("TosWidgets", "Aufräumen fehlgeschlagen", it) }
     }
 
     companion object {

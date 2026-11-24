@@ -307,6 +307,7 @@ fun SearchOverlay(vm: HomeViewModel, d: LauncherData, apps: Map<de.umstieg.launc
         if (!s.searchSettings || query.trim().length < 2) emptyList() else FuzzySearch.rank(settingTitles, { it.second }, query, s.searchFuzziness).distinctBy { it.item.second }.take(4)
     }
     LaunchedEffect(Unit) { if (s.searchKeyboard) runCatching { focus.requestFocus() } }
+    val searchHint = stringResource(R.string.drawer_search_hint)
 
     fun open(app: AppInfo) {
         vm.controller.recordSearch(query, app.key)
@@ -344,7 +345,7 @@ fun SearchOverlay(vm: HomeViewModel, d: LauncherData, apps: Map<de.umstieg.launc
                         cursorBrush = SolidColor(Tos.Accent),
                         keyboardOptions = KeyboardOptions(imeAction = ImeAction.Go),
                         keyboardActions = KeyboardActions(onGo = { hits.firstOrNull()?.let { open(it.item) } }),
-                        modifier = Modifier.fillMaxWidth().focusRequester(focus).semantics { contentDescription = context.getString(R.string.drawer_search_hint) },
+                        modifier = Modifier.fillMaxWidth().focusRequester(focus).semantics { contentDescription = searchHint },
                     )
                 }
                 if (query.isNotEmpty()) RoundGlyph(R.drawable.ic_lucide_x, stringResource(R.string.search_clear)) { query = "" }
