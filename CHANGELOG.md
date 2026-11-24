@@ -1,5 +1,13 @@
 # Änderungen
 
+## 1.2.2 (versionCode 122)
+
+- **Langes Drücken nahm die App eine Reihe darüber auf (seit 1.2.0):** Die Trefferprüfung rechnete mit der
+  ganzen Pager-Höhe, obwohl das Raster seit 1.2.0 unten Platz für Seitenpunkte und Dock freihält. Die Zellen
+  waren dadurch rechnerisch zu hoch, und je tiefer man drückte, desto eher traf es die Reihe darüber. Jetzt wird
+  die Rasterfläche genau so berechnet, wie sie gezeichnet wird (GridHit, mit Tests); das gilt für Aufnehmen,
+  Ablegen und Ordnerbilden.
+
 ## 1.2.1 (versionCode 121)
 
 - **Suche und Panels decken die Statusleiste wieder vollständig ab:** Der Homescreen nutzte für die Tastatur

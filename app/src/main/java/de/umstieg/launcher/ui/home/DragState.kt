@@ -70,12 +70,8 @@ class GridGeometry(
     val cellW: Float get() = area.width / columns
     val cellH: Float get() = area.height / rows
 
-    fun cellAt(p: Offset): Pair<Int, Int>? {
-        if (!area.contains(p)) return null
-        val x = floor((p.x - area.left) / cellW).toInt().coerceIn(0, columns - 1)
-        val y = floor((p.y - area.top) / cellH).toInt().coerceIn(0, rows - 1)
-        return x to y
-    }
+    fun cellAt(p: Offset): Pair<Int, Int>? =
+        de.umstieg.launcher.core.GridHit.cellAt(de.umstieg.launcher.core.Area(area.left, area.top, area.right, area.bottom), columns, rows, p.x, p.y)
 
     fun iconCenter(x: Int, y: Int): Offset =
         Offset(area.left + (x + 0.5f) * cellW, area.top + (y + 0.5f) * cellH + iconCenterDy)

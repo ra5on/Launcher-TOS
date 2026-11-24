@@ -193,16 +193,21 @@ private fun HomeContent(vm: HomeViewModel, d: LauncherData, isDefault: Boolean, 
 
     // Geometrie in Wurzel-Koordinaten.
     var pagerBounds by remember { mutableStateOf(Rect.Zero) }
+    // Unten im Pager reservierter Platz (Seitenpunkte + Dock); das Raster endet darüber.
+    var bottomHeight by remember { mutableStateOf(0) }
     var gridMetrics by remember { mutableStateOf(0f to 0f) }
     val marginPx = with(density) { s.sideMarginDp.dp.toPx() }
     val gridGeo: GridGeometry? by rememberUpdatedState(
         if (pagerBounds.isEmpty || gridMetrics.second <= 0f) {
             null
         } else {
-            GridGeometry(
-                Rect(pagerBounds.left + marginPx, pagerBounds.top, pagerBounds.right - marginPx, pagerBounds.bottom),
-                s.columns, s.rows, gridMetrics.first, gridMetrics.second,
+            // Alles in Wurzel-Koordinaten: Pager-Fläche minus Seitenränder minus unten reservierter Platz
+            // (genau die Fläche, in der PageGrid zeichnet). Fingerpositionen kommen aus derselben Wurzel.
+            val a = de.umstieg.launcher.core.GridHit.gridArea(
+                de.umstieg.launcher.core.Area(pagerBounds.left, pagerBounds.top, pagerBounds.right, pagerBounds.bottom),
+                marginPx, bottomHeight.toFloat(),
             )
+            GridGeometry(Rect(a.left, a.top, a.right, a.bottom), s.columns, s.rows, gridMetrics.first, gridMetrics.second)
         },
     )
     var dockGeo by remember { mutableStateOf<DockGeometry?>(null) }
@@ -630,7 +635,6 @@ private fun HomeContent(vm: HomeViewModel, d: LauncherData, isDefault: Boolean, 
             }
             // Pager über die volle Höhe; Punkte und Dock liegen unten darüber. Homeseiten halten deren Platz frei,
             // App-Übersicht und Widget-Seite nutzen die Fläche bis unten.
-            var bottomHeight by remember { mutableStateOf(0) }
             val bottomDp = with(density) { bottomHeight.toDp() }
             Box(Modifier.weight(1f).fillMaxWidth()) {
             HorizontalPager(
