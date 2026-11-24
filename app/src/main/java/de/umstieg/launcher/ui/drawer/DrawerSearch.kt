@@ -108,7 +108,7 @@ fun DrawerPage(vm: HomeViewModel, d: LauncherData, apps: Map<de.umstieg.launcher
             DrawerView.GRID -> R.string.drawer_view_grid
         },
     )
-    Column(Modifier.fillMaxSize().padding(horizontal = 16.dp)) {
+    Column(Modifier.fillMaxSize().wallpaperScrim().padding(horizontal = 16.dp)) {
         FakeSearchField { vm.showOverlay(Overlay.SEARCH) }
         Row(Modifier.fillMaxWidth().padding(vertical = 14.dp), verticalAlignment = Alignment.Bottom) {
             Text(
@@ -134,6 +134,13 @@ fun DrawerPage(vm: HomeViewModel, d: LauncherData, apps: Map<de.umstieg.launcher
             DrawerView.GRID -> AppGrid(vm, d, list, shape)
         }
     }
+}
+
+/** Abdunkelung hinter Seiten auf hellem Hintergrund, damit Titel und Texte lesbar bleiben. */
+@Composable
+fun Modifier.wallpaperScrim(): Modifier {
+    if (!de.umstieg.launcher.ui.theme.LocalTosStyle.current.lightWallpaper) return this
+    return this.background(androidx.compose.ui.graphics.Brush.verticalGradient(listOf(Color(0x8C0B0F16), Color(0x590B0F16), Color(0x730B0F16))))
 }
 
 @Composable

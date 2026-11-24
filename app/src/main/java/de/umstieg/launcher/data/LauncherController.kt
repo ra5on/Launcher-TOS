@@ -47,6 +47,8 @@ class LauncherController(
     val media: MediaCenter,
     val system: SystemControls,
     val widgets: WidgetHostHolder,
+    val updater: Updater,
+    val permissions: PermissionHelp,
 ) {
     private val appContext = context.applicationContext
 
@@ -86,6 +88,22 @@ class LauncherController(
                 previous = used
             }
         }
+    }
+
+    /** Wöchentliche Update-Prüfung beim Start bzw. beim Zurückkehren (wenn eingeschaltet und fällig). */
+    fun maybeAutoCheck() {
+        val d = data.value ?: return
+        if (!d.settings.autoUpdateCheck) return
+        val now = System.currentTimeMillis()
+        if (!de.umstieg.launcher.core.UpdateLogic.dueForCheck(d.lastUpdateCheck, now)) return
+        updateLayout { it.copy(lastUpdateCheck = now) }
+        scope.launch { updater.check() }
+    }
+
+    /** Manuelle Prüfung („Jetzt suchen“). */
+    fun checkForUpdate() {
+        updateLayout { it.copy(lastUpdateCheck = System.currentTimeMillis()) }
+        scope.launch { updater.check() }
     }
 
     /** Beliebige Änderung an den gespeicherten Daten (für einfache Schalter/Listen). */

@@ -73,6 +73,14 @@ class HomeViewModel(application: Application) : AndroidViewModel(application) {
     private val _resizeWidget = MutableStateFlow<Int?>(null)
     val resizeWidget: StateFlow<Int?> = _resizeWidget.asStateFlow()
 
+    /** Einrichtung erneut zeigen (Karte „Einrichtung fortsetzen“). */
+    private val _setupRequested = MutableStateFlow(false)
+    val setupRequested: StateFlow<Boolean> = _setupRequested.asStateFlow()
+
+    fun showSetup(show: Boolean) {
+        _setupRequested.value = show
+    }
+
     private val _toFirstPage = MutableSharedFlow<Boolean>(extraBufferCapacity = 1, onBufferOverflow = BufferOverflow.DROP_OLDEST)
 
     /** Aufforderung, zur ersten Homescreen-Seite zu blättern (true = animiert). */

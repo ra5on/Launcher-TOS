@@ -66,6 +66,7 @@ class SettingsActions(
     val export: () -> Unit,
     val import: () -> Unit,
     val authenticate: (onSuccess: () -> Unit) -> Unit,
+    val restartSetup: () -> Unit,
     val openIntent: (android.content.Intent) -> Unit,
 )
 
@@ -119,6 +120,7 @@ fun SettingsScreen(
                 Section.PERMISSIONS -> PermissionsPage(p)
                 Section.BACKUP -> BackupPage(p)
                 Section.ABOUT -> AboutPage(p, versionName, licenses)
+                Section.UPDATES -> UpdatesPage(p)
             }
             Spacer(Modifier.height(24.dp))
         }
@@ -247,6 +249,8 @@ private fun Overview(d: LauncherData, isDefault: Boolean, versionName: String, a
             stringResource(if (isDefault) R.string.summary_default_yes else R.string.summary_default_no)) { actions.requestDefault() }
         CardDivider()
         NavRow(R.drawable.ic_lucide_download, Color(0xFF5C6B85), stringResource(R.string.settings_section_backup), stringResource(R.string.summary_backup)) { open(Section.BACKUP) }
+        CardDivider()
+        NavRow(R.drawable.ic_lucide_download, Color(0xFF26B597), stringResource(R.string.settings_section_updates), stringResource(if (s.autoUpdateCheck) R.string.summary_updates_auto else R.string.summary_updates_manual)) { open(Section.UPDATES) }
         CardDivider()
         NavRow(R.drawable.ic_lucide_info, Color(0xFF7C8799), stringResource(R.string.settings_section_about), stringResource(R.string.summary_about, versionName)) { open(Section.ABOUT) }
     }

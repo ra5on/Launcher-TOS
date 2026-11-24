@@ -3,15 +3,21 @@
     xmlns:tools="http://schemas.android.com/tools">
 
     <!--
-        Berechtigungen (keine davon erlaubt Internet; jede wird in der App erklärt):
+        Berechtigungen (jede wird in der App erklärt):
         - EXPAND_STATUS_BAR: Systemleiste/Schnelleinstellungen aufklappen, wenn eigene Panels nicht möglich sind
         - ACCESS_NETWORK_STATE: WLAN/Mobile Daten im Schnellzugriff als „verbunden“ anzeigen
         - ACCESS_NOTIFICATION_POLICY: „Nicht stören“ schalten (Zugriff erteilt der Nutzer selbst)
         - WRITE_SETTINGS: Helligkeit und Drehsperre (optional, der Nutzer erteilt sie selbst)
         - USE_BIOMETRIC: versteckte Apps mit der Geräte-Sperre schützen (optional)
         - REQUEST_DELETE_PACKAGES: „Deinstallieren“ im App-Menü (Android fragt immer nach)
+        - INTERNET: ausschließlich Updates von GitHub (api.github.com, github.com), abschaltbar
+        - REQUEST_INSTALL_PACKAGES: ein geprüftes Update installieren (Android fragt nach)
     -->
     <uses-permission android:name="android.permission.EXPAND_STATUS_BAR" />
+    <!-- Nur für Updates von GitHub (abschaltbar); keine anderen Verbindungen. -->
+    <uses-permission android:name="android.permission.INTERNET" />
+    <!-- Updates installieren (der Nutzer erlaubt „Unbekannte Apps installieren“ selbst). -->
+    <uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission android:name="android.permission.ACCESS_NOTIFICATION_POLICY" />
     <uses-permission
@@ -48,6 +54,7 @@
 
     <application
         android:name=".TosApplication"
+        android:networkSecurityConfig="@xml/network_security_config"
         android:allowBackup="false"
         android:dataExtractionRules="@xml/data_extraction_rules"
         android:fullBackupContent="false"
@@ -98,6 +105,11 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity-alias>
+
+        <!-- Ergebnis der Update-Installation (nur von Android an diese App). -->
+        <receiver
+            android:name=".data.InstallReceiver"
+            android:exported="false" />
 
         <!-- Benachrichtigungszugriff (optional): Badges, eigene Benachrichtigungsliste, Mediensteuerung. -->
         <service

@@ -114,6 +114,8 @@ data class TosStyle(
     val reduceMotion: Boolean = false,
     val blur: Float = 0.6f,
     val dim: Float = 0f,
+    /** Heller Hintergrund (Foto): Glas stärker tönen, Texte mit Schatten und Abdunkelung. */
+    val lightWallpaper: Boolean = false,
 )
 
 val LocalTosStyle = staticCompositionLocalOf { TosStyle() }
@@ -129,13 +131,18 @@ fun accentColor(s: LauncherSettings, wallpaper: Color?): Color = when (s.accent)
     Accent.CUSTOM -> Color(s.accentCustom.toInt())
 }
 
-fun styleFor(s: LauncherSettings, wallpaper: Color?, systemReduceMotion: Boolean): TosStyle {
+fun styleFor(s: LauncherSettings, wallpaper: Color?, systemReduceMotion: Boolean, lightWallpaper: Boolean = false): TosStyle {
     val accent = accentColor(s, wallpaper)
     val t = s.glassTint / 100f
     val clear = Color.White.copy(alpha = 0.10f)
     val tinted = Color(0xFF0E121A).copy(alpha = 0.45f)
     var fill = lerp(clear, tinted, t)
     var line = Color.White.copy(alpha = 0.16f)
+    if (lightWallpaper) {
+        // Auf hellen Fotos sonst kaum lesbar: deutlich dunkler tönen.
+        fill = lerp(fill, Color(0xFF0E121A).copy(alpha = 0.62f), 0.6f)
+        line = Color.White.copy(alpha = 0.22f)
+    }
     if (s.highContrast) {
         fill = fill.copy(alpha = (fill.alpha + 0.25f).coerceAtMost(0.85f))
         line = Color.White.copy(alpha = 0.40f)
@@ -155,6 +162,7 @@ fun styleFor(s: LauncherSettings, wallpaper: Color?, systemReduceMotion: Boolean
         reduceMotion = reduce,
         blur = s.blurStrength / 100f,
         dim = s.dimWallpaper / 100f,
+        lightWallpaper = lightWallpaper,
     )
 }
 

@@ -78,6 +78,10 @@ enum class LegacyBackground { WHITE, DOMINANT, CUSTOM }
 @Serializable
 enum class PageCountMode { AUTO, FIXED }
 
+/** Lage einer Zusatzseite (App-Übersicht, Widget-Seite). */
+@Serializable
+enum class PageSide { LEFT, RIGHT, OFF }
+
 @Serializable
 enum class AutoAddTarget { NEXT_FREE, LAST_PAGE }
 
@@ -191,7 +195,7 @@ data class LauncherSettings(
     val folderPreview3x3: Boolean = false,
     val folderColumns: Int = 3,
     val folderBackground: FolderBackground = FolderBackground.GLASS,
-    val glassTint: Int = 30,
+    val glassTint: Int = 50,
     val blurStrength: Int = 60,
     val dimWallpaper: Int = 0,
     val accent: Accent = Accent.MINT,
@@ -201,8 +205,8 @@ data class LauncherSettings(
     val gesturePreset: GesturePreset = GesturePreset.TOS,
     /** Oberer Rand geteilt (links/Mitte/rechts) oder eine Zone. */
     val edgeSplit: Boolean = true,
-    /** Höhe der Randzone unter der Statusleiste. */
-    val edgeHeightDp: Int = 56,
+    /** Höhe der Randzone ab Unterkante Statusleiste in % der Bildschirmhöhe. */
+    val edgeHeightPercent: Int = 25,
     val swipeZoneLeft: Int = 35,
     val swipeZoneRight: Int = 35,
     val badgesEnabled: Boolean = true,
@@ -215,16 +219,21 @@ data class LauncherSettings(
     val searchCalculator: Boolean = true,
     val searchSettings: Boolean = true,
     val searchHistory: Boolean = true,
-    val drawerEnabled: Boolean = true,
+    /** App-Übersicht: links, rechts oder aus. */
+    val drawerSide: PageSide = PageSide.RIGHT,
     val drawerView: DrawerView = DrawerView.CATEGORIES,
     val hiddenAppsLocked: Boolean = false,
-    val widgetPageEnabled: Boolean = true,
+    /** Widget-Seite: links, rechts oder aus. */
+    val widgetSide: PageSide = PageSide.OFF,
     val widgetsOnHome: Boolean = true,
     val widgetGlass: Boolean = true,
     val animationSpeed: Int = 100,
     val appOpenAnimation: AppOpenAnimation = AppOpenAnimation.ZOOM,
     val simpleMode: Boolean = false,
     val reduceMotion: TriState = TriState.SYSTEM,
+    // ---------- 1.1 ----------
+    /** Wöchentlich auf GitHub nach einer neuen Version suchen. */
+    val autoUpdateCheck: Boolean = true,
 ) {
     val grid: GridSpec get() = GridSpec(columns, rows)
 
@@ -250,10 +259,13 @@ data class LauncherSettings(
         dimWallpaper = dimWallpaper.coerceIn(0, 60),
         swipeZoneLeft = swipeZoneLeft.coerceIn(SWIPE_ZONE),
         swipeZoneRight = swipeZoneRight.coerceIn(SWIPE_ZONE),
-        edgeHeightDp = edgeHeightDp.coerceIn(EDGE_HEIGHT),
+        edgeHeightPercent = edgeHeightPercent.coerceIn(EDGE_HEIGHT),
         animationSpeed = animationSpeed.coerceIn(0, 200),
         gestures = DEFAULT_GESTURES + gestures,
     )
+
+    val drawerEnabled: Boolean get() = drawerSide != PageSide.OFF
+    val widgetPageEnabled: Boolean get() = widgetSide != PageSide.OFF
 
     /** Mindestanzahl der Seiten (feste Seitenanzahl). */
     val minPages: Int get() = if (pageCountMode == PageCountMode.FIXED) fixedPages else 1
@@ -268,7 +280,7 @@ data class LauncherSettings(
         val FIXED_PAGES = 1..9
         val FOLDER_COLUMNS = 3..5
         val SWIPE_ZONE = 20..50
-        val EDGE_HEIGHT = 24..64
+        val EDGE_HEIGHT = 5..40
 
         /** Vorlage „Launcher TOS“ (Standard). */
         val DEFAULT_GESTURES: Map<Gesture, GestureBinding> = mapOf(
@@ -309,7 +321,20 @@ data class LauncherData(
     /** Zuletzt aus der Suche/Übersicht gestartet (neueste zuerst). */
     val recentApps: List<AppKey> = emptyList(),
     val quickSettings: QsLayout = QsLayout.DEFAULT,
+    /** Einrichtung wurde einmal gezeigt (bzw. vor 1.1 die Einführung). */
     val onboardingDone: Boolean = false,
+    // ---------- 1.1 ----------
+    /** Schritte der Einrichtung, die bewusst abgelehnt wurden. */
+    val setupDeclined: Set<SetupStep> = emptySet(),
+    /** Karte „Einrichtung fortsetzen“ weggewischt. */
+    val setupCardDismissed: Boolean = false,
+    /** Frage „Updates automatisch prüfen“ beantwortet. */
+    val updateChoiceMade: Boolean = false,
+    /** Gesten in der Einrichtung gezeigt. */
+    val gesturesSeen: Boolean = false,
+    val lastUpdateCheck: Long = 0,
+    /** Version, deren Update-Hinweis weggewischt wurde. */
+    val updateDismissed: String? = null,
 ) {
     companion object {
         const val CURRENT_VERSION = 1

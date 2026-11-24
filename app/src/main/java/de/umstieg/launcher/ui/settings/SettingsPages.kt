@@ -64,6 +64,10 @@ import de.umstieg.launcher.core.LauncherData
 import de.umstieg.launcher.core.LauncherSettings
 import de.umstieg.launcher.core.LegacyBackground
 import de.umstieg.launcher.core.PageCountMode
+import de.umstieg.launcher.core.PageSide
+import de.umstieg.launcher.data.UpdateState
+import androidx.compose.runtime.collectAsState
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import de.umstieg.launcher.core.PageTransition
 import de.umstieg.launcher.core.QsLayout
 import de.umstieg.launcher.core.SearchFuzziness
@@ -102,6 +106,18 @@ private fun ResetSection(onReset: () -> Unit) {
     SettingsCard { ActionRow(stringResource(R.string.settings_reset_section), onClick = onReset) }
 }
 
+/** „Links / Rechts / Aus“ für eine Zusatzseite. */
+@Composable
+fun PageSideRow(title: String, summary: String, value: PageSide, onChange: (PageSide) -> Unit) {
+    SegmentedRow(
+        title,
+        listOf(PageSide.LEFT to stringResource(R.string.side_left), PageSide.RIGHT to stringResource(R.string.side_right), PageSide.OFF to stringResource(R.string.off)),
+        value,
+        onChange,
+    )
+    Note(summary)
+}
+
 // ---------- Homescreen & Raster ----------
 
 @Composable
@@ -109,6 +125,11 @@ fun GridPage(p: PageEnv) {
     val s = p.s
     var preview by remember(s) { mutableStateOf(s) }
     SubpageHeader(stringResource(R.string.settings_section_grid), p.back)
+    SettingsCard {
+        PageSideRow(stringResource(R.string.setting_widget_side), stringResource(R.string.setting_widget_page_summary), s.widgetSide) { v -> p.set { it.copy(widgetSide = v) } }
+        CardDivider()
+        PageSideRow(stringResource(R.string.setting_drawer_side), stringResource(R.string.setting_drawer_summary), s.drawerSide) { v -> p.set { it.copy(drawerSide = v) } }
+    }
     GridPreview(p.apps, p.vm.icons, preview)
     val dpFormat = stringResource(R.string.dp_value)
     SettingsCard {
@@ -510,8 +531,9 @@ fun GesturesPage(p: PageEnv) {
             p.set { GesturePresets.withSplit(it, v) }
         }
         CardDivider()
-        SliderBlock(stringResource(R.string.setting_edge_height), s.edgeHeightDp, LauncherSettings.EDGE_HEIGHT, { String.format(dpFormat, it) },
-            onPreview = {}, onCommit = { v -> p.set { it.copy(edgeHeightDp = v) } }, stepSize = 4)
+        SliderBlock(stringResource(R.string.setting_edge_height), s.edgeHeightPercent, LauncherSettings.EDGE_HEIGHT, pct,
+            onPreview = {}, onCommit = { v -> p.set { it.copy(edgeHeightPercent = v) } }, stepSize = 5)
+        Note(stringResource(R.string.setting_edge_height_summary))
         if (s.edgeSplit) {
             CardDivider()
             SliderBlock(stringResource(R.string.setting_swipe_zone_left), s.swipeZoneLeft, LauncherSettings.SWIPE_ZONE, pct, onPreview = {}, onCommit = { v -> p.set { it.copy(swipeZoneLeft = v) } }, stepSize = 5)
@@ -530,7 +552,7 @@ fun GesturesPage(p: PageEnv) {
     if (!GestureClassifier.searchReachableByGesture(s)) SettingsCard { Note(stringResource(R.string.gestures_search_hint)) }
     SettingsCard { Note(stringResource(R.string.gestures_system_note)) }
     ResetSection {
-        p.set { GesturePresets.apply(it, GesturePreset.TOS).copy(swipeZoneLeft = Defaults.swipeZoneLeft, swipeZoneRight = Defaults.swipeZoneRight, edgeHeightDp = Defaults.edgeHeightDp) }
+        p.set { GesturePresets.apply(it, GesturePreset.TOS).copy(swipeZoneLeft = Defaults.swipeZoneLeft, swipeZoneRight = Defaults.swipeZoneRight, edgeHeightPercent = Defaults.edgeHeightPercent) }
     }
     editing?.let { g ->
         AlertDialog(
@@ -600,8 +622,12 @@ fun BadgesPage(p: PageEnv) {
         ActionRow(
             stringResource(if (granted) R.string.listener_granted else R.string.listener_allow),
             value = stringResource(if (granted) R.string.perm_status_granted else R.string.perm_status_missing),
-        ) { p.actions.openIntent(android.content.Intent(android.provider.Settings.ACTION_NOTIFICATION_LISTENER_SETTINGS)) }
+        ) {
+            p.vm.markListenerAttempt()
+            p.actions.openIntent(android.content.Intent(android.provider.Settings.ACTION_NOTIFICATION_LISTENER_SETTINGS))
+        }
     }
+    if (p.vm.showRestrictedHelp(granted)) RestrictedSettingsCard(p)
     SettingsCard {
         SwitchRow(stringResource(R.string.setting_badges), stringResource(R.string.setting_badges_summary), s.badgesEnabled) { v -> p.set { it.copy(badgesEnabled = v) } }
         CardDivider()
@@ -696,7 +722,7 @@ fun DrawerSettingsPage(p: PageEnv) {
     val s = p.s
     SubpageHeader(stringResource(R.string.settings_section_drawer), p.back)
     SettingsCard {
-        SwitchRow(stringResource(R.string.setting_drawer), stringResource(R.string.setting_drawer_summary), s.drawerEnabled) { v -> p.set { it.copy(drawerEnabled = v) } }
+        PageSideRow(stringResource(R.string.setting_drawer_side), stringResource(R.string.setting_drawer_summary), s.drawerSide) { v -> p.set { it.copy(drawerSide = v) } }
         CardDivider()
         SegmentedRow(
             stringResource(R.string.setting_drawer_view),
@@ -713,7 +739,7 @@ fun DrawerSettingsPage(p: PageEnv) {
             p.actions.authenticate { p.set { it.copy(hiddenAppsLocked = v) } }
         }
     }
-    ResetSection { p.set { it.copy(drawerEnabled = Defaults.drawerEnabled, drawerView = Defaults.drawerView) } }
+    ResetSection { p.set { it.copy(drawerSide = Defaults.drawerSide, drawerView = Defaults.drawerView) } }
 }
 
 @Composable
@@ -734,13 +760,13 @@ fun WidgetsPage(p: PageEnv) {
     val s = p.s
     SubpageHeader(stringResource(R.string.settings_section_widgets), p.back)
     SettingsCard {
-        SwitchRow(stringResource(R.string.setting_widget_page), stringResource(R.string.setting_widget_page_summary), s.widgetPageEnabled) { v -> p.set { it.copy(widgetPageEnabled = v) } }
+        PageSideRow(stringResource(R.string.setting_widget_side), stringResource(R.string.setting_widget_page_summary), s.widgetSide) { v -> p.set { it.copy(widgetSide = v) } }
         CardDivider()
         SwitchRow(stringResource(R.string.setting_widgets_home), stringResource(R.string.setting_widgets_home_summary), s.widgetsOnHome) { v -> p.set { it.copy(widgetsOnHome = v) } }
         CardDivider()
         SwitchRow(stringResource(R.string.setting_widget_glass), checked = s.widgetGlass) { v -> p.set { it.copy(widgetGlass = v) } }
     }
-    ResetSection { p.set { it.copy(widgetPageEnabled = Defaults.widgetPageEnabled, widgetsOnHome = Defaults.widgetsOnHome, widgetGlass = Defaults.widgetGlass) } }
+    ResetSection { p.set { it.copy(widgetSide = Defaults.widgetSide, widgetsOnHome = Defaults.widgetsOnHome, widgetGlass = Defaults.widgetGlass) } }
 }
 
 // ---------- Haptik & Animationen ----------
@@ -809,6 +835,7 @@ fun PermissionsPage(p: PageEnv) {
     SettingsCard { Note(stringResource(R.string.perm_intro)) }
     SettingsCard {
         PermissionRow(R.string.perm_listener_title, R.string.perm_listener_text, NotificationCenter.isPermissionGranted(context)) {
+            p.vm.markListenerAttempt()
             p.actions.openIntent(android.content.Intent(android.provider.Settings.ACTION_NOTIFICATION_LISTENER_SETTINGS))
         }
         CardDivider()
@@ -825,8 +852,13 @@ fun PermissionsPage(p: PageEnv) {
         PermissionRow(R.string.perm_biometric_title, R.string.perm_biometric_text, true, null)
         CardDivider()
         PermissionRow(R.string.perm_delete_title, R.string.perm_delete_text, true, null)
+        CardDivider()
+        PermissionRow(R.string.perm_internet_title, R.string.perm_internet_text, true, null)
+        CardDivider()
+        PermissionRow(R.string.perm_install_title, R.string.perm_install_text, p.vm.canInstall()) { p.actions.openIntent(p.vm.allowInstallIntent()) }
     }
-    SettingsCard { Note(stringResource(R.string.perm_no_internet)) }
+    if (p.vm.showRestrictedHelp(NotificationCenter.isPermissionGranted(context))) RestrictedSettingsCard(p)
+    SettingsCard { Note(stringResource(R.string.perm_internet_only_github)) }
 }
 
 @Composable
@@ -843,6 +875,90 @@ private fun PermissionRow(title: Int, text: Int, granted: Boolean, onClick: (() 
             )
         }
         Text(stringResource(text), style = SummaryStyle.copy(color = c.secondary))
+    }
+}
+
+// ---------- Updates ----------
+
+@Composable
+fun UpdatesPage(p: PageEnv) {
+    val c = LocalPanelColors.current
+    val state by p.vm.updateState.collectAsStateWithLifecycle()
+    var canInstall by remember { mutableStateOf(p.vm.canInstall()) }
+    LifecycleEventEffect(Lifecycle.Event.ON_RESUME) { canInstall = p.vm.canInstall() }
+    SubpageHeader(stringResource(R.string.settings_section_updates), p.back)
+    SettingsCard {
+        Column(Modifier.fillMaxWidth().padding(18.dp)) {
+            Text(stringResource(R.string.updates_installed, p.vm.installedVersion), style = TitleStyle.copy(color = c.content))
+            Spacer(Modifier.height(6.dp))
+            val status = when (val st = state) {
+                UpdateState.Idle -> null
+                UpdateState.Checking -> stringResource(R.string.updates_checking)
+                UpdateState.UpToDate -> stringResource(R.string.updates_up_to_date)
+                is UpdateState.Available -> stringResource(R.string.updates_available, st.release.version.name)
+                is UpdateState.Downloading -> stringResource(R.string.updates_downloading, if (st.total > 0) (st.done * 100 / st.total).toInt() else 0)
+                is UpdateState.Verifying -> stringResource(R.string.updates_verifying)
+                is UpdateState.Installing -> stringResource(R.string.updates_installing)
+                is UpdateState.NeedsPermission -> stringResource(R.string.updates_needs_permission)
+                is UpdateState.Failed -> stringResource(
+                    when (st.reason) {
+                        UpdateState.Reason.NETWORK -> R.string.updates_failed_network
+                        UpdateState.Reason.CHECKSUM -> R.string.updates_failed_checksum
+                        UpdateState.Reason.SIGNATURE -> R.string.updates_failed_signature
+                        UpdateState.Reason.PACKAGE -> R.string.updates_failed_package
+                        UpdateState.Reason.INSTALL -> R.string.updates_failed_install
+                    },
+                ) + (st.detail?.let { " ($it)" } ?: "")
+            }
+            if (status != null) Text(status, style = SummaryStyle.copy(color = c.secondary))
+            val progress = (state as? UpdateState.Downloading)?.let { if (it.total > 0) it.done.toFloat() / it.total else 0f }
+            if (progress != null) {
+                Spacer(Modifier.height(10.dp))
+                androidx.compose.material3.LinearProgressIndicator(progress = { progress }, modifier = Modifier.fillMaxWidth(), color = Tos.Accent)
+            }
+        }
+        CardDivider()
+        ActionRow(stringResource(R.string.updates_check_now), stringResource(R.string.updates_check_now_summary)) { p.vm.checkForUpdate() }
+        val release = when (val st = state) {
+            is UpdateState.Available -> st.release
+            is UpdateState.NeedsPermission -> st.release
+            is UpdateState.Failed -> st.release
+            else -> null
+        }
+        if (release != null) {
+            CardDivider()
+            ActionRow(stringResource(R.string.updates_install, release.version.name), stringResource(R.string.updates_install_summary), color = Tos.Accent) { p.vm.install(release) }
+        }
+        if (release != null && !canInstall) {
+            CardDivider()
+            ActionRow(stringResource(R.string.updates_allow_install), stringResource(R.string.updates_allow_install_summary)) { p.actions.openIntent(p.vm.allowInstallIntent()) }
+        }
+    }
+    val notes = (state as? UpdateState.Available)?.release?.notes ?: (state as? UpdateState.NeedsPermission)?.release?.notes
+    if (!notes.isNullOrBlank()) {
+        SettingsCard {
+            Text(stringResource(R.string.updates_changelog), style = TitleStyle.copy(color = c.content), modifier = Modifier.padding(start = 18.dp, top = 12.dp))
+            Text(notes, style = SummaryStyle.copy(color = c.content), modifier = Modifier.padding(18.dp))
+        }
+    }
+    SettingsCard {
+        SwitchRow(stringResource(R.string.setting_auto_update), stringResource(R.string.setting_auto_update_summary), p.s.autoUpdateCheck) { v ->
+            p.vm.updateData { it.copy(updateChoiceMade = true, settings = it.settings.copy(autoUpdateCheck = v)) }
+        }
+        Note(stringResource(R.string.updates_privacy))
+    }
+}
+
+/** Hilfe zu „Eingeschränkten Einstellungen“ (Android 13+, Installation nicht aus einem Store). */
+@Composable
+fun RestrictedSettingsCard(p: PageEnv) {
+    SettingsCard {
+        Text(stringResource(R.string.restricted_title), style = TitleStyle.copy(color = LocalPanelColors.current.content), modifier = Modifier.padding(start = 18.dp, top = 12.dp, end = 18.dp))
+        Note(stringResource(R.string.restricted_text))
+        ActionRow(stringResource(R.string.setup_open_app_info), stringResource(R.string.restricted_after)) {
+            p.vm.markAppInfoOpened()
+            p.actions.openIntent(p.vm.appDetailsIntent())
+        }
     }
 }
 
@@ -890,7 +1006,7 @@ fun AboutPage(p: PageEnv, versionName: String, licenses: () -> List<Pair<String,
             Text(stringResource(R.string.about_text), style = SummaryStyle.copy(color = c.content))
         }
     }
-    SettingsCard { ActionRow(stringResource(R.string.about_show_intro)) { p.vm.updateData { it.copy(onboardingDone = false) } } }
+    SettingsCard { ActionRow(stringResource(R.string.setup_restart), stringResource(R.string.setup_restart_summary)) { p.actions.restartSetup() } }
     SettingsCard {
         Text(stringResource(R.string.about_licenses), style = TitleStyle.copy(color = c.content), modifier = Modifier.padding(horizontal = 18.dp, vertical = 10.dp))
         Note(stringResource(R.string.about_licenses_summary))

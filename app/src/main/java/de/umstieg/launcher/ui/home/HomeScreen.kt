@@ -79,11 +79,14 @@ import de.umstieg.launcher.core.GestureAction
 import de.umstieg.launcher.core.GestureClassifier
 import de.umstieg.launcher.core.LauncherData
 import de.umstieg.launcher.core.LayoutOps
+import de.umstieg.launcher.core.PageSide
 import de.umstieg.launcher.core.PageTransition
 import de.umstieg.launcher.core.Slot
 import de.umstieg.launcher.core.effective
 import de.umstieg.launcher.data.AppInfo
-import de.umstieg.launcher.data.NotificationCenter
+import de.umstieg.launcher.data.UpdateState
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.compose.LifecycleEventEffect
 import de.umstieg.launcher.ui.drawer.DrawerPage
 import de.umstieg.launcher.ui.components.tosHaptic
 import de.umstieg.launcher.ui.icons.rememberSuperellipse
@@ -108,14 +111,36 @@ class HomeActions(
     val unlockHidden: (onSuccess: () -> Unit) -> Unit,
     val wallpaperColor: Color?,
     val systemReduceMotion: Boolean,
+    val lightWallpaper: Boolean = false,
 )
 
-/** Zuordnung der Pager-Seiten: Widget-Seite (links), Homescreen-Seiten, App-Übersicht (rechts). */
-class PageMap(val widgetPage: Boolean, val homePages: Int, val drawer: Boolean) {
-    val firstHome: Int get() = if (widgetPage) 1 else 0
-    val count: Int get() = firstHome + homePages + if (drawer) 1 else 0
-    val drawerIndex: Int get() = if (drawer) count - 1 else -1
+/**
+ * Zuordnung der Pager-Seiten: Zusatzseiten links, Homescreen-Seiten, Zusatzseiten rechts. Liegen
+ * App-Übersicht und Widget-Seite auf derselben Seite, liegen die Widgets außen.
+ */
+class PageMap(widgetSide: PageSide, drawerSide: PageSide, val homePages: Int) {
+    private val left = buildList {
+        if (widgetSide == PageSide.LEFT) add(EXTRA_WIDGETS)
+        if (drawerSide == PageSide.LEFT) add(EXTRA_DRAWER)
+    }
+    private val right = buildList {
+        if (drawerSide == PageSide.RIGHT) add(EXTRA_DRAWER)
+        if (widgetSide == PageSide.RIGHT) add(EXTRA_WIDGETS)
+    }
+    val firstHome: Int get() = left.size
+    val count: Int get() = left.size + homePages + right.size
+    val drawer: Boolean get() = EXTRA_DRAWER in left || EXTRA_DRAWER in right
+    val drawerIndex: Int get() = when {
+        EXTRA_DRAWER in left -> left.indexOf(EXTRA_DRAWER)
+        EXTRA_DRAWER in right -> firstHome + homePages + right.indexOf(EXTRA_DRAWER)
+        else -> -1
+    }
     fun homeIndex(pagerIndex: Int): Int? = (pagerIndex - firstHome).takeIf { it in 0 until homePages }
+
+    private companion object {
+        const val EXTRA_WIDGETS = 0
+        const val EXTRA_DRAWER = 1
+    }
 }
 
 /** Homescreen: Seiten, Gesten, Panels, Bearbeitungsmodus mit Ziehen & Ablegen. */
@@ -125,7 +150,7 @@ fun HomeScreen(vm: HomeViewModel, isDefault: Boolean, actions: HomeActions) {
     val d = data ?: return
     val s = d.settings.effective()
     val dark = isDark(s.theme)
-    TosTheme(dark = dark, style = styleFor(s, actions.wallpaperColor, actions.systemReduceMotion)) {
+    TosTheme(dark = dark, style = styleFor(s, actions.wallpaperColor, actions.systemReduceMotion, actions.lightWallpaper)) {
         HomeContent(vm, d.copy(settings = s), isDefault, actions)
     }
 }
@@ -151,11 +176,13 @@ private fun HomeContent(vm: HomeViewModel, d: LauncherData, isDefault: Boolean, 
     val widgetPicker by vm.widgetPicker.collectAsStateWithLifecycle()
     val quietApp by vm.quietApp.collectAsStateWithLifecycle()
     val resizeWidget by vm.resizeWidget.collectAsStateWithLifecycle()
+    val setupRequested by vm.setupRequested.collectAsStateWithLifecycle()
+    val updateState by vm.controller.updater.state.collectAsStateWithLifecycle()
 
     val map = PageMap(
-        widgetPage = s.widgetPageEnabled,
+        widgetSide = s.widgetSide,
+        drawerSide = if (editMode) PageSide.OFF else s.drawerSide,
         homePages = d.layout.pages.size + if (editMode) 1 else 0,
-        drawer = s.drawerEnabled && !editMode,
     )
     val pagerState = rememberPagerState(initialPage = map.firstHome) { map.count }
     val shape = rememberSuperellipse(s.iconRounding)
@@ -227,10 +254,8 @@ private fun HomeContent(vm: HomeViewModel, d: LauncherData, isDefault: Boolean, 
 
     fun perform(action: GestureAction, binding: de.umstieg.launcher.core.GestureBinding?) {
         when (action) {
-            GestureAction.NOTIFICATIONS -> {
-                val own = s.ownNotificationList && NotificationCenter.isPermissionGranted(context)
-                if (own || !vm.system.expandStatusBar(false)) vm.showOverlay(Overlay.NOTIFICATIONS)
-            }
+            // Eigene Liste auch ohne Zugriff: das Panel erklärt dann, wie man ihn erteilt (kein stiller Wechsel).
+            GestureAction.NOTIFICATIONS -> if (s.ownNotificationList || !vm.system.expandStatusBar(false)) vm.showOverlay(Overlay.NOTIFICATIONS)
             GestureAction.QUICK_SETTINGS -> vm.showOverlay(Overlay.QUICK_SETTINGS)
             GestureAction.SYSTEM_NOTIFICATIONS, GestureAction.SYSTEM_QUICK_SETTINGS -> {
                 // Kein Bedienungshilfe-Dienst: klappt das Aufklappen nicht, nur ein Hinweis.
@@ -443,32 +468,42 @@ private fun HomeContent(vm: HomeViewModel, d: LauncherData, isDefault: Boolean, 
                     onDragCancel = { drag.clear() },
                 )
             }
-            // Wischgesten (oben links/rechts, Mitte nach unten, nach oben) auf dem Homescreen.
+            // Wischgesten (oberer Rand, Bildschirmmitte, nach oben). Läuft in der Initial-Phase, also vor Pager
+            // und Icons: sobald die Bewegung den Touch-Slop überschreitet und eher senkrecht ist, gehört sie der
+            // Geste (auch wenn sie auf einem Icon beginnt); eher waagerecht bleibt sie dem Pager.
             .pointerInput(Unit) {
                 awaitEachGesture {
-                    val down = awaitFirstDown(requireUnconsumed = false)
+                    val down = awaitFirstDown(requireUnconsumed = false, pass = PointerEventPass.Initial)
                     val allowed = currentOverlay == Overlay.NONE && !currentEdit && currentFolder == null &&
                         homePage() != null && !drag.active
                     if (!allowed) return@awaitEachGesture
+                    val slop = viewConfiguration.touchSlop
                     var total = Offset.Zero
+                    var claimed = false
                     while (true) {
-                        val ev = awaitPointerEvent()
+                        val ev = awaitPointerEvent(PointerEventPass.Initial)
                         val ch = ev.changes.firstOrNull { it.id == down.id } ?: break
-                        // Langes Drücken (Bearbeiten/Ziehen) hat Vorrang: dann keine Wischgeste.
-                        if (!ch.pressed || ch.isConsumed || drag.longPressed || drag.active) break
+                        if (!ch.pressed || drag.longPressed || drag.active) break
                         total += ch.positionChange()
-                        val edgeBottom = (statusTop + current.settings.edgeHeightDp.dp.toPx()) / size.height
+                        if (!claimed) {
+                            if (abs(total.x) > slop && abs(total.x) >= abs(total.y)) break
+                            if (abs(total.y) > slop && abs(total.y) > abs(total.x)) claimed = true
+                        }
+                        if (!claimed) continue
+                        ch.consume()
+                        val edgeBottom = (statusTop + size.height * current.settings.edgeHeightPercent / 100f) / size.height
                         val g = GestureClassifier.classify(
                             down.position.x / size.width, down.position.y / size.height,
                             total.x / size.height, total.y / size.height,
                             edgeBottom, current.settings.edgeSplit,
                             current.settings.swipeZoneLeft, current.settings.swipeZoneRight,
+                            minDistance = SWIPE_TRIGGER_DP.dp.toPx() / size.height,
+                            dominance = 1f,
                         )
                         if (g != null) {
-                            ch.consume()
                             gesture(g)
                             do {
-                                val rest = awaitPointerEvent()
+                                val rest = awaitPointerEvent(PointerEventPass.Initial)
                                 rest.changes.forEach { it.consume() }
                             } while (rest.changes.any { it.pressed })
                             break
@@ -575,8 +610,24 @@ private fun HomeContent(vm: HomeViewModel, d: LauncherData, isDefault: Boolean, 
             SideEffect { folderGeo = null }
         }
 
-        if (!isDefault && !d.defaultHintDismissed && !editMode && overlay == Overlay.NONE) {
-            DefaultHintCard(actions.requestDefault, vm::dismissDefaultHint, Modifier.align(Alignment.TopCenter))
+        // Hinweise oben: Einrichtung fortsetzen bzw. Update verfügbar (wegwischbar).
+        val setupVisible = !d.onboardingDone || setupRequested
+        var factsTick by remember { mutableStateOf(0) }
+        LifecycleEventEffect(Lifecycle.Event.ON_RESUME) { factsTick++ }
+        val openSteps = remember(factsTick, d, isDefault) {
+            de.umstieg.launcher.core.SetupLogic.open(setupFacts(vm, d, isDefault, context), d.setupDeclined)
+        }
+        val update = (updateState as? UpdateState.Available)?.release
+        if (!setupVisible && !editMode && overlay == Overlay.NONE && openFolderId == null) {
+            if (!d.setupCardDismissed && openSteps.isNotEmpty()) {
+                SetupCard(openSteps.size, onOpen = { vm.showSetup(true) }, onDismiss = {
+                    vm.controller.updateData { it.copy(setupCardDismissed = true, setupDeclined = it.setupDeclined + openSteps) }
+                }, modifier = Modifier.align(Alignment.TopCenter))
+            } else if (update != null && update.version.name != d.updateDismissed && d.settings.autoUpdateCheck) {
+                UpdateCard(update.version.name, onOpen = { actions.openSettings("UPDATES") }, onDismiss = {
+                    vm.controller.updateData { it.copy(updateDismissed = update.version.name) }
+                }, modifier = Modifier.align(Alignment.TopCenter))
+            }
         }
 
         AnimatedVisibility(lockedHint, Modifier.align(Alignment.BottomCenter), enter = fadeIn(), exit = fadeOut()) {
@@ -635,8 +686,8 @@ private fun HomeContent(vm: HomeViewModel, d: LauncherData, isDefault: Boolean, 
         customize?.let { app -> CustomizeDialog(vm, d, app) }
         quietApp?.let { app -> QuietProfileDialog(vm, app) }
 
-        if (!d.onboardingDone && (isDefault || d.defaultHintDismissed) && !editMode && overlay == Overlay.NONE) {
-            Onboarding { vm.controller.setOnboardingDone(true) }
+        if (setupVisible && !editMode) {
+            SetupWizard(vm, d, isDefault, actions) { vm.showSetup(false) }
         }
     }
 }
@@ -670,3 +721,6 @@ private fun Modifier.pageTransition(state: PagerState, page: Int, transition: Pa
 val TOP_BAR_HEIGHT = 64.dp
 private val INDICATOR_AREA = 76.dp
 private const val EDGE_DWELL_MS = 600L
+
+/** Strecke, ab der ein beanspruchter senkrechter Wisch auslöst. */
+private const val SWIPE_TRIGGER_DP = 40

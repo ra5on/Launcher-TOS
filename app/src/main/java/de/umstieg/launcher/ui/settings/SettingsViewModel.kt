@@ -53,6 +53,37 @@ class SettingsViewModel(application: Application) : AndroidViewModel(application
 
     fun writeSettingsIntent() = controller.system.writeSettingsIntent()
 
+    // ---------- Updates ----------
+    val updateState = controller.updater.state
+    val installedVersion: String get() = controller.updater.installedName
+    fun canInstall() = controller.updater.canInstall()
+    fun allowInstallIntent() = controller.updater.allowInstallIntent()
+    fun checkForUpdate() = controller.checkForUpdate()
+    fun install(release: de.umstieg.launcher.core.ReleaseInfo) = controller.updater.install(release)
+
+    // ---------- Eingeschränkte Einstellungen ----------
+    private val help = controller.permissions
+    fun markListenerAttempt() = help.markAttempt(de.umstieg.launcher.data.PermissionHelp.Kind.LISTENER)
+    fun showRestrictedHelp(granted: Boolean) = help.showRestrictedHelp(de.umstieg.launcher.data.PermissionHelp.Kind.LISTENER, granted)
+    fun markAppInfoOpened() {
+        help.appInfoOpenedFor = de.umstieg.launcher.data.PermissionHelp.Kind.LISTENER
+    }
+    fun appDetailsIntent() = help.appDetailsIntent()
+
+    /** Zurück aus der App-Info: direkt weiter zur Listener-Einstellung (einmal). */
+    fun afterAppInfo(context: android.content.Context) {
+        if (help.appInfoOpenedFor == null) return
+        help.appInfoOpenedFor = null
+        if (!de.umstieg.launcher.data.NotificationCenter.isPermissionGranted(context)) {
+            controller.system.start(context, controller.system.listenerSettingsIntent())
+        }
+    }
+
+    /** Einrichtung zurücksetzen; sie erscheint beim nächsten Homescreen. */
+    fun restartSetup() = controller.updateData {
+        it.copy(onboardingDone = false, setupCardDismissed = false, setupDeclined = emptySet(), gesturesSeen = false)
+    }
+
     /** Zustand der Sonderberechtigungen (für die Übersicht). */
     class PermissionStatus(val policy: Boolean, val writeSettings: Boolean)
 

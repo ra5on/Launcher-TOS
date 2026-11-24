@@ -111,7 +111,7 @@ fun NotificationPanel(vm: HomeViewModel, d: LauncherData, apps: Map<AppKey, AppI
     Column(
         Modifier
             .fillMaxSize()
-            .background(Color(0x990B0F16))
+            .background(if (de.umstieg.launcher.ui.theme.LocalTosStyle.current.lightWallpaper) Color(0xD90B0F16) else Color(0x990B0F16))
             .windowInsetsPadding(WindowInsets.systemBars)
             .padding(horizontal = 16.dp),
     ) {

@@ -55,6 +55,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import de.umstieg.launcher.R
 import de.umstieg.launcher.core.LauncherData
 import de.umstieg.launcher.core.WidgetOps
+import de.umstieg.launcher.ui.drawer.wallpaperScrim
 import de.umstieg.launcher.ui.panels.PillButton
 import de.umstieg.launcher.ui.theme.Inter
 import de.umstieg.launcher.ui.theme.Tos
@@ -68,7 +69,7 @@ fun WidgetPage(vm: HomeViewModel, d: LauncherData, actions: HomeActions) {
     val editing by vm.widgetEdit.collectAsStateWithLifecycle()
     val entries = d.widgetPage
     val shape = RoundedCornerShape(28.dp)
-    Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(horizontal = 16.dp), verticalArrangement = Arrangement.spacedBy(14.dp)) {
+    Column(Modifier.fillMaxSize().wallpaperScrim().verticalScroll(rememberScrollState()).padding(horizontal = 16.dp), verticalArrangement = Arrangement.spacedBy(14.dp)) {
         if (entries.isEmpty()) {
             Column(
                 Modifier.fillMaxWidth().padding(top = 40.dp).glass(shape, Tos.Glass, Tos.GlassLine).padding(24.dp),

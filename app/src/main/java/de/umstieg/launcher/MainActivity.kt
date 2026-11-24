@@ -39,6 +39,7 @@ class MainActivity : ComponentActivity() {
     private val vm: HomeViewModel by viewModels()
     private val isDefault = mutableStateOf(true)
     private val wallpaperColor = mutableStateOf<androidx.compose.ui.graphics.Color?>(null)
+    private val lightWallpaper = mutableStateOf(false)
 
     /** Widget, das gerade gebunden/konfiguriert wird. */
     private var pending: Triple<Int, AppWidgetProviderInfo, WidgetTarget>? = null
@@ -74,6 +75,7 @@ class MainActivity : ComponentActivity() {
             unlockHidden = { it() },
             wallpaperColor = null,
             systemReduceMotion = Settings.Global.getFloat(contentResolver, Settings.Global.ANIMATOR_DURATION_SCALE, 1f) == 0f,
+            lightWallpaper = false,
         )
         setContent {
             val data by vm.data.collectAsStateWithLifecycle()
@@ -81,7 +83,7 @@ class MainActivity : ComponentActivity() {
             LaunchedEffect(hideStatus) { applyStatusBar(hideStatus) }
             HomeScreen(vm, isDefault.value, HomeActions(
                 actions.openSettings, actions.requestDefault, actions.setWindowBlur, actions.addWidget,
-                actions.uninstall, actions.unlockHidden, wallpaperColor.value, actions.systemReduceMotion,
+                actions.uninstall, actions.unlockHidden, wallpaperColor.value, actions.systemReduceMotion, lightWallpaper.value,
             ))
         }
     }
@@ -100,6 +102,8 @@ class MainActivity : ComponentActivity() {
         super.onResume()
         isDefault.value = DefaultLauncher.isDefault(this)
         readWallpaperColor()
+        // Wöchentliche Update-Prüfung (nur wenn eingeschaltet).
+        vm.controller.maybeAutoCheck()
     }
 
     /** Home-Taste bei laufendem Launcher: Panels schließen, erste Seite (animiert, wenn schon sichtbar). */
@@ -113,9 +117,15 @@ class MainActivity : ComponentActivity() {
     /** Hauptfarbe des Hintergrunds (für „Akzent aus Hintergrund“). */
     private fun readWallpaperColor() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O_MR1) {
-            wallpaperColor.value = runCatching {
-                WallpaperManager.getInstance(this).getWallpaperColors(WallpaperManager.FLAG_SYSTEM)?.primaryColor?.toArgb()
-            }.getOrNull()?.let { androidx.compose.ui.graphics.Color(it) }
+            val colors = runCatching { WallpaperManager.getInstance(this).getWallpaperColors(WallpaperManager.FLAG_SYSTEM) }.getOrNull()
+            wallpaperColor.value = colors?.primaryColor?.toArgb()?.let { androidx.compose.ui.graphics.Color(it) }
+            // Hell? Ab Android 12 sagt es das System (dunkle Schrift passt), sonst nach Helligkeit der Hauptfarbe.
+            lightWallpaper.value = when {
+                colors == null -> false
+                Build.VERSION.SDK_INT >= Build.VERSION_CODES.S ->
+                    colors.colorHints and android.app.WallpaperColors.HINT_SUPPORTS_DARK_TEXT != 0
+                else -> colors.primaryColor.luminance() > 0.55f
+            }
         }
     }
 

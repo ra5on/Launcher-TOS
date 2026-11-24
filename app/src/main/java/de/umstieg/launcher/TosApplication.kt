@@ -6,6 +6,8 @@ import de.umstieg.launcher.data.IconLoader
 import de.umstieg.launcher.data.LauncherController
 import de.umstieg.launcher.data.LauncherStore
 import de.umstieg.launcher.data.MediaCenter
+import de.umstieg.launcher.data.PermissionHelp
+import de.umstieg.launcher.data.Updater
 import de.umstieg.launcher.data.SystemControls
 import de.umstieg.launcher.data.WidgetHostHolder
 import kotlinx.coroutines.CoroutineScope
@@ -26,6 +28,8 @@ class TosApplication : Application() {
             media = MediaCenter(this, appScope),
             system = SystemControls(this),
             widgets = WidgetHostHolder(this),
+            updater = Updater(this, appScope).also { Updater.instance = it },
+            permissions = PermissionHelp(this),
         ).also { it.start() }
     }
 }

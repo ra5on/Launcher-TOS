@@ -6,7 +6,7 @@ import de.umstieg.launcher.R
 /** Seiten der Einstellungen (Name = Schlüssel für Sprünge aus der Suche). */
 enum class Section {
     OVERVIEW, GRID, ICONS, LABELS, DOCK, DESIGN, GLASS, GESTURES, BADGES, QUICK, SEARCH, DRAWER, WIDGETS,
-    HAPTICS, ACCESSIBILITY, PERMISSIONS, HIDDEN, BACKUP, ABOUT,
+    HAPTICS, ACCESSIBILITY, PERMISSIONS, HIDDEN, BACKUP, ABOUT, UPDATES,
 }
 
 /** Ein auffindbarer Eintrag der Einstellungen. */
@@ -74,6 +74,10 @@ object SettingsIndex {
         SettingsEntry(R.string.settings_section_backup, Section.BACKUP),
         SettingsEntry(R.string.backup_reset, Section.BACKUP),
         SettingsEntry(R.string.settings_section_about, Section.ABOUT),
-        SettingsEntry(R.string.about_show_intro, Section.ABOUT),
+        SettingsEntry(R.string.setup_restart, Section.ABOUT),
+        SettingsEntry(R.string.settings_section_updates, Section.UPDATES),
+        SettingsEntry(R.string.setting_auto_update, Section.UPDATES),
+        SettingsEntry(R.string.setting_widget_side, Section.GRID),
+        SettingsEntry(R.string.setting_drawer_side, Section.GRID),
     )
 }

@@ -56,6 +56,11 @@ class SettingsActivity : ComponentActivity() {
         setContent { SettingsRoot(requested.value) }
     }
 
+    override fun onResume() {
+        super.onResume()
+        vm.afterAppInfo(this)
+    }
+
     override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
         setIntent(intent)
@@ -97,6 +102,11 @@ class SettingsActivity : ComponentActivity() {
                 export = { runCatching { exportLauncher.launch(fileName) } },
                 import = { runCatching { importLauncher.launch(arrayOf("application/json", "text/plain", "application/octet-stream")) } },
                 authenticate = ::authenticate,
+                restartSetup = {
+                    vm.restartSetup()
+                    startActivity(Intent(Intent.ACTION_MAIN).addCategory(Intent.CATEGORY_HOME).setPackage(packageName).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))
+                    finish()
+                },
                 openIntent = { intent -> runCatching { startActivity(Intent(intent).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)) } },
             )
         }

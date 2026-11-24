@@ -23,8 +23,10 @@ object GestureClassifier {
         split: Boolean,
         zoneLeft: Int,
         zoneRight: Int,
+        minDistance: Float = MIN_DISTANCE,
+        dominance: Float = 1.3f,
     ): Gesture? {
-        if (abs(dy) < MIN_DISTANCE || abs(dy) < abs(dx) * 1.3f) return null
+        if (abs(dy) < minDistance || abs(dy) < abs(dx) * dominance) return null
         if (dy < 0) return Gesture.SWIPE_UP
         if (startY > edgeBottom) return Gesture.SWIPE_DOWN
         if (!split) return Gesture.EDGE
