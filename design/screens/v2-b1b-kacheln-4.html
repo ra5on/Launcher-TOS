@@ -1,0 +1,35 @@
+<!doctype html><html lang="de"><head><meta charset="utf-8">
+<title>Übersicht Kacheln 4</title>
+<link rel="stylesheet" href="../assets/kit.css">
+<style>
+  .wrap { position:absolute; top:44px; left:16px; right:16px; }
+  .search { height:40px; border-radius:20px; display:flex; align-items:center; gap:8px; padding:0 14px; font-size:14px; color:var(--ink-2); margin-bottom:16px; background:rgba(20,26,36,.55); }
+  .search i { width:17px; height:17px; }
+  .cards { display:grid; grid-template-columns:1fr 1fr; gap:14px 12px; }
+  .card { border-radius:26px; padding:12px; background:rgba(20,26,36,.50); border:1px solid rgba(255,255,255,.14); backdrop-filter:var(--blur); }
+  .g { display:grid; grid-template-columns:1fr 1fr; gap:10px; justify-items:center; }
+  .more { width:56px; height:56px; border-radius:18px; background:rgba(255,255,255,.14); display:grid; grid-template-columns:1fr 1fr; gap:3px; padding:6px; position:relative; }
+  .more b { position:absolute; inset:0; display:grid; place-items:center; font-size:15px; font-weight:700; background:rgba(10,14,20,.45); border-radius:18px; }
+  .cap { text-align:center; font-size:12px; font-weight:600; margin-top:7px; text-shadow:0 1px 3px rgba(0,0,0,.5); }
+</style></head>
+<body>
+<div class="wall blurred"></div>
+<div class="layer"><div class="wrap">
+  <div class="search"><i data-i="search"></i>Apps durchsuchen</div>
+  <div class="cards">
+    <div><div class="card"><div class="g"><div data-tile="kalender" data-size="56"></div><div data-tile="mail" data-size="56"></div><div data-tile="notizen" data-size="56"></div><div class="more"><div data-tile="aufgaben" data-size="20"></div><div data-tile="dateien" data-size="20"></div><div data-tile="rechner" data-size="20"></div><div data-tile="uhr" data-size="20"></div><b>+6</b></div></div></div>
+      <div class="cap">Produktivität</div></div>
+    <div><div class="card"><div class="g"><div data-tile="chat" data-size="56"></div><div data-tile="telefon" data-size="56"></div><div data-tile="kontakte" data-size="56"></div><div class="more"><div data-tile="mail" data-size="20"></div><div data-tile="browser" data-size="20"></div><b>+2</b></div></div></div>
+      <div class="cap">Kommunikation</div></div>
+    <div><div class="card"><div class="g"><div data-tile="musik" data-size="56"></div><div data-tile="video" data-size="56"></div><div data-tile="podcast" data-size="56"></div><div class="more"><div data-tile="tv" data-size="20"></div><div data-tile="spiele" data-size="20"></div><div data-tile="lesen" data-size="20"></div><b>+3</b></div></div></div>
+      <div class="cap">Unterhaltung</div></div>
+    <div><div class="card"><div class="g"><div data-tile="kamera" data-size="56"></div><div data-tile="galerie" data-size="56"></div><div data-tile="malen" data-size="56"></div></div></div>
+      <div class="cap">Fotos &amp; Video</div></div>
+    <div><div class="card"><div class="g"><div data-tile="karten" data-size="56"></div><div data-tile="bahn" data-size="56"></div><div data-tile="flug" data-size="56"></div><div class="more"><div data-tile="fahrrad" data-size="20"></div><div data-tile="auto" data-size="20"></div><div data-tile="wetter" data-size="20"></div><b>+3</b></div></div></div>
+      <div class="cap">Unterwegs</div></div>
+    <div><div class="card"><div class="g"><div data-tile="fitness" data-size="56"></div><div data-tile="training" data-size="56"></div><div data-tile="rezepte" data-size="56"></div><div class="more"><div data-tile="home" data-size="20"></div><div data-tile="shop" data-size="20"></div><div data-tile="bank" data-size="20"></div><b>+3</b></div></div></div>
+      <div class="cap">Alltag</div></div>
+  </div>
+</div></div>
+<script src="../assets/kit.js"></script>
+</body></html>
