@@ -1,0 +1,36 @@
+<!doctype html><html lang="de"><head><meta charset="utf-8">
+<title>Übersicht Ordner</title>
+<link rel="stylesheet" href="../assets/kit.css">
+<style>
+  .wrap { position:absolute; top:44px; left:16px; right:16px; }
+  .search { height:40px; border-radius:20px; display:flex; align-items:center; gap:8px; padding:0 14px; font-size:14px; color:var(--ink-2); margin-bottom:18px; background:rgba(20,26,36,.55); }
+  .search i { width:17px; height:17px; }
+  .sec { font-size:12px; font-weight:650; letter-spacing:.6px; text-transform:uppercase; color:var(--ink-2); margin:4px 4px 10px; }
+  .row { display:grid; grid-template-columns:repeat(4,1fr); row-gap:18px; justify-items:center; margin-bottom:20px; }
+  .f { display:flex; flex-direction:column; align-items:center; gap:6px; }
+  .f .box { width:64px; height:64px; border-radius:20px; background:rgba(20,26,36,.50); border:1px solid rgba(255,255,255,.16); display:grid; grid-template-columns:1fr 1fr; gap:4px; padding:8px; }
+  .f .lbl { font-size:11.5px; font-weight:550; text-shadow:0 1px 3px rgba(0,0,0,.5); white-space:nowrap; }
+</style></head>
+<body>
+<div class="wall blurred"></div>
+<div class="layer"><div class="wrap">
+  <div class="search"><i data-i="search"></i>Apps durchsuchen</div>
+  <div class="sec">Zuletzt installiert</div>
+  <div class="row"><div data-app="rezepte"></div><div data-app="fahrrad"></div><div data-app="sprache"></div><div data-app="training"></div></div>
+  <div class="sec">Kategorien</div>
+  <div class="row">
+    <div class="f"><div class="box"><div data-tile="kalender" data-size="22"></div><div data-tile="mail" data-size="22"></div><div data-tile="notizen" data-size="22"></div><div data-tile="aufgaben" data-size="22"></div></div><div class="lbl">Produktivität</div></div>
+    <div class="f"><div class="box"><div data-tile="chat" data-size="22"></div><div data-tile="telefon" data-size="22"></div><div data-tile="kontakte" data-size="22"></div><div data-tile="browser" data-size="22"></div></div><div class="lbl">Kontakt</div></div>
+    <div class="f"><div class="box"><div data-tile="musik" data-size="22"></div><div data-tile="video" data-size="22"></div><div data-tile="podcast" data-size="22"></div><div data-tile="tv" data-size="22"></div></div><div class="lbl">Unterhaltung</div></div>
+    <div class="f"><div class="box"><div data-tile="kamera" data-size="22"></div><div data-tile="galerie" data-size="22"></div><div data-tile="malen" data-size="22"></div></div><div class="lbl">Fotos</div></div>
+    <div class="f"><div class="box"><div data-tile="karten" data-size="22"></div><div data-tile="bahn" data-size="22"></div><div data-tile="flug" data-size="22"></div><div data-tile="auto" data-size="22"></div></div><div class="lbl">Unterwegs</div></div>
+    <div class="f"><div class="box"><div data-tile="fitness" data-size="22"></div><div data-tile="training" data-size="22"></div><div data-tile="rezepte" data-size="22"></div></div><div class="lbl">Gesundheit</div></div>
+    <div class="f"><div class="box"><div data-tile="spiele" data-size="22"></div></div><div class="lbl">Spiele</div></div>
+    <div class="f"><div class="box"><div data-tile="bank" data-size="22"></div><div data-tile="geld" data-size="22"></div><div data-tile="shop" data-size="22"></div></div><div class="lbl">Finanzen</div></div>
+    <div class="f"><div class="box"><div data-tile="einstell" data-size="22"></div><div data-tile="dateien" data-size="22"></div><div data-tile="rechner" data-size="22"></div><div data-tile="uhr" data-size="22"></div></div><div class="lbl">Werkzeuge</div></div>
+    <div class="f"><div class="box"><div data-tile="home" data-size="22"></div><div data-tile="wetter" data-size="22"></div></div><div class="lbl">Zuhause</div></div>
+    <div class="f"><div class="box"><div data-tile="lesen" data-size="22"></div><div data-tile="zeitung" data-size="22"></div></div><div class="lbl">Lesen</div></div>
+  </div>
+</div></div>
+<script src="../assets/kit.js"></script>
+</body></html>

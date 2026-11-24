@@ -1,0 +1,49 @@
+<!doctype html><html lang="de"><head><meta charset="utf-8">
+<title>Einstellungen einfach</title>
+<link rel="stylesheet" href="../assets/kit.css">
+<style>
+  .wrap { position:absolute; top:44px; left:14px; right:14px; }
+  .h-title { font-size:28px; margin:2px 4px 4px; }
+  .sub { font-size:13px; color:var(--ink-2); margin:0 4px 14px; }
+  .seg { display:flex; background:rgba(255,255,255,.10); border-radius:12px; padding:3px; margin-bottom:14px; }
+  .seg span { flex:1; text-align:center; padding:8px 0; font-size:13px; font-weight:600; border-radius:9px; color:var(--ink-2); }
+  .seg span.on { background:#fff; color:#111; }
+  .group { border-radius:var(--r-card); overflow:hidden; margin-bottom:12px; background:rgba(255,255,255,.08); border:1px solid rgba(255,255,255,.10); }
+  .row { display:flex; align-items:center; gap:12px; padding:12px 14px; position:relative; }
+  .row + .row::before { content:""; position:absolute; top:0; left:14px; right:0; height:1px; background:rgba(255,255,255,.08); }
+  .t { flex:1; min-width:0; }
+  .n { font-size:15px; font-weight:600; }
+  .d { font-size:12.5px; color:var(--ink-2); margin-top:2px; line-height:1.35; }
+  .cap { font-size:12px; font-weight:650; letter-spacing:.6px; text-transform:uppercase; color:var(--ink-2); margin:6px 6px 8px; }
+  .chip { font-size:13px; color:var(--accent); font-weight:600; white-space:nowrap; }
+</style></head>
+<body>
+<div class="wall dark"></div>
+<div class="layer"><div class="wrap">
+  <div class="h-title">Einstellungen</div>
+  <div class="sub">Die wichtigsten Einstellungen. Alles Weitere unter „Alle“.</div>
+  <div class="seg"><span class="on">Einfach</span><span>Alle</span></div>
+
+  <div class="cap">Homescreen</div>
+  <div class="group">
+    <div class="row"><div class="t"><div class="n">Apps pro Reihe</div><div class="d">Wie viele Apps nebeneinander stehen.</div></div><span class="chip">4 ›</span></div>
+    <div class="row"><div class="t"><div class="n">Größe der Icons</div><div class="d">Macht alle App-Symbole größer oder kleiner.</div></div><span class="chip">Normal ›</span></div>
+    <div class="row"><div class="t"><div class="n">Ecken der Icons</div><div class="d">Von eckig bis kreisrund – mit Vorschau.</div></div><span class="chip">Weich ›</span></div>
+    <div class="row"><div class="t"><div class="n">Widget-Seite links</div><div class="d">Eine eigene Seite für Widgets, ganz links.</div></div><div class="switch"></div></div>
+    <div class="row"><div class="t"><div class="n">App-Übersicht rechts</div><div class="d">Alle Apps nach Themen sortiert, ganz rechts.</div></div><div class="switch on"></div></div>
+  </div>
+
+  <div class="cap">Wischen</div>
+  <div class="group">
+    <div class="row"><div class="t"><div class="n">Von oben wischen</div><div class="d">Was passiert, wenn du oben nach unten wischst.</div></div><span class="chip">Android ›</span></div>
+    <div class="row"><div class="t"><div class="n">In der Mitte nach unten</div><div class="d">Öffnet die Suche nach Apps.</div></div><span class="chip">Suche ›</span></div>
+  </div>
+
+  <div class="cap">Aussehen</div>
+  <div class="group">
+    <div class="row"><div class="t"><div class="n">Hell oder dunkel</div><div class="d">Folgt dem Handy oder fest einstellen.</div></div><span class="chip">Wie Handy ›</span></div>
+    <div class="row"><div class="t"><div class="n">Zahlen an Apps</div><div class="d">Rote Zahl für ungelesene Benachrichtigungen.</div></div><div class="switch on"></div></div>
+  </div>
+</div></div>
+<script src="../assets/kit.js"></script>
+</body></html>

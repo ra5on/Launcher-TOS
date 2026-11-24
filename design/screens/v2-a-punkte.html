@@ -1,0 +1,31 @@
+<!doctype html><html lang="de"><head><meta charset="utf-8">
+<title>Seitenpunkte</title>
+<link rel="stylesheet" href="../assets/kit.css">
+<style>
+  .grid { position:absolute; top:52px; left:var(--side); right:var(--side);
+    display:grid; grid-template-columns:repeat(4,1fr); row-gap:20px; justify-items:center; }
+  .dots { position:absolute; top:640px; left:50%; transform:translateX(-50%); display:flex; gap:7px;
+    padding:7px 11px; border-radius:12px; }
+  .dots span { width:7px; height:7px; border-radius:50%; background:rgba(255,255,255,.45); }
+  .dots span.on { background:#fff; }
+  .dock { position:absolute; left:12px; right:12px; bottom:22px; height:92px; border-radius:30px;
+    display:flex; justify-content:space-around; align-items:center; padding:0 10px; }
+  .tag { position:absolute; top:600px; left:0; right:0; text-align:center; font-size:11px; color:var(--ink-2); }
+</style></head>
+<body data-time="09:15">
+<div class="wall"></div>
+<div class="layer">
+  <div class="grid">
+    <div data-app="kalender"></div><div data-app="galerie"></div><div data-app="wetter"></div><div data-app="mail" data-badge="3"></div>
+    <div data-app="kamera"></div><div data-app="karten"></div><div data-app="notizen"></div><div data-app="aufgaben"></div>
+    <div data-app="fitness"></div><div data-app="bank"></div><div data-app="home"></div><div data-app="podcast"></div>
+    <div data-app="bahn"></div><div data-app="shop"></div><div data-app="einstell"></div>
+  </div>
+  <div class="dots glass dark"><span class="on"></span><span></span><span></span></div>
+  <div class="dock glass">
+    <div data-app="telefon" data-label="0"></div><div data-app="browser" data-label="0"></div>
+    <div data-app="chat" data-label="0" data-badge="2"></div><div data-app="musik" data-label="0"></div>
+  </div>
+</div>
+<script src="../assets/kit.js"></script>
+</body></html>
