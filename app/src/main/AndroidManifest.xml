@@ -2,8 +2,29 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
 
-    <!-- Keine Berechtigungen. Sichtbar sind nur Apps mit Startbildschirm-Eintrag. -->
+    <!--
+        Berechtigungen (keine davon erlaubt Internet; jede wird in der App erklärt):
+        - EXPAND_STATUS_BAR: Systemleiste/Schnelleinstellungen aufklappen, wenn eigene Panels nicht möglich sind
+        - ACCESS_NETWORK_STATE: WLAN/Mobile Daten im Schnellzugriff als „verbunden“ anzeigen
+        - ACCESS_NOTIFICATION_POLICY: „Nicht stören“ schalten (Zugriff erteilt der Nutzer selbst)
+        - WRITE_SETTINGS: Helligkeit und Drehsperre (optional, der Nutzer erteilt sie selbst)
+        - USE_BIOMETRIC: versteckte Apps mit der Geräte-Sperre schützen (optional)
+        - REQUEST_DELETE_PACKAGES: „Deinstallieren“ im App-Menü (Android fragt immer nach)
+    -->
+    <uses-permission android:name="android.permission.EXPAND_STATUS_BAR" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <uses-permission android:name="android.permission.ACCESS_NOTIFICATION_POLICY" />
+    <uses-permission
+        android:name="android.permission.WRITE_SETTINGS"
+        tools:ignore="ProtectedPermissions" />
+    <uses-permission android:name="android.permission.USE_BIOMETRIC" />
+    <uses-permission android:name="android.permission.REQUEST_DELETE_PACKAGES" />
+
+    <!-- Sichtbar sind nur Apps mit Startbildschirm-Eintrag und Widget-Anbieter. -->
     <queries>
+        <intent>
+            <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+        </intent>
         <intent>
             <action android:name="android.intent.action.MAIN" />
             <category android:name="android.intent.category.LAUNCHER" />
@@ -76,5 +97,16 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity-alias>
+
+        <!-- Benachrichtigungszugriff (optional): Badges, eigene Benachrichtigungsliste, Mediensteuerung. -->
+        <service
+            android:name=".data.TosNotificationListener"
+            android:exported="true"
+            android:label="@string/app_name"
+            android:permission="android.permission.BIND_NOTIFICATION_LISTENER_SERVICE">
+            <intent-filter>
+                <action android:name="android.service.notification.NotificationListenerService" />
+            </intent-filter>
+        </service>
     </application>
 </manifest>

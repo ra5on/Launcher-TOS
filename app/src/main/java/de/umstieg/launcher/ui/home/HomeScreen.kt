@@ -519,7 +519,7 @@ private fun Dock(
         Modifier
             .fillMaxWidth()
             .padding(start = 10.dp, end = 10.dp, bottom = 8.dp)
-            .glass(RoundedCornerShape(34.dp))
+            .glass(RoundedCornerShape(34.dp), Tos.Glass, Tos.GlassLine)
             .semantics { contentDescription = dockDescription }
             .padding(vertical = 14.dp, horizontal = 8.dp),
     ) {

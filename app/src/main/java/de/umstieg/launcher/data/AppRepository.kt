@@ -2,17 +2,24 @@ package de.umstieg.launcher.data
 
 import android.app.ActivityOptions
 import android.content.ComponentName
+import android.content.BroadcastReceiver
 import android.content.Context
+import android.content.Intent
+import android.content.IntentFilter
 import android.content.pm.LauncherActivityInfo
 import android.content.pm.LauncherApps
 import android.graphics.Rect
+import android.os.Build
 import android.os.Handler
 import android.os.HandlerThread
 import android.os.Process
 import android.os.UserHandle
 import android.os.UserManager
 import android.util.Log
+import androidx.core.content.ContextCompat
+import de.umstieg.launcher.core.AppCategory
 import de.umstieg.launcher.core.AppKey
+import de.umstieg.launcher.core.Categories
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -35,9 +42,23 @@ class AppInfo(
     val user: UserHandle,
     val isWorkProfile: Boolean,
     internal val activityInfo: LauncherActivityInfo,
+    val category: AppCategory = AppCategory.OTHER,
+    val firstInstallTime: Long = 0,
+    /** Profil pausiert (Arbeitsprofil „Pause“). */
+    val quiet: Boolean = false,
+    /** Eigener Name gesetzt (Originalname in [originalLabel]). */
+    val originalLabel: String = label,
+    /** Einfarbiges Themen-Icon für diese App erzwungen. */
+    val monochrome: Boolean = false,
 ) {
-    override fun equals(other: Any?): Boolean = other is AppInfo && other.key == key && other.label == label
-    override fun hashCode(): Int = key.hashCode() * 31 + label.hashCode()
+    fun withOverride(customLabel: String?, mono: Boolean): AppInfo = AppInfo(
+        key, customLabel?.takeIf { it.isNotBlank() } ?: originalLabel, component, user, isWorkProfile, activityInfo,
+        category, firstInstallTime, quiet, originalLabel, mono,
+    )
+
+    override fun equals(other: Any?): Boolean = other is AppInfo && other.key == key && other.label == label &&
+        other.quiet == quiet && other.monochrome == monochrome
+    override fun hashCode(): Int = (key.hashCode() * 31 + label.hashCode()) * 31 + quiet.hashCode()
 }
 
 /**
@@ -96,6 +117,21 @@ class AppRepository(context: Context, private val scope: CoroutineScope) {
 
     fun start() {
         launcherApps.registerCallback(callback, Handler(callbackThread.looper))
+        // Arbeitsprofil pausiert/fortgesetzt → neu laden (Icons ausgegraut bzw. normal).
+        val filter = IntentFilter().apply {
+            addAction(Intent.ACTION_MANAGED_PROFILE_AVAILABLE)
+            addAction(Intent.ACTION_MANAGED_PROFILE_UNAVAILABLE)
+            addAction(Intent.ACTION_MANAGED_PROFILE_ADDED)
+            addAction(Intent.ACTION_MANAGED_PROFILE_REMOVED)
+        }
+        ContextCompat.registerReceiver(
+            appContext,
+            object : BroadcastReceiver() {
+                override fun onReceive(context: Context, intent: Intent) = scheduleReload()
+            },
+            filter,
+            ContextCompat.RECEIVER_NOT_EXPORTED,
+        )
         scheduleReload(immediate = true)
     }
 
@@ -112,10 +148,18 @@ class AppRepository(context: Context, private val scope: CoroutineScope) {
 
     private fun load(): List<AppInfo> {
         val me = Process.myUserHandle()
+        val pm = appContext.packageManager
         return userManager.userProfiles.flatMap { user ->
             val serial = userManager.getSerialNumberForUser(user)
+            val quiet = user != me && runCatching { userManager.isQuietModeEnabled(user) }.getOrDefault(false)
             launcherApps.getActivityList(null, user).map { info ->
                 val cn = info.componentName
+                val appInfo = info.applicationInfo
+                val installed = if (user == me) {
+                    runCatching { pm.getPackageInfo(cn.packageName, 0).firstInstallTime }.getOrDefault(0L)
+                } else {
+                    0L
+                }
                 AppInfo(
                     key = AppKey(cn.packageName, cn.className, serial),
                     label = info.label?.toString()?.trim().orEmpty().ifEmpty { cn.packageName },
@@ -123,9 +167,27 @@ class AppRepository(context: Context, private val scope: CoroutineScope) {
                     user = user,
                     isWorkProfile = user != me,
                     activityInfo = info,
+                    category = Categories.fromAndroid(appInfo.category, cn.packageName),
+                    firstInstallTime = installed,
+                    quiet = quiet,
                 )
             }
         }.sortedWith { a, b -> collator.compare(a.label, b.label) }
+    }
+
+    /** Pausiertes Arbeitsprofil fortsetzen (nur als Standard-Launcher erlaubt). */
+    fun resumeProfile(user: UserHandle): Boolean = runCatching {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+            userManager.requestQuietModeEnabled(false, user)
+            true
+        } else {
+            false
+        }
+    }.getOrDefault(false).also { scheduleReload() }
+
+    /** Systemseite „App-Info“. */
+    fun showAppDetails(app: AppInfo, bounds: Rect?) {
+        runCatching { launcherApps.startAppDetailsActivity(app.component, app.user, bounds, null) }
     }
 
     /** Startet die App; false, wenn das nicht ging (z. B. deaktiviert oder Profil pausiert). */

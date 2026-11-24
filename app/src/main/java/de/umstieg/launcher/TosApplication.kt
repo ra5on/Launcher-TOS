@@ -5,6 +5,9 @@ import de.umstieg.launcher.data.AppRepository
 import de.umstieg.launcher.data.IconLoader
 import de.umstieg.launcher.data.LauncherController
 import de.umstieg.launcher.data.LauncherStore
+import de.umstieg.launcher.data.MediaCenter
+import de.umstieg.launcher.data.SystemControls
+import de.umstieg.launcher.data.WidgetHostHolder
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -20,6 +23,9 @@ class TosApplication : Application() {
             store = LauncherStore(this, CoroutineScope(SupervisorJob() + Dispatchers.IO)),
             apps = AppRepository(this, appScope),
             icons = IconLoader(this),
+            media = MediaCenter(this, appScope),
+            system = SystemControls(this),
+            widgets = WidgetHostHolder(this),
         ).also { it.start() }
     }
 }
