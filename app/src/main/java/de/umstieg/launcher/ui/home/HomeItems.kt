@@ -32,6 +32,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.res.painterResource
@@ -313,9 +314,30 @@ fun HomeItemView(
             },
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
+        // Ordner-Vorschau beim Verweilen: Glasrahmen hinter dem vergrößerten Ziel-Icon.
+        val frame by animateFloatAsState(if (highlighted) 1f else 0f, label = "folderFrame")
         Box(
             Modifier
                 .wobble(editMode && wobble, item.id)
+                .drawBehind {
+                    if (frame > 0f) {
+                        val pad = size.minDimension * 0.16f
+                        val r = (size.minDimension + 2 * pad) * 0.3f
+                        drawRoundRect(
+                            Color.White.copy(alpha = 0.22f * frame),
+                            topLeft = androidx.compose.ui.geometry.Offset(-pad, -pad),
+                            size = androidx.compose.ui.geometry.Size(size.width + 2 * pad, size.height + 2 * pad),
+                            cornerRadius = androidx.compose.ui.geometry.CornerRadius(r, r),
+                        )
+                        drawRoundRect(
+                            Color.White.copy(alpha = 0.55f * frame),
+                            topLeft = androidx.compose.ui.geometry.Offset(-pad, -pad),
+                            size = androidx.compose.ui.geometry.Size(size.width + 2 * pad, size.height + 2 * pad),
+                            cornerRadius = androidx.compose.ui.geometry.CornerRadius(r, r),
+                            style = androidx.compose.ui.graphics.drawscope.Stroke(width = 1.5f * density),
+                        )
+                    }
+                }
                 .graphicsLayer {
                     scaleX = scale
                     scaleY = scale

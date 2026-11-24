@@ -616,7 +616,7 @@ fun PermissionDialog(r: Requirement, vm: HomeViewModel, onClose: () -> Unit) {
         text = { Text(stringResource(text)) },
         confirmButton = {
             TextButton(onClick = {
-                vm.system.start(context, Intent(intent))
+                if (r == Requirement.WRITE_SETTINGS || r == Requirement.NOTIFICATION_POLICY) vm.system.start(context, Intent(intent)) else vm.requestListenerAccess(context)
                 onClose()
             }) { Text(stringResource(R.string.perm_open_settings)) }
         },

@@ -528,8 +528,8 @@
     <string name="perm_install_text">Damit ein geprüftes Update installiert werden kann. Android fragt jedes Mal nach.</string>
     <string name="perm_internet_only_github">Keine Werbung, keine Datenerhebung. Internet nur für Updates von GitHub.</string>
 
-    <string name="restricted_title">Zuerst „Eingeschränkte Einstellungen“ zulassen</string>
-    <string name="restricted_text">Android sperrt diesen Zugriff für Apps, die nicht aus einem Store kommen. Öffne die App-Info, tippe oben rechts auf ⋮ und wähle „Eingeschränkte Einstellungen zulassen“.</string>
+    <string name="restricted_title">Schritt 1 von 2: „Eingeschränkte Einstellungen“ zulassen</string>
+    <string name="restricted_text">Android sperrt diesen Zugriff für Apps, die aus einer heruntergeladenen Datei installiert wurden. So gibst du ihn frei:\n1. Unten „App-Info öffnen“ tippen.\n2. Oben rechts auf ⋮ tippen.\n3. „Eingeschränkte Einstellungen zulassen“ wählen und bestätigen.\n4. Zurückkehren – Schritt 2 öffnet sich von selbst.</string>
     <string name="restricted_after">Danach geht es automatisch weiter zum Benachrichtigungszugriff.</string>
     <string name="restricted_sketch_description">Skizze: App-Info mit dem Menü oben rechts und dem Eintrag „Eingeschränkte Einstellungen zulassen“</string>
     <string name="restricted_sketch_app_info">App-Info</string>
@@ -668,4 +668,6 @@
     <string name="search_clear_history_info">Entfernt die zuletzt gesuchten und gestarteten Apps aus der Suche.</string>
     <string name="settings_section_hidden_info">Apps, die nicht in Übersicht und Suche erscheinen.</string>
     <string name="settings_reset_section_info">Setzt nur die Einstellungen dieser Seite zurück, das Layout bleibt.</string>
+    <string name="restricted_step2">Schritt 2 von 2</string>
+    <string name="restricted_missing_entry">Kein Eintrag unter ⋮? Erst einmal Zugriff versuchen</string>
 </resources>

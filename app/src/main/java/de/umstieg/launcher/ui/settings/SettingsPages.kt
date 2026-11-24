@@ -627,6 +627,7 @@ fun BadgesPage(p: PageEnv) {
     var granted by remember { mutableStateOf(NotificationCenter.isPermissionGranted(context)) }
     LifecycleEventEffect(Lifecycle.Event.ON_RESUME) { granted = NotificationCenter.isPermissionGranted(context) }
     SubpageHeader(stringResource(R.string.settings_section_badges), p.back)
+    if (p.vm.showRestrictedHelp(granted)) RestrictedSettingsCard(p)
     SettingsCard {
         Text(stringResource(R.string.listener_title), style = TitleStyle.copy(color = LocalPanelColors.current.content), modifier = Modifier.padding(start = 18.dp, top = 12.dp, end = 18.dp))
         Note(stringResource(R.string.listener_text))
@@ -634,11 +635,9 @@ fun BadgesPage(p: PageEnv) {
             stringResource(if (granted) R.string.listener_granted else R.string.listener_allow),
             value = stringResource(if (granted) R.string.perm_status_granted else R.string.perm_status_missing),
         ) {
-            p.vm.markListenerAttempt()
-            p.actions.openIntent(android.content.Intent(android.provider.Settings.ACTION_NOTIFICATION_LISTENER_SETTINGS))
+            p.actions.openIntent(p.vm.listenerAccessIntent())
         }
     }
-    if (p.vm.showRestrictedHelp(granted)) RestrictedSettingsCard(p)
     SettingsCard {
         SwitchRow(stringResource(R.string.setting_badges), stringResource(R.string.setting_badges_summary), s.badgesEnabled) { v -> p.set { it.copy(badgesEnabled = v) } }
         CardDivider()
@@ -848,10 +847,10 @@ fun PermissionsPage(p: PageEnv) {
     val status = remember(tick) { p.vm.permissionStatus() }
     SubpageHeader(stringResource(R.string.settings_section_permissions), p.back)
     SettingsCard { Note(stringResource(R.string.perm_intro)) }
+    if (p.vm.showRestrictedHelp(NotificationCenter.isPermissionGranted(context))) RestrictedSettingsCard(p)
     SettingsCard {
         PermissionRow(R.string.perm_listener_title, R.string.perm_listener_text, NotificationCenter.isPermissionGranted(context)) {
-            p.vm.markListenerAttempt()
-            p.actions.openIntent(android.content.Intent(android.provider.Settings.ACTION_NOTIFICATION_LISTENER_SETTINGS))
+            p.actions.openIntent(p.vm.listenerAccessIntent())
         }
         CardDivider()
         PermissionRow(R.string.perm_dnd_title, R.string.perm_dnd_text, status.policy) {
@@ -872,7 +871,6 @@ fun PermissionsPage(p: PageEnv) {
         CardDivider()
         PermissionRow(R.string.perm_install_title, R.string.perm_install_text, p.vm.canInstall()) { p.actions.openIntent(p.vm.allowInstallIntent()) }
     }
-    if (p.vm.showRestrictedHelp(NotificationCenter.isPermissionGranted(context))) RestrictedSettingsCard(p)
     SettingsCard { Note(stringResource(R.string.perm_internet_only_github)) }
 }
 

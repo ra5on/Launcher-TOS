@@ -101,24 +101,32 @@ fun SetupWizard(vm: HomeViewModel, d: LauncherData, isDefault: Boolean, actions:
         if (back != null) {
             help.appInfoOpenedFor = null
             val granted = if (back == PermissionHelp.Kind.LISTENER) NotificationCenter.isPermissionGranted(context) else vm.system.hasPolicyAccess()
-            if (!granted) {
+            // Schritt 2 erst, wenn die Freigabe erkennbar erteilt ist (oder sich nicht prüfen lässt) – sonst
+            // käme wieder „Zugriff verweigert“. Ohne Freigabe bleibt die Hilfe (Schritt 1) stehen.
+            if (!granted && (!help.restricted() || help.restrictedAllowed() == null)) {
                 val intent = if (back == PermissionHelp.Kind.LISTENER) vm.system.listenerSettingsIntent() else vm.system.policyAccessIntent()
                 vm.system.start(context, intent)
             }
         }
     }
     val facts = remember(tick, d, isDefault) { setupFacts(vm, d, isDefault, context) }
-    val step = SetupLogic.next(index, facts, d.setupDeclined, includeWelcome = index == 0)
+    val only = vm.controller.setupOnly
+    val step = if (only != null) {
+        only.takeIf { !SetupLogic.isDone(it, facts) && index <= it.ordinal }
+    } else {
+        SetupLogic.next(index, facts, d.setupDeclined, includeWelcome = index == 0)
+    }
 
     fun finish() {
         vm.controller.setupIndex = 0
+        vm.controller.setupOnly = null
         vm.controller.updateData { it.copy(onboardingDone = true) }
         onClose()
     }
     fun later() {
         if (step == null) return finish()
         index = step.ordinal + 1
-        if (SetupLogic.next(index, facts, d.setupDeclined, includeWelcome = false) == null) finish()
+        if (only != null || SetupLogic.next(index, facts, d.setupDeclined, includeWelcome = false) == null) finish()
     }
     if (step == null) {
         finish()
@@ -134,7 +142,7 @@ fun SetupWizard(vm: HomeViewModel, d: LauncherData, isDefault: Boolean, actions:
             .padding(horizontal = 24.dp, vertical = 16.dp),
     ) {
         Column(Modifier.fillMaxSize(), horizontalAlignment = Alignment.CenterHorizontally) {
-            Dots(SetupStep.entries.size, step.ordinal)
+            if (only == null) Dots(SetupStep.entries.size, step.ordinal)
             Column(
                 Modifier.weight(1f).fillMaxWidth().verticalScroll(rememberScrollState()),
                 horizontalAlignment = Alignment.CenterHorizontally,
@@ -145,7 +153,19 @@ fun SetupWizard(vm: HomeViewModel, d: LauncherData, isDefault: Boolean, actions:
                     SetupStep.DEFAULT_HOME -> StepBody(R.drawable.ic_lucide_house, R.string.setup_default_title, R.string.setup_default_text)
                     SetupStep.NOTIFICATIONS -> {
                         val showHelp = forceHelp || help.showRestrictedHelp(PermissionHelp.Kind.LISTENER, facts.listener)
-                        if (showHelp) RestrictedHelp() else StepBody(R.drawable.ic_lucide_bell, R.string.setup_notifications_title, R.string.setup_notifications_text)
+                        if (showHelp) {
+                            RestrictedHelp()
+                        } else {
+                            // Nach der Freigabe: deutlich als zweiter Schritt kennzeichnen.
+                            if (help.packageSource == SetupLogic.SOURCE_DOWNLOADED_FILE || help.packageSource == SetupLogic.SOURCE_LOCAL_FILE) {
+                                Text(
+                                    stringResource(R.string.restricted_step2),
+                                    style = TextStyle(fontFamily = Inter, fontWeight = FontWeight.SemiBold, fontSize = 15.sp, color = Tos.Accent),
+                                    modifier = Modifier.padding(bottom = 12.dp),
+                                )
+                            }
+                            StepBody(R.drawable.ic_lucide_bell, R.string.setup_notifications_title, R.string.setup_notifications_text)
+                        }
                         if (BuildConfig.DEBUG && !showHelp) {
                             Text(
                                 stringResource(R.string.setup_debug_show_help),
@@ -194,6 +214,13 @@ fun SetupWizard(vm: HomeViewModel, d: LauncherData, isDefault: Boolean, actions:
                         vm.controller.updateData { it.copy(gesturesSeen = true, onboardingDone = true) }
                         onClose()
                     }
+                }
+            }
+            if (listenerHelp) {
+                // Android zeigt den Eintrag unter ⋮ oft erst nach einem ersten Versuch, den Zugriff einzuschalten.
+                TextLink(stringResource(R.string.restricted_missing_entry)) {
+                    help.markAttempt(PermissionHelp.Kind.LISTENER)
+                    vm.system.start(context, vm.system.listenerSettingsIntent())
                 }
             }
             if (step == SetupStep.UPDATES) {
@@ -271,7 +298,7 @@ private fun RestrictedHelp() {
     Spacer(Modifier.height(10.dp))
     Text(
         stringResource(R.string.restricted_text),
-        style = TextStyle(fontFamily = Inter, fontSize = 17.sp, lineHeight = 24.sp, color = Tos.Ink2, textAlign = TextAlign.Center),
+        style = TextStyle(fontFamily = Inter, fontSize = 17.sp, lineHeight = 24.sp, color = Tos.Ink2, textAlign = TextAlign.Start), modifier = Modifier.fillMaxWidth(),
     )
     Spacer(Modifier.height(20.dp))
     // Skizze: App-Info mit hervorgehobenem ⋮ und geöffnetem Menü.

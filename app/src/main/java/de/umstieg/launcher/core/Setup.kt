@@ -47,14 +47,29 @@ object SetupLogic {
             if (step == SetupStep.WELCOME) includeWelcome else step !in declined && !isDone(step, f)
         }
 
+    /** Installationsquelle (InstallSourceInfo.getPackageSource, ab Android 13). */
+    const val SOURCE_STORE = 2
+    const val SOURCE_LOCAL_FILE = 3
+    const val SOURCE_DOWNLOADED_FILE = 4
+
     /**
-     * Hilfe zu „Eingeschränkten Einstellungen“ zeigen? Android 13+ sperrt den Benachrichtigungszugriff für
-     * Apps, die nicht aus einem Store stammen, bis der Nutzer es in der App-Info erlaubt. Abfragen lässt
-     * sich das nicht; verlässlich ist: nach der Rückkehr aus der Listener-Einstellung weiterhin aus und
-     * nicht aus einem Store installiert.
+     * Gelten „Eingeschränkte Einstellungen“? Android 13+ sperrt Benachrichtigungszugriff und
+     * Bedienungshilfe für Apps aus einer Datei bzw. einem Download, bis der Nutzer es in der App-Info
+     * erlaubt. Deterministisch über die Paketquelle; [restrictedAllowed] ist der AppOps-Status, sofern
+     * lesbar (true = bereits freigegeben). adb- und Store-Installationen sind nicht betroffen.
      */
-    fun showRestrictedHelp(sdk: Int, fromStore: Boolean, attemptedListener: Boolean, granted: Boolean): Boolean =
-        sdk >= 33 && !fromStore && attemptedListener && !granted
+    fun isRestricted(sdk: Int, packageSource: Int?, installer: String?, restrictedAllowed: Boolean?): Boolean {
+        if (sdk < 33 || restrictedAllowed == true) return false
+        return when (packageSource) {
+            SOURCE_LOCAL_FILE, SOURCE_DOWNLOADED_FILE -> true
+            SOURCE_STORE -> false
+            // Quelle unbekannt: über den Installer entscheiden (Shell/adb und Stores sind frei).
+            else -> installer != null && installer != "com.android.shell" && !isStore(installer)
+        }
+    }
+
+    /** Hilfe vor dem Zugriff zeigen: eingeschränkt und noch nicht erteilt. */
+    fun showRestrictedHelp(restricted: Boolean, granted: Boolean): Boolean = restricted && !granted
 
     /** Bekannte App-Stores (Installationsquelle); sonst gilt die Installation als „selbst geladen“. */
     val STORES = setOf(

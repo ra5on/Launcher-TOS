@@ -74,8 +74,23 @@ class SettingsViewModel(application: Application) : AndroidViewModel(application
     fun afterAppInfo(context: android.content.Context) {
         if (help.appInfoOpenedFor == null) return
         help.appInfoOpenedFor = null
-        if (!de.umstieg.launcher.data.NotificationCenter.isPermissionGranted(context)) {
+        // Erst weiter, wenn die Freigabe erteilt ist (oder nicht prüfbar) – sonst käme „Zugriff verweigert“.
+        if (!de.umstieg.launcher.data.NotificationCenter.isPermissionGranted(context) && (!help.restricted() || help.restrictedAllowed() == null)) {
             controller.system.start(context, controller.system.listenerSettingsIntent())
+        }
+    }
+
+    /**
+     * „Zugriff erlauben“ für Benachrichtigungen: bei „Eingeschränkten Einstellungen“ zuerst die App-Info
+     * (Schritt 1), sonst direkt die Listener-Einstellung.
+     */
+    fun listenerAccessIntent(): android.content.Intent {
+        markListenerAttempt()
+        return if (help.restricted()) {
+            markAppInfoOpened()
+            help.appDetailsIntent()
+        } else {
+            controller.system.listenerSettingsIntent()
         }
     }
 

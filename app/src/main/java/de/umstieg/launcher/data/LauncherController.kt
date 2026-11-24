@@ -114,6 +114,10 @@ class LauncherController(
     @Volatile
     var setupIndex: Int = 0
 
+    /** Nur diesen einen Schritt zeigen (z. B. Benachrichtigungszugriff aus einem Panel). */
+    @Volatile
+    var setupOnly: de.umstieg.launcher.core.SetupStep? = null
+
     fun checkForUpdate() {
         updateLayout { it.copy(lastUpdateCheck = System.currentTimeMillis()) }
         scope.launch { updater.check() }

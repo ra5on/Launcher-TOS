@@ -118,12 +118,21 @@ class UpdateSetupTest {
     }
 
     @Test
-    fun restrictedHelp_onlyWhenPlausible() {
-        assertTrue(SetupLogic.showRestrictedHelp(34, fromStore = false, attemptedListener = true, granted = false))
-        assertFalse(SetupLogic.showRestrictedHelp(32, false, true, false)) // vor Android 13 gibt es das nicht
-        assertFalse(SetupLogic.showRestrictedHelp(34, true, true, false)) // aus einem Store
-        assertFalse(SetupLogic.showRestrictedHelp(34, false, false, false)) // noch nicht versucht
-        assertFalse(SetupLogic.showRestrictedHelp(34, false, true, true)) // erteilt
+    fun restricted_isDeterministicFromPackageSource() {
+        // Download bzw. Datei ab Android 13: eingeschränkt, bis freigegeben.
+        assertTrue(SetupLogic.isRestricted(34, SetupLogic.SOURCE_DOWNLOADED_FILE, "com.google.android.packageinstaller", null))
+        assertTrue(SetupLogic.isRestricted(36, SetupLogic.SOURCE_LOCAL_FILE, null, false))
+        assertFalse(SetupLogic.isRestricted(36, SetupLogic.SOURCE_LOCAL_FILE, null, true)) // schon freigegeben
+        assertFalse(SetupLogic.isRestricted(32, SetupLogic.SOURCE_DOWNLOADED_FILE, null, null)) // vor Android 13
+        assertFalse(SetupLogic.isRestricted(34, SetupLogic.SOURCE_STORE, "com.android.vending", null))
+        // Quelle unbekannt: adb/Shell frei, unbekannter Installer eingeschränkt, Store frei.
+        assertFalse(SetupLogic.isRestricted(34, 0, null, null))
+        assertFalse(SetupLogic.isRestricted(34, 0, "com.android.shell", null))
+        assertTrue(SetupLogic.isRestricted(34, 1, "com.example.filemanager", null))
+        assertFalse(SetupLogic.isRestricted(34, 1, "org.fdroid.fdroid", null))
+        assertTrue(SetupLogic.showRestrictedHelp(restricted = true, granted = false))
+        assertFalse(SetupLogic.showRestrictedHelp(restricted = true, granted = true))
+        assertFalse(SetupLogic.showRestrictedHelp(restricted = false, granted = false))
         assertTrue(SetupLogic.isStore("com.android.vending"))
         assertFalse(SetupLogic.isStore("com.google.android.packageinstaller"))
         assertFalse(SetupLogic.isStore(null))

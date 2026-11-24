@@ -136,7 +136,7 @@ fun NotificationPanel(vm: HomeViewModel, d: LauncherData, apps: Map<AppKey, AppI
             modifier = Modifier.padding(vertical = 10.dp).semantics { heading() },
         )
         if (!granted) {
-            ListenerExplanation(onAllow = { vm.system.start(context, vm.system.listenerSettingsIntent()) }, onSystem = {
+            ListenerExplanation(onAllow = { vm.requestListenerAccess(context) }, onSystem = {
                 vm.showOverlay(Overlay.NONE)
                 vm.system.expandStatusBar(false)
             })

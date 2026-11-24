@@ -325,22 +325,38 @@ private fun HomeContent(vm: HomeViewModel, d: LauncherData, isDefault: Boolean, 
         return Hit(placed.item, Slot.Grid(page, placed.x, placed.y), center)
     }
 
+    /**
+     * Ziel unter dem gezogenen Icon. Liegt dessen Mitte über einem anderen Icon, wird erst verweilt
+     * ([de.umstieg.launcher.core.MergeDwell], ca. 400 ms): solange weicht nichts aus, danach gilt es als
+     * Ordner-Ziel (Vorschau + Haptik). Maßgeblich ist die Icon-Mitte, nicht der Finger.
+     */
     fun targetAt(pointer: Offset): DropTarget? {
         val layout = current.layout
+        val now = android.os.SystemClock.uptimeMillis()
         // Widgets: Ziel ist die linke obere Zelle (unter der gegriffenen Stelle verschoben).
         val p = if (drag.item is de.umstieg.launcher.core.WidgetItem) pointer - drag.grab else pointer
+        val ic = pointer - drag.grab
+        val mayMerge = drag.item is AppItem && current.settings.folderByDrag
+        fun dwellFor(key: String?): Boolean {
+            val ready = drag.dwell.update(key, now)
+            drag.holdKey = if (key != null && !ready) key else null
+            return ready
+        }
         dockGeo?.let { geo ->
             if (geo.area.inflate(geo.iconPx * 0.2f).contains(p)) {
                 val i = geo.indexAt(p)
-                return DropTarget.Dock(i, merge = geo.isOnIcon(p, i) && layout.dock.getOrNull(i) != null)
+                val over = mayMerge && layout.dock.getOrNull(i) != null && !(drag.from == Slot.Dock(i)) && geo.isOnIcon(ic, i)
+                return DropTarget.Dock(i, merge = dwellFor(if (over) "d:$i" else null))
             }
         }
-        val geo = gridGeo ?: return null
-        val page = homePage() ?: return null
-        val (x, y) = geo.cellAt(p) ?: return null
+        val geo = gridGeo ?: return null.also { dwellFor(null) }
+        val page = homePage() ?: return null.also { dwellFor(null) }
+        // Zelle nach der Icon-Mitte (dort, wo das gezogene Icon sichtbar ist).
+        val (x, y) = geo.cellAt(if (drag.item is AppItem || drag.item is FolderItem) ic else p) ?: geo.cellAt(p) ?: return null.also { dwellFor(null) }
         val occupant = LayoutOps.itemAt(layout, page, x, y)
-        val canMerge = occupant != null && occupant !is de.umstieg.launcher.core.WidgetItem && drag.item is AppItem
-        return DropTarget.Grid(page, x, y, merge = canMerge && current.settings.folderByDrag && geo.isOnIcon(p, x, y))
+        val self = drag.from == Slot.Grid(page, x, y)
+        val over = mayMerge && occupant != null && !self && occupant !is de.umstieg.launcher.core.WidgetItem && geo.isOnIcon(ic, x, y)
+        return DropTarget.Grid(page, x, y, merge = dwellFor(if (over) "g:$page:$x:$y" else null))
     }
 
     fun finishDrag() {
@@ -366,7 +382,8 @@ private fun HomeContent(vm: HomeViewModel, d: LauncherData, isDefault: Boolean, 
             val from = drag.from
             val t = drag.target
             val l = current.layout
-            if (from == null || t == null || t.merge) {
+            // Beim Verweilen über einem Icon nichts verschieben, sonst flieht das Ziel unter dem Finger weg.
+            if (from == null || t == null || t.merge || drag.holdKey != null) {
                 l
             } else {
                 LayoutOps.drop(l, current.settings.grid, current.settings.dockCapacity, from, t, false) { a, b ->
@@ -378,6 +395,12 @@ private fun HomeContent(vm: HomeViewModel, d: LauncherData, isDefault: Boolean, 
     // Haptik, wenn das Ziel ein Ordner-Ziel wird.
     val mergeTarget by remember { derivedStateOf { drag.target?.merge == true } }
     LaunchedEffect(mergeTarget) { if (mergeTarget) view.tosHaptic(s) }
+    // Auch ohne Fingerbewegung: nach der Verweilzeit das Ziel neu bewerten (wird zum Ordner-Ziel).
+    LaunchedEffect(drag.holdKey) {
+        if (drag.holdKey == null) return@LaunchedEffect
+        delay(de.umstieg.launcher.core.MergeDwell.DEFAULT_MS + 20)
+        if (drag.active) drag.target = targetAt(drag.pointer)
+    }
 
     // Seitenwechsel, wenn das gezogene Icon am Rand verweilt.
     val edge by remember {

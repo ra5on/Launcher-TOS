@@ -1,5 +1,6 @@
 package de.umstieg.launcher.data
 
+import android.app.AppOpsManager
 import android.content.Context
 import android.content.Intent
 import android.os.Build
@@ -36,10 +37,29 @@ class PermissionHelp(context: Context) {
         }
     }.getOrNull()
 
+    /** Paketquelle (Store, Datei, Download …) ab Android 13. */
+    val packageSource: Int? = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+        runCatching { ctx.packageManager.getInstallSourceInfo(ctx.packageName).packageSource }.getOrNull()
+    } else {
+        null
+    }
+
     val fromStore: Boolean get() = SetupLogic.isStore(installer)
 
-    fun showRestrictedHelp(kind: Kind, granted: Boolean): Boolean =
-        SetupLogic.showRestrictedHelp(Build.VERSION.SDK_INT, fromStore, attempted(kind), granted)
+    /** AppOps-Status „Eingeschränkte Einstellungen“ (true = freigegeben), null wenn nicht lesbar. */
+    fun restrictedAllowed(): Boolean? {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) return null
+        return runCatching {
+            val ops = ctx.getSystemService(AppOpsManager::class.java)
+            ops.unsafeCheckOpNoThrow("android:access_restricted_settings", ctx.applicationInfo.uid, ctx.packageName) == AppOpsManager.MODE_ALLOWED
+        }.getOrNull()
+    }
+
+    /** Gelten gerade „Eingeschränkte Einstellungen“ (Android 13+, aus Datei/Download, nicht freigegeben)? */
+    fun restricted(): Boolean = SetupLogic.isRestricted(Build.VERSION.SDK_INT, packageSource, installer, restrictedAllowed())
+
+    @Suppress("UNUSED_PARAMETER")
+    fun showRestrictedHelp(kind: Kind, granted: Boolean): Boolean = SetupLogic.showRestrictedHelp(restricted(), granted)
 
     fun appDetailsIntent(): Intent =
         Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS, "package:${ctx.packageName}".toUri())

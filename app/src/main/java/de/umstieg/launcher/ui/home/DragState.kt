@@ -10,7 +10,6 @@ import de.umstieg.launcher.core.DropTarget
 import de.umstieg.launcher.core.HomeItem
 import de.umstieg.launcher.core.Slot
 import kotlin.math.floor
-import kotlin.math.hypot
 
 /** Zustand eines laufenden Ziehvorgangs (Overlay über dem Pager). */
 @Stable
@@ -26,6 +25,15 @@ class DragState {
     var grab = Offset.Zero
         private set
 
+    /** Verweilen über einem Icon (Ordner erst nach kurzer Pause). */
+    val dwell = de.umstieg.launcher.core.MergeDwell()
+
+    /** Ziel, über dem gerade verweilt wird (noch kein Ordner); die Vorschau schiebt dann nichts weg. */
+    var holdKey by mutableStateOf<String?>(null)
+
+    /** Mitte des gezogenen Icons (Finger minus Griff-Abstand). */
+    val iconCenter: Offset get() = pointer - grab
+
     /** Die aktuelle Geste begann mit langem Drücken (Tipp beim Loslassen ignorieren). */
     var longPressed = false
 
@@ -37,12 +45,16 @@ class DragState {
         this.pointer = pointer
         this.grab = pointer - iconCenter
         this.target = null
+        dwell.reset()
+        holdKey = null
     }
 
     fun clear() {
         item = null
         from = null
         target = null
+        dwell.reset()
+        holdKey = null
     }
 }
 
@@ -73,7 +85,7 @@ class GridGeometry(
     /** Mittig auf einem Icon (für Ordner). */
     fun isOnIcon(p: Offset, x: Int, y: Int): Boolean {
         val c = iconCenter(x, y)
-        return hypot(p.x - c.x, p.y - c.y) < iconPx * MERGE_RADIUS
+        return de.umstieg.launcher.core.MergeDwell.isOver(p.x - c.x, p.y - c.y, iconPx)
     }
 }
 
@@ -90,9 +102,7 @@ class DockGeometry(val area: Rect, val capacity: Int, val count: Int, val iconPx
     fun isOnIcon(p: Offset, index: Int): Boolean {
         if (index !in 0 until count) return false
         val c = center(index)
-        return hypot(p.x - c.x, p.y - c.y) < iconPx * MERGE_RADIUS
+        return de.umstieg.launcher.core.MergeDwell.isOver(p.x - c.x, p.y - c.y, iconPx)
     }
 }
 
-/** Anteil der Icongröße, ab dem „auf dem Icon“ als Ordner-Wunsch gilt. */
-const val MERGE_RADIUS = 0.42f

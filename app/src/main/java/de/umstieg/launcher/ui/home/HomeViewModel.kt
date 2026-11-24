@@ -77,7 +77,25 @@ class HomeViewModel(application: Application) : AndroidViewModel(application) {
     private val _setupRequested = MutableStateFlow(false)
     val setupRequested: StateFlow<Boolean> = _setupRequested.asStateFlow()
 
+    /**
+     * „Benachrichtigungszugriff erlauben“ aus Panels: bei „Eingeschränkten Einstellungen“ erst der
+     * Einrichtungsschritt mit Hilfe (App-Info, dann Zugriff), sonst direkt die Systemseite.
+     */
+    fun requestListenerAccess(context: android.content.Context) {
+        val help = controller.permissions
+        help.markAttempt(de.umstieg.launcher.data.PermissionHelp.Kind.LISTENER)
+        if (help.restricted()) {
+            showOverlay(Overlay.NONE)
+            controller.setupOnly = de.umstieg.launcher.core.SetupStep.NOTIFICATIONS
+            controller.setupIndex = de.umstieg.launcher.core.SetupStep.NOTIFICATIONS.ordinal
+            _setupRequested.value = true
+        } else {
+            system.start(context, system.listenerSettingsIntent())
+        }
+    }
+
     fun showSetup(show: Boolean) {
+        if (show) controller.setupOnly = null
         if (show) controller.setupIndex = 0
         _setupRequested.value = show
     }

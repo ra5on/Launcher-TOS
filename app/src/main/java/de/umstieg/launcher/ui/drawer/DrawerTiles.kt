@@ -291,12 +291,17 @@ fun CategoryPanel(vm: HomeViewModel, d: LauncherData, apps: Map<de.umstieg.launc
                                     ) {
                                         AppIconImage(vm.icons, app, d.settings.iconOptions(), shape, 60.dp, shadow = d.settings.iconShadow)
                                         Spacer(Modifier.height(6.dp))
+                                        // Zwei Zeilen mit Silbentrennung statt „Bambu Han…“.
                                         Text(
                                             app.label,
-                                            style = TextStyle(fontFamily = Inter, fontWeight = FontWeight.Medium, fontSize = 14.sp, color = Tos.Ink, textAlign = TextAlign.Center),
-                                            maxLines = 1,
-                                            overflow = TextOverflow.Ellipsis,
-                                            modifier = Modifier.width(92.dp),
+                                            style = TextStyle(
+                                                fontFamily = Inter, fontWeight = FontWeight.Medium, fontSize = 13.sp, lineHeight = 16.sp, color = Tos.Ink,
+                                                textAlign = TextAlign.Center, hyphens = androidx.compose.ui.text.style.Hyphens.Auto,
+                                                lineBreak = androidx.compose.ui.text.style.LineBreak.Paragraph,
+                                            ),
+                                            maxLines = 2,
+                                            overflow = TextOverflow.Clip,
+                                            modifier = Modifier.width(96.dp),
                                         )
                                     }
                                 }
