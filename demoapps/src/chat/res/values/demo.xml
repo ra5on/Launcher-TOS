@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Chat</string>
+    <bool name="demo_media">false</bool>
+    <string-array name="demo_notifications">
+        <item>Mara|Kommst du heute Abend zum Essen? Ich koche Linsencurry.</item>
+        <item>Jonas|Bin in zehn Minuten da.</item>
+        <item>Familie|Oma hat Fotos vom Sonntag geschickt.</item>
+    </string-array>
+</resources>

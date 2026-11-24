@@ -28,6 +28,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import de.umstieg.launcher.core.ThemeMode
 import de.umstieg.launcher.data.DefaultLauncher
 import de.umstieg.launcher.ui.settings.Section
+import de.umstieg.launcher.ui.settings.SectionRequest
 import de.umstieg.launcher.ui.settings.SettingsActions
 import de.umstieg.launcher.ui.settings.SettingsScreen
 import de.umstieg.launcher.ui.settings.SettingsViewModel
@@ -40,6 +41,9 @@ class SettingsActivity : ComponentActivity() {
     private val vm: SettingsViewModel by viewModels()
     private var pendingAuth: (() -> Unit)? = null
 
+    /** Angeforderte Seite (auch bei erneutem Aufruf, z. B. aus der Suche, wenn die Einstellungen schon offen sind). */
+    private val requested = mutableStateOf(SectionRequest(Section.OVERVIEW, 0))
+
     private val keyguardRequest = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
         if (result.resultCode == RESULT_OK) pendingAuth?.invoke()
         pendingAuth = null
@@ -48,12 +52,22 @@ class SettingsActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         enableEdgeToEdge()
         super.onCreate(savedInstanceState)
-        val start = intent.getStringExtra(EXTRA_SECTION)?.let { runCatching { Section.valueOf(it) }.getOrNull() } ?: Section.OVERVIEW
-        setContent { SettingsRoot(start) }
+        requested.value = SectionRequest(sectionOf(intent), System.nanoTime())
+        setContent { SettingsRoot(requested.value) }
     }
 
+    override fun onNewIntent(intent: Intent) {
+        super.onNewIntent(intent)
+        setIntent(intent)
+        // Neue Anforderung (eigene Kennung), damit auch dieselbe Seite erneut geöffnet wird.
+        requested.value = SectionRequest(sectionOf(intent), System.nanoTime())
+    }
+
+    private fun sectionOf(intent: Intent?): Section =
+        intent?.getStringExtra(EXTRA_SECTION)?.let { runCatching { Section.valueOf(it) }.getOrNull() } ?: Section.OVERVIEW
+
     @Composable
-    private fun SettingsRoot(start: Section) {
+    private fun SettingsRoot(start: SectionRequest) {
         val data by vm.data.collectAsStateWithLifecycle()
         val settings = data?.settings
         val dark = isDark(settings?.theme ?: ThemeMode.SYSTEM)

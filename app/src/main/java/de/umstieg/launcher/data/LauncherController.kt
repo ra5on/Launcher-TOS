@@ -218,12 +218,18 @@ class LauncherController(
 
     /** Importiert JSON; wirft bei ungültigem Inhalt. Anschließend Abgleich mit den installierten Apps. */
     suspend fun importJson(text: String) {
-        // Widget-IDs gelten nur auf dem Gerät, auf dem sie angelegt wurden: beim Import weglassen.
+        // Widget-IDs gelten nur auf dem Gerät, auf dem sie angelegt wurden: nur behalten, was der Host
+        // hier noch unter derselben ID für denselben Anbieter kennt (z. B. Rundlauf auf demselben Gerät).
         val raw = LauncherJson.decode(text)
+        fun valid(id: Int, provider: String) = widgets.info(id)?.provider?.flattenToString() == provider
         val imported = raw.copy(
-            widgetPage = emptyList(),
+            widgetPage = raw.widgetPage.filter { valid(it.widgetId, it.provider) },
             layout = LayoutOps.normalize(
-                raw.layout.copy(pages = raw.layout.pages.map { page -> page.filterNot { it.item is WidgetItem } }),
+                raw.layout.copy(
+                    pages = raw.layout.pages.map { page ->
+                        page.filter { p -> (p.item as? WidgetItem)?.let { valid(it.widgetId, it.provider) } ?: true }
+                    },
+                ),
                 raw.settings.grid, raw.settings.dockCapacity, raw.settings.minPages,
             ),
         )

@@ -14,4 +14,4 @@ dependencyResolutionManagement {
 }
 
 rootProject.name = "LauncherTOS"
-include(":app")
+include(":app", ":demoapps")

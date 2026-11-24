@@ -50,7 +50,7 @@ object NotificationCenter {
         _notifications.value = runCatching { s.activeNotifications?.toList().orEmpty() }
             .onFailure { Log.w("TosNotifications", "Liste nicht lesbar", it) }
             .getOrDefault(emptyList())
-            .sortedByDescending { it.postTime }
+            .sortedByDescending { it.notification.`when`.takeIf { w -> w > 0 } ?: it.postTime }
     }
 
     fun cancel(key: String) {

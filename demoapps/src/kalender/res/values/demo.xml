@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Kalender</string>
+    <bool name="demo_media">false</bool>
+    <string-array name="demo_notifications">
+        <item>Zahnarzt in 30 Minuten|10:30 – 11:00 · Praxis am Markt</item>
+        <item>Elternabend|Heute 19:00 – 20:30 · Grundschule</item>
+        <item>Geburtstag|Morgen hat Paul Geburtstag.</item>
+    </string-array>
+</resources>

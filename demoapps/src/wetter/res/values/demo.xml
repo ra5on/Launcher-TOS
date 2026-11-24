@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Wetter</string>
+    <bool name="demo_media">false</bool>
+    <string-array name="demo_notifications">
+        <item>Regen ab 14 Uhr|Rheinstadt · 12° · Schirm nicht vergessen</item>
+        <item>Morgen sonnig|Bis zu 15° und kaum Wind.</item>
+    </string-array>
+</resources>

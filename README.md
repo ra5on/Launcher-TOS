@@ -100,6 +100,41 @@ Voraussetzungen: JDK 17 oder neuer, Android SDK mit Plattform 37 (`local.propert
 ./gradlew testDebugUnitTest lint        # Tests und Prüfungen
 ```
 
+## Veröffentlichen (Google Play)
+
+Für Play wird ein App Bundle (AAB) mit dem **Upload-Schlüssel** signiert; den eigentlichen
+App-Signaturschlüssel verwaltet Google („Play App Signing“). Upload-Schlüssel einmalig anlegen –
+**außerhalb des Repos** aufbewahren (Keystores sind per `.gitignore` ausgeschlossen):
+
+```sh
+keytool -genkeypair -v -keystore ~/launchertos-upload.jks -alias launchertos-upload \
+  -keyalg RSA -keysize 4096 -validity 10000
+```
+
+Signiertes AAB bauen (ohne die Variablen entsteht ein unsigniertes Bundle):
+
+```sh
+export LAUNCHERTOS_KEYSTORE=~/launchertos-upload.jks
+export LAUNCHERTOS_KEYSTORE_PASSWORD='…'   # Keystore- und Schlüssel-Passwort
+./gradlew bundleRelease                     # → app/build/outputs/bundle/release/app-release.aab
+```
+
+## Demo-Apps für Store-Bilder
+
+Das Modul `:demoapps` gehört nicht zum Launcher. Es erzeugt kleine Demo-Apps (je Flavor eine eigene
+App, Paket `de.umstieg.launcher.demo.<name>`) mit deutschen Namen, eigenen Icons und
+Beispiel-Benachrichtigungen, damit Bildschirmfotos ohne fremde Apps und Inhalte auskommen:
+
+```sh
+./gradlew :demoapps:assembleDebug
+adb install -r demoapps/build/outputs/apk/chat/debug/demoapps-chat-debug.apk   # usw.
+adb shell am start -n de.umstieg.launcher.demo.chat/de.umstieg.launcher.demo.NotifyActivity       # Benachrichtigungen
+adb shell am start -n de.umstieg.launcher.demo.musik/de.umstieg.launcher.demo.NotifyActivity      # plus Mediensitzung
+adb shell am start -n de.umstieg.launcher.demo.telefon/de.umstieg.launcher.demo.WallpaperActivity # Demo-Hintergrund
+```
+
+Icons und Texte erzeugt `demoapps/tools/generate.py` (Glyphen aus Lucide, eigene Farben).
+
 ## Installieren
 
 ```sh

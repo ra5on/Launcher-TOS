@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Mail</string>
+    <bool name="demo_media">false</bool>
+    <string-array name="demo_notifications">
+        <item>Stadtwerke|Ihre Jahresabrechnung ist da.</item>
+        <item>Lena|Re: Wochenende – klingt gut, ich bin dabei!</item>
+        <item>Bücherei|Zwei Bücher sind bald fällig.</item>
+    </string-array>
+</resources>

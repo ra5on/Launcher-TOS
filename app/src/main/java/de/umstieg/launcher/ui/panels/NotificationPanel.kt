@@ -241,7 +241,8 @@ private fun NotificationCard(
     val title = extras.getCharSequence(Notification.EXTRA_TITLE)?.toString().orEmpty()
     val text = (extras.getCharSequence(Notification.EXTRA_BIG_TEXT) ?: extras.getCharSequence(Notification.EXTRA_TEXT))?.toString().orEmpty()
     val appName = app?.label ?: remember(sbn.packageName) { fallbackAppName(context, sbn.packageName) } ?: stringResource(R.string.notifications_system)
-    val time = relativeTimeText(RelativeTime.of(sbn.postTime, System.currentTimeMillis()))
+    // Zeit der Benachrichtigung selbst (von der App gesetzt), sonst Zeitpunkt des Postens.
+    val time = relativeTimeText(RelativeTime.of(sbn.notification.`when`.takeIf { it > 0 } ?: sbn.postTime, System.currentTimeMillis()))
     val large: ImageBitmap? by produceState<ImageBitmap?>(null, sbn.key) {
         value = withContext(Dispatchers.IO) {
             runCatching { sbn.notification.getLargeIcon()?.loadDrawable(context)?.toBitmap(160, 160)?.asImageBitmap() }.getOrNull()

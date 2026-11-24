@@ -82,6 +82,7 @@
         <activity
             android:name=".SettingsActivity"
             android:exported="false"
+            android:launchMode="singleTask"
             android:label="@string/settings_entry_name"
             android:taskAffinity="de.umstieg.launcher.settings"
             android:theme="@style/Theme.Tos.Settings" />

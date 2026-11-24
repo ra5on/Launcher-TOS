@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Galerie</string>
+    <bool name="demo_media">false</bool>
+    <string-array name="demo_notifications">
+        <item>Neuer Rückblick|Herbstspaziergang · 24 Fotos</item>
+        <item>Geteiltes Album|Lena hat 5 Fotos zu „Urlaub“ hinzugefügt.</item>
+    </string-array>
+</resources>

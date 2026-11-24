@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Shop</string>
+    <bool name="demo_media">false</bool>
+    <string-array name="demo_notifications">
+        <item>Paket kommt heute|Zustellung zwischen 13 und 15 Uhr.</item>
+        <item>Bestellung verschickt|Wanderschuhe, Größe 42</item>
+        <item>Abholung bereit|Dein Paket liegt in der Packstation am Bahnhof.</item>
+    </string-array>
+</resources>

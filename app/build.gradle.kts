@@ -4,6 +4,11 @@ plugins {
     alias(libs.plugins.kotlin.serialization)
 }
 
+// Release-Signatur nur über Umgebungsvariablen (Upload-Schlüssel für Play App Signing).
+// Ohne sie bleibt der Release-Build (APK/AAB) unsigniert.
+val releaseKeystore: String? = System.getenv("LAUNCHERTOS_KEYSTORE")?.takeIf { it.isNotBlank() }
+val releasePassword: String? = System.getenv("LAUNCHERTOS_KEYSTORE_PASSWORD")?.takeIf { it.isNotBlank() }
+
 android {
     namespace = "de.umstieg.launcher"
     compileSdk = 37
@@ -14,12 +19,25 @@ android {
         versionCode = 100
         versionName = "1.0.0"
     }
+    signingConfigs {
+        if (releaseKeystore != null && releasePassword != null) {
+            create("release") {
+                storeFile = file(releaseKeystore)
+                storePassword = releasePassword
+                keyAlias = "launchertos-upload"
+                keyPassword = releasePassword
+                enableV2Signing = true
+                enableV3Signing = true
+            }
+        }
+    }
     buildTypes {
         // Release unsigniert (signiert wird vom Inhaber), mit R8.
         release {
             isMinifyEnabled = true
             isShrinkResources = true
             proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
+            signingConfig = signingConfigs.findByName("release")
         }
     }
     compileOptions {

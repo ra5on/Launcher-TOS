@@ -490,4 +490,5 @@
     <string name="time_hours">vor %1$d Std.</string>
     <string name="time_yesterday">gestern</string>
     <string name="notifications_system">System</string>
+    <string name="edit_add_apps_short">Apps</string>
 </resources>

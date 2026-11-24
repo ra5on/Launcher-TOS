@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Kamera</string>
+    <bool name="demo_media">false</bool>
+    <string-array name="demo_notifications">
+
+    </string-array>
+</resources>

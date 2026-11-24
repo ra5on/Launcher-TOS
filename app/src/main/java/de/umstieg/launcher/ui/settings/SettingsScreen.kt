@@ -57,6 +57,9 @@ import de.umstieg.launcher.ui.theme.LocalPanelColors
 import de.umstieg.launcher.ui.theme.glass
 import kotlin.math.max
 
+/** Angeforderte Einstellungsseite; [id] unterscheidet wiederholte Anforderungen derselben Seite. */
+data class SectionRequest(val section: Section, val id: Long)
+
 /** Aktionen, die die Activity ausführt (Dateiauswahl, Rollen-Anfrage, Geräte-Sperre). */
 class SettingsActions(
     val requestDefault: () -> Unit,
@@ -71,14 +74,14 @@ fun SettingsScreen(
     vm: SettingsViewModel,
     isDefault: Boolean,
     versionName: String,
-    startSection: Section,
+    startSection: SectionRequest,
     licenses: () -> List<Pair<String, String>>,
     actions: SettingsActions,
 ) {
     val data by vm.data.collectAsStateWithLifecycle()
     val apps by vm.previewApps.collectAsStateWithLifecycle()
     val d = data ?: return
-    var section by rememberSaveable { mutableStateOf(startSection) }
+    var section by rememberSaveable(startSection.id) { mutableStateOf(startSection.section) }
     BackHandler(enabled = section != Section.OVERVIEW) { section = if (section == Section.HIDDEN) Section.DRAWER else Section.OVERVIEW }
     val c = LocalPanelColors.current
     Box(Modifier.fillMaxSize()) {

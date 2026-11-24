@@ -454,7 +454,8 @@ private fun HomeContent(vm: HomeViewModel, d: LauncherData, isDefault: Boolean, 
                     while (true) {
                         val ev = awaitPointerEvent()
                         val ch = ev.changes.firstOrNull { it.id == down.id } ?: break
-                        if (!ch.pressed || ch.isConsumed) break
+                        // Langes Drücken (Bearbeiten/Ziehen) hat Vorrang: dann keine Wischgeste.
+                        if (!ch.pressed || ch.isConsumed || drag.longPressed || drag.active) break
                         total += ch.positionChange()
                         val edgeBottom = (statusTop + current.settings.edgeHeightDp.dp.toPx()) / size.height
                         val g = GestureClassifier.classify(
@@ -526,13 +527,6 @@ private fun HomeContent(vm: HomeViewModel, d: LauncherData, isDefault: Boolean, 
                     }
                 }
             }
-            if (editMode && drag.active && currentFolder == null) {
-                Text(
-                    stringResource(R.string.edit_hint_edge),
-                    style = TextStyle(fontFamily = Inter, fontSize = 14.sp, color = Tos.Ink2, textAlign = TextAlign.Center),
-                    modifier = Modifier.fillMaxWidth().padding(top = 4.dp),
-                )
-            }
             val homeNow = map.homeIndex(pagerState.currentPage)
             // Höhe von Indikator + Dock merken, damit der Pager beim Wechsel zu Widgets/Übersicht nicht springt.
             var bottomHeight by remember { mutableStateOf(0) }
@@ -541,14 +535,23 @@ private fun HomeContent(vm: HomeViewModel, d: LauncherData, isDefault: Boolean, 
                 SideEffect { dockGeo = null }
             } else Column(Modifier.fillMaxWidth().onSizeChanged { bottomHeight = it.height }) {
             if (homeNow != null) {
-                PageIndicator(
-                    style = s.indicator,
-                    pageCount = map.homePages,
-                    current = homeNow,
-                    hasNewPage = editMode,
-                    modifier = Modifier.align(Alignment.CenterHorizontally).padding(vertical = 10.dp),
-                    onSearch = if (editMode) null else ({ vm.showOverlay(Overlay.SEARCH) }),
-                )
+                // Feste Höhe, damit Raster und Pager beim Bearbeiten/Ziehen nicht springen; der Hinweis liegt darüber.
+                Box(Modifier.fillMaxWidth().height(INDICATOR_AREA), contentAlignment = Alignment.Center) {
+                    PageIndicator(
+                        style = s.indicator,
+                        pageCount = map.homePages,
+                        current = homeNow,
+                        hasNewPage = editMode,
+                        onSearch = if (editMode) null else ({ vm.showOverlay(Overlay.SEARCH) }),
+                    )
+                    if (editMode && drag.active && currentFolder == null) {
+                        Text(
+                            stringResource(R.string.edit_hint_edge),
+                            style = TextStyle(fontFamily = Inter, fontSize = 14.sp, color = Tos.Ink2, textAlign = TextAlign.Center),
+                            modifier = Modifier.align(Alignment.TopCenter).offset(y = (-26).dp).fillMaxWidth(),
+                        )
+                    }
+                }
             } else {
                 Spacer(Modifier.height(12.dp))
             }
@@ -665,4 +668,5 @@ private fun Modifier.pageTransition(state: PagerState, page: Int, transition: Pa
 }
 
 val TOP_BAR_HEIGHT = 64.dp
+private val INDICATOR_AREA = 76.dp
 private const val EDGE_DWELL_MS = 600L

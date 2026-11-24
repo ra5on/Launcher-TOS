@@ -70,12 +70,14 @@ fun EditTopBar(vm: HomeViewModel, actions: HomeActions, onAddWidget: (() -> Unit
                 .clip(Tos.PillShape)
                 .glass(Tos.PillShape, Tos.GlassControl)
                 .clickable(onClickLabel = addLabel, role = Role.Button) { vm.showAddSheet(true) }
+                .semantics(mergeDescendants = true) { contentDescription = addLabel }
                 .padding(horizontal = 16.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {
             Icon(painterResource(R.drawable.ic_lucide_plus), null, tint = Tos.Ink, modifier = Modifier.size(20.dp))
             Spacer(Modifier.width(6.dp))
-            Text(addLabel, style = ButtonText.copy(color = Tos.Ink))
+            // Kurz, damit „Fertig“ daneben Platz behält; TalkBack liest die lange Beschriftung.
+            Text(stringResource(R.string.edit_add_apps_short), style = ButtonText.copy(color = Tos.Ink), maxLines = 1)
         }
         if (onAddWidget != null) {
             val widgetLabel = stringResource(R.string.edit_add_widget)
@@ -112,7 +114,7 @@ fun EditTopBar(vm: HomeViewModel, actions: HomeActions, onAddWidget: (() -> Unit
         ) {
             Icon(painterResource(R.drawable.ic_lucide_check), null, tint = Color(0xFF10141C), modifier = Modifier.size(20.dp))
             Spacer(Modifier.width(6.dp))
-            Text(stringResource(R.string.edit_done), style = ButtonText.copy(color = Color(0xFF10141C)))
+            Text(stringResource(R.string.edit_done), style = ButtonText.copy(color = Color(0xFF10141C)), maxLines = 1, softWrap = false)
         }
     }
 }

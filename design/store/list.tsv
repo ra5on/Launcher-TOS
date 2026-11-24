@@ -3,6 +3,6 @@
 03-store-bearbeiten	app/02-edit	Ordnen, wie du willst	Lange drücken, verschieben, fertig	4
 04-store-ordner	app/03-ordner	Ordner per Ziehen	App auf App ziehen – fertig ist der Ordner	2
 05-store-suche	app/06-suche	Findet auch bei Tippfehlern	Mitten auf dem Display nach unten wischen	1
-06-store-app-uebersicht	app/07-uebersicht	Jede App sofort finden	Automatische Kategorien und A–Z-Liste	2
-07-store-raster	app/08-icons	Dein Raster, deine Icons	Spalten, Reihen, Größe und Rundung frei einstellbar	3
-08-store-einstellungen	app/10-einstellungen	Fast alles einstellbar	Gesten, Glas, Schrift, Badges und vieles mehr	4
+06-store-benachrichtigungen	app/04-benachrichtigungen	Alles Neue auf einen Blick	Von oben links wischen – nach App gebündelt	2
+07-store-raster	app/07-icons	Dein Raster, deine Icons	Spalten, Reihen, Größe und Rundung frei einstellbar	3
+08-store-einstellungen	app/08-gesten	Fast alles einstellbar	Gesten, Glas, Schrift, Badges und vieles mehr	4

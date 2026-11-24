@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="demo_text">%1$s ist eine Demo-App für die Store-Bilder von Launcher TOS. Sie tut nichts.</string>
+    <string name="notify_title">Demo-Benachrichtigungen</string>
+    <string name="notify_done">%1$d Demo-Benachrichtigungen gesendet.</string>
+    <string name="notify_denied">Benachrichtigungen sind nicht erlaubt.</string>
+    <string name="media_title">Leuchtfeuer am Hafen</string>
+    <string name="media_artist">Nordlicht Quartett</string>
+    <string name="media_album">Wellenlinien</string>
+    <string name="wallpaper_title">Demo-Hintergrund</string>
+    <string name="wallpaper_done">Demo-Hintergrund gesetzt.</string>
+</resources>
