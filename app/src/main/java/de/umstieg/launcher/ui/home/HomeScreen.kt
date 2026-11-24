@@ -57,6 +57,7 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.input.pointer.positionChange
 import androidx.compose.ui.layout.boundsInRoot
 import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalView
@@ -286,8 +287,10 @@ private fun HomeContent(vm: HomeViewModel, d: LauncherData, isDefault: Boolean, 
         return Hit(placed.item, Slot.Grid(page, placed.x, placed.y), center)
     }
 
-    fun targetAt(p: Offset): DropTarget? {
+    fun targetAt(pointer: Offset): DropTarget? {
         val layout = current.layout
+        // Widgets: Ziel ist die linke obere Zelle (unter der gegriffenen Stelle verschoben).
+        val p = if (drag.item is de.umstieg.launcher.core.WidgetItem) pointer - drag.grab else pointer
         dockGeo?.let { geo ->
             if (geo.area.inflate(geo.iconPx * 0.2f).contains(p)) {
                 val i = geo.indexAt(p)
@@ -531,6 +534,12 @@ private fun HomeContent(vm: HomeViewModel, d: LauncherData, isDefault: Boolean, 
                 )
             }
             val homeNow = map.homeIndex(pagerState.currentPage)
+            // Höhe von Indikator + Dock merken, damit der Pager beim Wechsel zu Widgets/Übersicht nicht springt.
+            var bottomHeight by remember { mutableStateOf(0) }
+            if (homeNow == null) {
+                Spacer(Modifier.height(with(density) { bottomHeight.toDp() }))
+                SideEffect { dockGeo = null }
+            } else Column(Modifier.fillMaxWidth().onSizeChanged { bottomHeight = it.height }) {
             if (homeNow != null) {
                 PageIndicator(
                     style = s.indicator,
@@ -543,10 +552,11 @@ private fun HomeContent(vm: HomeViewModel, d: LauncherData, isDefault: Boolean, 
             } else {
                 Spacer(Modifier.height(12.dp))
             }
-            if (s.dockEnabled && homeNow != null) {
+            if (s.dockEnabled) {
                 Dock(env, if (drag.active) preview else d.layout) { dockGeo = it }
             } else {
                 SideEffect { dockGeo = null }
+            }
             }
         }
 

@@ -19,6 +19,8 @@ object LauncherJson {
         val settings = raw.settings.sanitized()
         return raw.copy(
             settings = settings,
+            // Ohne Seiten wäre der Schnellzugriff leer und nicht bedienbar.
+            quickSettings = if (raw.quickSettings.pages.isEmpty()) QsLayout.DEFAULT else raw.quickSettings,
             layout = LayoutOps.normalize(raw.layout, settings.grid, settings.dockCapacity, settings.minPages),
         )
     }

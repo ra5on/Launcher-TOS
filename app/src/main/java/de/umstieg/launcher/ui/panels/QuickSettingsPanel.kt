@@ -283,7 +283,7 @@ fun QuickSettingsPanel(vm: HomeViewModel, layout: QsLayout) {
                         QsOps.allowedSizes(item.tile).forEach { sz ->
                             val on = sz == item.size
                             Box(
-                                Modifier.size(44.dp).clip(CircleShape).background(if (on) Tos.Accent else Color.Transparent)
+                                Modifier.size(48.dp).clip(CircleShape).background(if (on) Tos.Accent else Color.Transparent)
                                     .clickable(role = Role.RadioButton) { vm.controller.updateQuickSettings { QsOps.setSize(it, page.id, i, sz) } },
                                 contentAlignment = Alignment.Center,
                             ) { Text(sz.name, style = Label.copy(color = if (on) Tos.AccentInk else Tos.Ink)) }
@@ -341,7 +341,7 @@ fun QuickSettingsPanel(vm: HomeViewModel, layout: QsLayout) {
 
 @Composable
 private fun IconAction(icon: Int, description: String, onClick: () -> Unit) {
-    Box(Modifier.size(44.dp).clip(CircleShape).clickable(role = Role.Button, onClick = onClick), contentAlignment = Alignment.Center) {
+    Box(Modifier.size(48.dp).clip(CircleShape).clickable(role = Role.Button, onClick = onClick), contentAlignment = Alignment.Center) {
         Icon(painterResource(icon), description, tint = Tos.Ink)
     }
 }
@@ -476,7 +476,7 @@ private fun MediaCard(info: MediaInfo?, large: Boolean, vm: HomeViewModel, onNoA
                 Text(listOf(info.artist, info.album).filter { it.isNotBlank() }.joinToString(" · "), style = TextStyle(fontFamily = Inter, fontSize = 15.sp, color = Tos.Ink2), maxLines = 1, overflow = TextOverflow.Ellipsis)
             }
             Box(
-                Modifier.size(44.dp).clip(RoundedCornerShape(14.dp)).background(Color.White.copy(alpha = 0.12f)).clickable { vm.media.showOutputSwitcher(context) },
+                Modifier.size(48.dp).clip(RoundedCornerShape(14.dp)).background(Color.White.copy(alpha = 0.12f)).clickable { vm.media.showOutputSwitcher(context) },
                 contentAlignment = Alignment.Center,
             ) { Icon(painterResource(R.drawable.ic_lucide_cast), stringResource(R.string.qs_media_output), tint = Tos.Ink, modifier = Modifier.size(20.dp)) }
         }

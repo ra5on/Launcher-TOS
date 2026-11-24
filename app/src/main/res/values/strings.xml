@@ -64,7 +64,7 @@
     <string name="summary_default_yes">Launcher TOS ist der Standard-Launcher</string>
     <string name="summary_default_no">Noch nicht festgelegt</string>
     <string name="summary_backup">Exportieren · Importieren · Zurücksetzen</string>
-    <string name="summary_about">Version %1$s · keine Berechtigungen</string>
+    <string name="summary_about">Version %1$s · kein Internet</string>
     <string name="on">An</string>
     <string name="off">Aus</string>
     <string name="percent_value">%1$d %%</string>
@@ -151,7 +151,7 @@
 
     <!-- Über -->
     <string name="about_version">Version %1$s</string>
-    <string name="about_text">Launcher TOS ist freie Software unter der GNU General Public License Version 3. Die App braucht keine Berechtigungen, hat keinen Internetzugriff, zeigt keine Werbung und sammelt keine Daten.</string>
+    <string name="about_text">Launcher TOS ist freie Software unter der GNU General Public License Version 3. Kein Internetzugriff, keine Werbung, keine Datenerhebung. Alle Berechtigungen sind freiwillig und unter „Berechtigungen“ einzeln erklärt.</string>
     <string name="about_licenses">Lizenzen</string>
     <string name="about_licenses_summary">Inter (SIL OFL 1.1), Lucide (ISC), AndroidX und Kotlin (Apache 2.0)</string>
     <!-- ===== Phase 2 ===== -->

@@ -85,12 +85,13 @@ fun PageIndicator(
         horizontalArrangement = Arrangement.spacedBy(8.dp),
     ) {
         if (onSearch != null) {
-            Icon(
-                painterResource(R.drawable.ic_lucide_search),
-                stringResource(R.string.search_open),
-                tint = Tos.Ink,
-                modifier = Modifier.size(18.dp).clickable(role = Role.Button, onClick = onSearch),
-            )
+            // 48-dp-Touchfläche, sichtbar bleibt die kleine Lupe.
+            Box(
+                Modifier.size(48.dp).clip(CircleShape).clickable(role = Role.Button, onClick = onSearch),
+                contentAlignment = Alignment.Center,
+            ) {
+                Icon(painterResource(R.drawable.ic_lucide_search), stringResource(R.string.search_open), tint = Tos.Ink, modifier = Modifier.size(18.dp))
+            }
         }
         if (showPages) when (style) {
             IndicatorStyle.NUMBER -> Text(
