@@ -411,15 +411,13 @@
     <string name="setting_blur_summary">Hinter Ordnern, Suche und Panels</string>
     <string name="setting_blur_unsupported">Unschärfe gibt es erst ab Android 12; darunter wird halbtransparent abgedunkelt.</string>
     <string name="setting_dim">Hintergrund abdunkeln</string>
-    <string name="gesture_top_left">Wisch von oben links</string>
-    <string name="gesture_top_right">Wisch von oben rechts</string>
-    <string name="gesture_down">Wisch nach unten (Mitte)</string>
-    <string name="gesture_up">Wisch nach oben</string>
+    <string name="gesture_down">Nach unten wischen (Bildschirmmitte)</string>
+    <string name="gesture_up">Nach oben wischen</string>
     <string name="gesture_double_tap">Doppeltipp auf leere Fläche</string>
     <string name="gesture_double_tap_bottom">Doppeltipp unten</string>
     <string name="gestures_simple_mode">Im einfachen Modus ist nur „Wisch nach unten = Suche“ aktiv.</string>
-    <string name="action_notifications">Benachrichtigungen</string>
-    <string name="action_quick">Schnellzugriff</string>
+    <string name="action_notifications">Eigene Benachrichtigungen</string>
+    <string name="action_quick">Eigener Schnellzugriff</string>
     <string name="action_search">Suche</string>
     <string name="action_drawer">App-Übersicht</string>
     <string name="action_open_app">App öffnen</string>
@@ -466,4 +464,25 @@
     <string name="setting_simple_mode">Einfacher Modus</string>
     <string name="setting_simple_mode_summary">Große Icons und Schrift, Beschriftungen an, weniger Gesten</string>
     <string name="setting_reduce_motion">Bewegung reduzieren</string>
+    <string name="gesture_edge_left">Oberer Rand links</string>
+    <string name="gesture_edge_center">Oberer Rand Mitte</string>
+    <string name="gesture_edge_right">Oberer Rand rechts</string>
+    <string name="gesture_edge">Oberer Rand</string>
+    <string name="action_system_notifications">System-Benachrichtigungen</string>
+    <string name="action_system_quick">System-Schnelleinstellungen</string>
+    <string name="system_panel_unavailable">Dieses Gerät lässt die Systemleiste nicht von Apps aufklappen. Wisch sie bitte direkt am oberen Rand herunter.</string>
+    <string name="gesture_presets">Vorlage</string>
+    <string name="preset_tos">Launcher TOS</string>
+    <string name="preset_tos_summary">Oben links eigene Benachrichtigungen, oben rechts eigener Schnellzugriff, Mitte nach unten Suche</string>
+    <string name="preset_android">Android-Standard</string>
+    <string name="preset_android_summary">Nach unten wischen öffnet überall die System-Benachrichtigungen, nach oben die Suche</string>
+    <string name="preset_android_search">Android + Suche</string>
+    <string name="preset_android_search_summary">Oberer Rand: System-Benachrichtigungen, Bildschirmmitte nach unten: Suche</string>
+    <string name="preset_custom">Eigen</string>
+    <string name="preset_custom_summary">Jede Geste einzeln gewählt</string>
+    <string name="setting_edge_split">Oberen Rand teilen</string>
+    <string name="setting_edge_split_summary">Links, Mitte und rechts getrennt belegen</string>
+    <string name="setting_edge_height">Höhe der Randzone</string>
+    <string name="gestures_search_hint">Keine Geste öffnet die Suche – sie bleibt über die Lupe im Seitenindikator erreichbar.</string>
+    <string name="gestures_system_note">„System-Benachrichtigungen“ und „System-Schnelleinstellungen“ klappen die Leiste von Android auf. Geht das auf einem Gerät nicht, erscheint ein Hinweis.</string>
 </resources>

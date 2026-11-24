@@ -120,13 +120,23 @@ enum class AppOpenAnimation { ZOOM, FADE, NONE }
 @Serializable
 enum class TriState { SYSTEM, ON, OFF }
 
-/** Gesten auf dem Homescreen (Katalog §8). */
+/**
+ * Gesten auf dem Homescreen (Katalog §8). Der obere Rand ist geteilt (EDGE_LEFT/CENTER/RIGHT) oder
+ * ungeteilt (EDGE); „Nach unten wischen“ in der Bildschirmmitte ist davon getrennt (SWIPE_DOWN).
+ */
 @Serializable
-enum class Gesture { SWIPE_TOP_LEFT, SWIPE_TOP_RIGHT, SWIPE_DOWN, SWIPE_UP, DOUBLE_TAP, DOUBLE_TAP_BOTTOM }
+enum class Gesture { EDGE_LEFT, EDGE_CENTER, EDGE_RIGHT, EDGE, SWIPE_DOWN, SWIPE_UP, DOUBLE_TAP, DOUBLE_TAP_BOTTOM }
 
-/** Was eine Geste auslöst. */
+/** Was eine Geste auslöst (eigene Panels oder die des Systems). */
 @Serializable
-enum class GestureAction { NOTIFICATIONS, QUICK_SETTINGS, SEARCH, APP_DRAWER, OPEN_APP, ASSISTANT, NOTHING }
+enum class GestureAction {
+    NOTIFICATIONS, QUICK_SETTINGS, SYSTEM_NOTIFICATIONS, SYSTEM_QUICK_SETTINGS,
+    SEARCH, APP_DRAWER, OPEN_APP, ASSISTANT, NOTHING,
+}
+
+/** Gesten-Vorlagen (Schnellwahl); jede einzelne Änderung führt zu [CUSTOM]. */
+@Serializable
+enum class GesturePreset { TOS, ANDROID, ANDROID_SEARCH, CUSTOM }
 
 @Serializable
 data class GestureBinding(val action: GestureAction, val app: AppKey? = null)
@@ -188,6 +198,11 @@ data class LauncherSettings(
     val accentCustom: Long = 0xFF2EC4A6,
     val highContrast: Boolean = false,
     val gestures: Map<Gesture, GestureBinding> = DEFAULT_GESTURES,
+    val gesturePreset: GesturePreset = GesturePreset.TOS,
+    /** Oberer Rand geteilt (links/Mitte/rechts) oder eine Zone. */
+    val edgeSplit: Boolean = true,
+    /** Höhe der Randzone unter der Statusleiste. */
+    val edgeHeightDp: Int = 40,
     val swipeZoneLeft: Int = 35,
     val swipeZoneRight: Int = 35,
     val badgesEnabled: Boolean = true,
@@ -235,6 +250,7 @@ data class LauncherSettings(
         dimWallpaper = dimWallpaper.coerceIn(0, 60),
         swipeZoneLeft = swipeZoneLeft.coerceIn(SWIPE_ZONE),
         swipeZoneRight = swipeZoneRight.coerceIn(SWIPE_ZONE),
+        edgeHeightDp = edgeHeightDp.coerceIn(EDGE_HEIGHT),
         animationSpeed = animationSpeed.coerceIn(0, 200),
         gestures = DEFAULT_GESTURES + gestures,
     )
@@ -252,9 +268,14 @@ data class LauncherSettings(
         val FIXED_PAGES = 1..9
         val FOLDER_COLUMNS = 3..5
         val SWIPE_ZONE = 20..50
+        val EDGE_HEIGHT = 24..64
+
+        /** Vorlage „Launcher TOS“ (Standard). */
         val DEFAULT_GESTURES: Map<Gesture, GestureBinding> = mapOf(
-            Gesture.SWIPE_TOP_LEFT to GestureBinding(GestureAction.NOTIFICATIONS),
-            Gesture.SWIPE_TOP_RIGHT to GestureBinding(GestureAction.QUICK_SETTINGS),
+            Gesture.EDGE_LEFT to GestureBinding(GestureAction.NOTIFICATIONS),
+            Gesture.EDGE_CENTER to GestureBinding(GestureAction.SEARCH),
+            Gesture.EDGE_RIGHT to GestureBinding(GestureAction.QUICK_SETTINGS),
+            Gesture.EDGE to GestureBinding(GestureAction.SYSTEM_NOTIFICATIONS),
             Gesture.SWIPE_DOWN to GestureBinding(GestureAction.SEARCH),
             Gesture.SWIPE_UP to GestureBinding(GestureAction.NOTHING),
             Gesture.DOUBLE_TAP to GestureBinding(GestureAction.NOTHING),

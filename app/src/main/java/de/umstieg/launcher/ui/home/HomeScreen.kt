@@ -24,6 +24,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.layout.systemBars
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.pager.HorizontalPager
@@ -183,6 +184,7 @@ private fun HomeContent(vm: HomeViewModel, d: LauncherData, isDefault: Boolean, 
     val currentFolder by rememberUpdatedState(openFolderId)
     val currentMap by rememberUpdatedState(map)
     val currentOverlay by rememberUpdatedState(overlay)
+    val statusTop by rememberUpdatedState(WindowInsets.statusBars.getTop(density).toFloat())
 
     LaunchedEffect(pagerState) {
         vm.toFirstPage.collect { animate ->
@@ -229,6 +231,12 @@ private fun HomeContent(vm: HomeViewModel, d: LauncherData, isDefault: Boolean, 
                 if (own || !vm.system.expandStatusBar(false)) vm.showOverlay(Overlay.NOTIFICATIONS)
             }
             GestureAction.QUICK_SETTINGS -> vm.showOverlay(Overlay.QUICK_SETTINGS)
+            GestureAction.SYSTEM_NOTIFICATIONS, GestureAction.SYSTEM_QUICK_SETTINGS -> {
+                // Kein Bedienungshilfe-Dienst: klappt das Aufklappen nicht, nur ein Hinweis.
+                if (!vm.system.expandStatusBar(action == GestureAction.SYSTEM_QUICK_SETTINGS)) {
+                    Toast.makeText(context, R.string.system_panel_unavailable, Toast.LENGTH_LONG).show()
+                }
+            }
             GestureAction.SEARCH -> vm.showOverlay(Overlay.SEARCH)
             GestureAction.APP_DRAWER -> if (s.drawerEnabled) vm.goToDrawer() else vm.showOverlay(Overlay.SEARCH)
             GestureAction.OPEN_APP -> binding?.app?.let { apps[it] }?.let { launch(it, Rect.Zero) }
@@ -445,9 +453,11 @@ private fun HomeContent(vm: HomeViewModel, d: LauncherData, isDefault: Boolean, 
                         val ch = ev.changes.firstOrNull { it.id == down.id } ?: break
                         if (!ch.pressed || ch.isConsumed) break
                         total += ch.positionChange()
+                        val edgeBottom = (statusTop + current.settings.edgeHeightDp.dp.toPx()) / size.height
                         val g = GestureClassifier.classify(
                             down.position.x / size.width, down.position.y / size.height,
                             total.x / size.height, total.y / size.height,
+                            edgeBottom, current.settings.edgeSplit,
                             current.settings.swipeZoneLeft, current.settings.swipeZoneRight,
                         )
                         if (g != null) {

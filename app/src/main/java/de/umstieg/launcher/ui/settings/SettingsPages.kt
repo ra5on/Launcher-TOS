@@ -54,6 +54,9 @@ import de.umstieg.launcher.core.FontWeightSetting
 import de.umstieg.launcher.core.Gesture
 import de.umstieg.launcher.core.GestureAction
 import de.umstieg.launcher.core.GestureBinding
+import de.umstieg.launcher.core.GestureClassifier
+import de.umstieg.launcher.core.GesturePreset
+import de.umstieg.launcher.core.GesturePresets
 import de.umstieg.launcher.core.HapticStrength
 import de.umstieg.launcher.core.IndicatorStyle
 import de.umstieg.launcher.core.LabelColor
@@ -435,8 +438,10 @@ fun GlassPage(p: PageEnv) {
 @Composable
 fun gestureName(g: Gesture) = stringResource(
     when (g) {
-        Gesture.SWIPE_TOP_LEFT -> R.string.gesture_top_left
-        Gesture.SWIPE_TOP_RIGHT -> R.string.gesture_top_right
+        Gesture.EDGE_LEFT -> R.string.gesture_edge_left
+        Gesture.EDGE_CENTER -> R.string.gesture_edge_center
+        Gesture.EDGE_RIGHT -> R.string.gesture_edge_right
+        Gesture.EDGE -> R.string.gesture_edge
         Gesture.SWIPE_DOWN -> R.string.gesture_down
         Gesture.SWIPE_UP -> R.string.gesture_up
         Gesture.DOUBLE_TAP -> R.string.gesture_double_tap
@@ -449,6 +454,8 @@ fun actionName(a: GestureAction) = stringResource(
     when (a) {
         GestureAction.NOTIFICATIONS -> R.string.action_notifications
         GestureAction.QUICK_SETTINGS -> R.string.action_quick
+        GestureAction.SYSTEM_NOTIFICATIONS -> R.string.action_system_notifications
+        GestureAction.SYSTEM_QUICK_SETTINGS -> R.string.action_system_quick
         GestureAction.SEARCH -> R.string.action_search
         GestureAction.APP_DRAWER -> R.string.action_drawer
         GestureAction.OPEN_APP -> R.string.action_open_app
@@ -458,41 +465,86 @@ fun actionName(a: GestureAction) = stringResource(
 )
 
 @Composable
+fun presetName(g: GesturePreset) = stringResource(
+    when (g) {
+        GesturePreset.TOS -> R.string.preset_tos
+        GesturePreset.ANDROID -> R.string.preset_android
+        GesturePreset.ANDROID_SEARCH -> R.string.preset_android_search
+        GesturePreset.CUSTOM -> R.string.preset_custom
+    },
+)
+
+@Composable
 fun GesturesPage(p: PageEnv) {
     val s = p.s
     var editing by remember { mutableStateOf<Gesture?>(null) }
     var pickApp by remember { mutableStateOf<Gesture?>(null) }
     val pct = percentFormat()
+    val dpFormat = stringResource(R.string.dp_value)
     SubpageHeader(stringResource(R.string.settings_section_gestures), p.back)
     if (s.simpleMode) SettingsCard { Note(stringResource(R.string.gestures_simple_mode)) }
     SettingsCard {
-        Gesture.entries.forEachIndexed { i, g ->
+        Text(stringResource(R.string.gesture_presets), style = TitleStyle.copy(color = LocalPanelColors.current.content), modifier = Modifier.padding(start = 18.dp, top = 12.dp))
+        Column(Modifier.padding(horizontal = 18.dp, vertical = 8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            GesturePreset.entries.forEach { preset ->
+                val on = s.gesturePreset == preset
+                Row(
+                    Modifier.fillMaxWidth().defaultMinSize(minHeight = 52.dp)
+                        .background(if (on) Tos.Accent.copy(alpha = 0.18f) else LocalPanelColors.current.chip, Tos.CardShape)
+                        .border(if (on) 2.dp else 0.dp, if (on) Tos.Accent else Color.Transparent, Tos.CardShape)
+                        .clickable(role = Role.RadioButton) { p.set { GesturePresets.apply(it, preset) } }
+                        .semantics { selected = on }
+                        .padding(horizontal = 14.dp, vertical = 10.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    Column(Modifier.weight(1f)) {
+                        Text(presetName(preset), style = TitleStyle.copy(color = LocalPanelColors.current.content))
+                        Text(stringResource(presetSummary(preset)), style = SummaryStyle.copy(color = LocalPanelColors.current.secondary))
+                    }
+                }
+            }
+        }
+    }
+    SettingsCard {
+        SwitchRow(stringResource(R.string.setting_edge_split), stringResource(R.string.setting_edge_split_summary), s.edgeSplit) { v ->
+            p.set { GesturePresets.withSplit(it, v) }
+        }
+        CardDivider()
+        SliderBlock(stringResource(R.string.setting_edge_height), s.edgeHeightDp, LauncherSettings.EDGE_HEIGHT, { String.format(dpFormat, it) },
+            onPreview = {}, onCommit = { v -> p.set { it.copy(edgeHeightDp = v) } }, stepSize = 4)
+        if (s.edgeSplit) {
+            CardDivider()
+            SliderBlock(stringResource(R.string.setting_swipe_zone_left), s.swipeZoneLeft, LauncherSettings.SWIPE_ZONE, pct, onPreview = {}, onCommit = { v -> p.set { it.copy(swipeZoneLeft = v) } }, stepSize = 5)
+            CardDivider()
+            SliderBlock(stringResource(R.string.setting_swipe_zone_right), s.swipeZoneRight, LauncherSettings.SWIPE_ZONE, pct, onPreview = {}, onCommit = { v -> p.set { it.copy(swipeZoneRight = v) } }, stepSize = 5)
+        }
+    }
+    SettingsCard {
+        GestureClassifier.active(s.edgeSplit).forEachIndexed { i, g ->
             if (i > 0) CardDivider()
-            val b = s.gestures[g] ?: LauncherSettings.DEFAULT_GESTURES.getValue(g)
+            val b = GestureClassifier.binding(s, g)
             val appName = b.app?.let { k -> p.apps.firstOrNull { it.key == k }?.label }
             ActionRow(gestureName(g), value = if (b.action == GestureAction.OPEN_APP && appName != null) appName else actionName(b.action)) { editing = g }
         }
     }
-    SettingsCard {
-        SliderBlock(stringResource(R.string.setting_swipe_zone_left), s.swipeZoneLeft, LauncherSettings.SWIPE_ZONE, pct, onPreview = {}, onCommit = { v -> p.set { it.copy(swipeZoneLeft = v) } }, stepSize = 5)
-        CardDivider()
-        SliderBlock(stringResource(R.string.setting_swipe_zone_right), s.swipeZoneRight, LauncherSettings.SWIPE_ZONE, pct, onPreview = {}, onCommit = { v -> p.set { it.copy(swipeZoneRight = v) } }, stepSize = 5)
-        Note(stringResource(R.string.setting_swipe_zone))
+    if (!GestureClassifier.searchReachableByGesture(s)) SettingsCard { Note(stringResource(R.string.gestures_search_hint)) }
+    SettingsCard { Note(stringResource(R.string.gestures_system_note)) }
+    ResetSection {
+        p.set { GesturePresets.apply(it, GesturePreset.TOS).copy(swipeZoneLeft = Defaults.swipeZoneLeft, swipeZoneRight = Defaults.swipeZoneRight, edgeHeightDp = Defaults.edgeHeightDp) }
     }
-    ResetSection { p.set { it.copy(gestures = LauncherSettings.DEFAULT_GESTURES, swipeZoneLeft = Defaults.swipeZoneLeft, swipeZoneRight = Defaults.swipeZoneRight) } }
     editing?.let { g ->
         AlertDialog(
             onDismissRequest = { editing = null },
             title = { Text(gestureName(g)) },
             text = {
-                Column {
+                Column(Modifier.heightIn(max = 460.dp).verticalScroll(rememberScrollState())) {
                     GestureAction.entries.forEach { a ->
                         Row(
                             Modifier.fillMaxWidth().defaultMinSize(minHeight = 48.dp).clickable(role = Role.RadioButton) {
                                 if (a == GestureAction.OPEN_APP) {
                                     pickApp = g
                                 } else {
-                                    p.set { it.copy(gestures = it.gestures + (g to GestureBinding(a))) }
+                                    p.set { GesturePresets.withGesture(it, g, GestureBinding(a)) }
                                 }
                                 editing = null
                             },
@@ -513,7 +565,7 @@ fun GesturesPage(p: PageEnv) {
                     p.apps.sortedBy { it.label.lowercase() }.forEach { app ->
                         Row(
                             Modifier.fillMaxWidth().defaultMinSize(minHeight = 48.dp).clickable {
-                                p.set { it.copy(gestures = it.gestures + (g to GestureBinding(GestureAction.OPEN_APP, app.key))) }
+                                p.set { GesturePresets.withGesture(it, g, GestureBinding(GestureAction.OPEN_APP, app.key)) }
                                 pickApp = null
                             },
                             verticalAlignment = Alignment.CenterVertically,
@@ -524,6 +576,13 @@ fun GesturesPage(p: PageEnv) {
             confirmButton = { TextButton(onClick = { pickApp = null }) { Text(stringResource(R.string.cancel)) } },
         )
     }
+}
+
+private fun presetSummary(p: GesturePreset) = when (p) {
+    GesturePreset.TOS -> R.string.preset_tos_summary
+    GesturePreset.ANDROID -> R.string.preset_android_summary
+    GesturePreset.ANDROID_SEARCH -> R.string.preset_android_search_summary
+    GesturePreset.CUSTOM -> R.string.preset_custom_summary
 }
 
 // ---------- Benachrichtigungen & Badges ----------

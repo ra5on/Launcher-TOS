@@ -137,28 +137,98 @@ class FeatureLogicTest {
     // ---------- Gesten ----------
 
     @Test
-    fun gestures_classify() {
-        assertEquals(Gesture.SWIPE_TOP_LEFT, GestureClassifier.classify(0.1f, 0.05f, 0f, 0.2f, 35, 35))
-        assertEquals(Gesture.SWIPE_TOP_RIGHT, GestureClassifier.classify(0.9f, 0.1f, 0.01f, 0.2f, 35, 35))
-        assertEquals(Gesture.SWIPE_DOWN, GestureClassifier.classify(0.5f, 0.1f, 0f, 0.2f, 35, 35))
-        assertEquals(Gesture.SWIPE_DOWN, GestureClassifier.classify(0.1f, 0.6f, 0f, 0.2f, 35, 35))
-        assertEquals(Gesture.SWIPE_UP, GestureClassifier.classify(0.5f, 0.8f, 0f, -0.2f, 35, 35))
-        assertNull(GestureClassifier.classify(0.5f, 0.5f, 0.3f, 0.1f, 35, 35)) // waagerecht
-        assertNull(GestureClassifier.classify(0.5f, 0.5f, 0f, 0.02f, 35, 35)) // zu kurz
+    fun gestures_classifyEdgeSplit() {
+        val edge = 0.10f
+        assertEquals(Gesture.EDGE_LEFT, GestureClassifier.classify(0.1f, 0.05f, 0f, 0.2f, edge, true, 35, 35))
+        assertEquals(Gesture.EDGE_RIGHT, GestureClassifier.classify(0.9f, 0.08f, 0.01f, 0.2f, edge, true, 35, 35))
+        assertEquals(Gesture.EDGE_CENTER, GestureClassifier.classify(0.5f, 0.05f, 0f, 0.2f, edge, true, 35, 35))
         // Breitere Zone rechts
-        assertEquals(Gesture.SWIPE_TOP_RIGHT, GestureClassifier.classify(0.55f, 0.1f, 0f, 0.2f, 20, 50))
+        assertEquals(Gesture.EDGE_RIGHT, GestureClassifier.classify(0.55f, 0.05f, 0f, 0.2f, edge, true, 20, 50))
     }
 
     @Test
-    fun gestures_defaultsAndOverrides() {
+    fun gestures_edgeAndMiddleAreSeparate() {
+        val edge = 0.10f
+        // Gleiche Bewegung, Start im Rand bzw. in der Bildschirmmitte.
+        assertEquals(Gesture.EDGE, GestureClassifier.classify(0.1f, 0.05f, 0f, 0.2f, edge, false, 35, 35))
+        assertEquals(Gesture.SWIPE_DOWN, GestureClassifier.classify(0.1f, 0.40f, 0f, 0.2f, edge, false, 35, 35))
+        assertEquals(Gesture.SWIPE_DOWN, GestureClassifier.classify(0.5f, 0.11f, 0f, 0.2f, edge, true, 35, 35))
+        assertEquals(Gesture.SWIPE_UP, GestureClassifier.classify(0.5f, 0.8f, 0f, -0.2f, edge, true, 35, 35))
+        assertNull(GestureClassifier.classify(0.5f, 0.5f, 0.3f, 0.1f, edge, true, 35, 35)) // waagerecht
+        assertNull(GestureClassifier.classify(0.5f, 0.5f, 0f, 0.02f, edge, true, 35, 35)) // zu kurz
+    }
+
+    @Test
+    fun gestures_defaultsAreTosPreset() {
         val s = LauncherSettings()
-        assertEquals(GestureAction.NOTIFICATIONS, GestureClassifier.binding(s, Gesture.SWIPE_TOP_LEFT).action)
+        assertEquals(GesturePreset.TOS, s.gesturePreset)
+        assertEquals(GesturePreset.TOS, GesturePresets.detect(s))
+        assertEquals(GestureAction.NOTIFICATIONS, GestureClassifier.binding(s, Gesture.EDGE_LEFT).action)
+        assertEquals(GestureAction.QUICK_SETTINGS, GestureClassifier.binding(s, Gesture.EDGE_RIGHT).action)
+        assertEquals(GestureAction.SEARCH, GestureClassifier.binding(s, Gesture.SWIPE_DOWN).action)
         assertEquals(GestureAction.ASSISTANT, GestureClassifier.binding(s, Gesture.DOUBLE_TAP_BOTTOM).action)
-        val custom = s.copy(gestures = mapOf(Gesture.SWIPE_UP to GestureBinding(GestureAction.APP_DRAWER))).sanitized()
-        assertEquals(GestureAction.APP_DRAWER, GestureClassifier.binding(custom, Gesture.SWIPE_UP).action)
-        assertEquals(GestureAction.SEARCH, GestureClassifier.binding(custom, Gesture.SWIPE_DOWN).action)
         assertEquals(Gesture.DOUBLE_TAP_BOTTOM, GestureClassifier.doubleTap(0.9f))
         assertEquals(Gesture.DOUBLE_TAP, GestureClassifier.doubleTap(0.5f))
+    }
+
+    @Test
+    fun gestures_presetsMapToBindings() {
+        val android = GesturePresets.apply(LauncherSettings(), GesturePreset.ANDROID)
+        assertFalse(android.edgeSplit)
+        assertEquals(GestureAction.SYSTEM_NOTIFICATIONS, GestureClassifier.binding(android, Gesture.EDGE).action)
+        assertEquals(GestureAction.SYSTEM_NOTIFICATIONS, GestureClassifier.binding(android, Gesture.SWIPE_DOWN).action)
+        assertEquals(GestureAction.SEARCH, GestureClassifier.binding(android, Gesture.SWIPE_UP).action)
+        assertEquals(GesturePreset.ANDROID, GesturePresets.detect(android))
+
+        val mixed = GesturePresets.apply(android, GesturePreset.ANDROID_SEARCH)
+        assertEquals(GestureAction.SYSTEM_NOTIFICATIONS, GestureClassifier.binding(mixed, Gesture.EDGE).action)
+        assertEquals(GestureAction.SEARCH, GestureClassifier.binding(mixed, Gesture.SWIPE_DOWN).action)
+        assertEquals(GesturePreset.ANDROID_SEARCH, GesturePresets.detect(mixed))
+
+        val back = GesturePresets.apply(mixed, GesturePreset.TOS)
+        assertTrue(back.edgeSplit)
+        assertEquals(LauncherSettings.DEFAULT_GESTURES, back.gestures)
+        // „Eigen“ als Vorlage behält die Belegung.
+        assertEquals(mixed.gestures, GesturePresets.apply(mixed, GesturePreset.CUSTOM).gestures)
+    }
+
+    @Test
+    fun gestures_singleChangeSwitchesToCustom() {
+        val s = LauncherSettings()
+        val changed = GesturePresets.withGesture(s, Gesture.SWIPE_UP, GestureBinding(GestureAction.APP_DRAWER))
+        assertEquals(GesturePreset.CUSTOM, changed.gesturePreset)
+        assertEquals(GestureAction.APP_DRAWER, GestureClassifier.binding(changed, Gesture.SWIPE_UP).action)
+        // Zurückgestellt → passt wieder zur Vorlage.
+        val restored = GesturePresets.withGesture(changed, Gesture.SWIPE_UP, GestureBinding(GestureAction.NOTHING))
+        assertEquals(GesturePreset.TOS, restored.gesturePreset)
+        // Rand-Aufteilung ändern wird neu zugeordnet: ungeteilt mit Standardbelegung = „Android + Suche“ …
+        val unsplit = GesturePresets.withSplit(s, false)
+        assertEquals(GesturePreset.ANDROID_SEARCH, unsplit.gesturePreset)
+        // … und jede weitere Abweichung ist „Eigen“.
+        assertEquals(GesturePreset.CUSTOM, GesturePresets.withGesture(unsplit, Gesture.DOUBLE_TAP, GestureBinding(GestureAction.SEARCH)).gesturePreset)
+    }
+
+    @Test
+    fun gestures_searchReachability() {
+        val s = LauncherSettings()
+        assertTrue(GestureClassifier.searchReachableByGesture(s))
+        val none = GesturePresets.withGesture(
+            GesturePresets.withGesture(s, Gesture.SWIPE_DOWN, GestureBinding(GestureAction.SYSTEM_NOTIFICATIONS)),
+            Gesture.EDGE_CENTER, GestureBinding(GestureAction.NOTHING),
+        )
+        assertFalse(GestureClassifier.searchReachableByGesture(none))
+        // Ungespeicherte Gesten werden aus den Standardwerten ergänzt.
+        val partial = s.copy(gestures = mapOf(Gesture.SWIPE_UP to GestureBinding(GestureAction.APP_DRAWER))).sanitized()
+        assertEquals(GestureAction.SEARCH, GestureClassifier.binding(partial, Gesture.SWIPE_DOWN).action)
+    }
+
+    @Test
+    fun simpleMode_keepsOnlySearchGesture() {
+        val e = LauncherSettings(simpleMode = true, iconSize = 90).effective()
+        assertEquals(120, e.iconSize)
+        assertEquals(GestureAction.SEARCH, GestureClassifier.binding(e, Gesture.SWIPE_DOWN).action)
+        assertEquals(GestureAction.NOTHING, GestureClassifier.binding(e, Gesture.EDGE_LEFT).action)
+        assertEquals(LauncherSettings(simpleMode = false).columns, e.columns)
     }
 
     // ---------- Schnellzugriff ----------
