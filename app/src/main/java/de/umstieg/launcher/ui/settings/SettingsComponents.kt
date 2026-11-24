@@ -180,6 +180,23 @@ fun ActionRow(title: String, summary: String? = null, value: String? = null, col
     }
 }
 
+/** Antippbare Zeile mit formatiertem Titel (z. B. hervorgehobene Suchtreffer). */
+@Composable
+fun ActionRowAnnotated(title: androidx.compose.ui.text.AnnotatedString, onClick: () -> Unit) {
+    val c = LocalPanelColors.current
+    Row(
+        Modifier
+            .fillMaxWidth()
+            .defaultMinSize(minHeight = 56.dp)
+            .clickable(role = Role.Button, onClick = onClick)
+            .padding(horizontal = 18.dp, vertical = 10.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Text(title, style = TitleStyle.copy(color = c.content), modifier = Modifier.weight(1f))
+        Icon(painterResource(R.drawable.ic_lucide_chevron_right), null, tint = c.secondary, modifier = Modifier.size(20.dp))
+    }
+}
+
 /**
  * Regler mit Titel und Wert. Während des Ziehens zeigt [onPreview] den Wert sofort (Live-Vorschau),
  * gespeichert wird beim Loslassen über [onCommit].

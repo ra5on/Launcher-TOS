@@ -1,7 +1,12 @@
 package de.umstieg.launcher
 
+import android.app.KeyguardManager
+import android.content.Intent
 import android.graphics.Color
+import android.hardware.biometrics.BiometricPrompt
+import android.os.Build
 import android.os.Bundle
+import android.os.CancellationSignal
 import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.SystemBarStyle
@@ -22,26 +27,36 @@ import androidx.lifecycle.compose.LifecycleEventEffect
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import de.umstieg.launcher.core.ThemeMode
 import de.umstieg.launcher.data.DefaultLauncher
+import de.umstieg.launcher.ui.settings.Section
 import de.umstieg.launcher.ui.settings.SettingsActions
 import de.umstieg.launcher.ui.settings.SettingsScreen
 import de.umstieg.launcher.ui.settings.SettingsViewModel
 import de.umstieg.launcher.ui.theme.TosTheme
 import de.umstieg.launcher.ui.theme.isDark
+import de.umstieg.launcher.ui.theme.styleFor
 
-/** Einstellungen (erreichbar über den Bearbeitungsmodus und den Eintrag „Launcher TOS“). */
+/** Einstellungen (erreichbar über den Bearbeitungsmodus, die Suche und den Eintrag „Launcher TOS“). */
 class SettingsActivity : ComponentActivity() {
     private val vm: SettingsViewModel by viewModels()
+    private var pendingAuth: (() -> Unit)? = null
+
+    private val keyguardRequest = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+        if (result.resultCode == RESULT_OK) pendingAuth?.invoke()
+        pendingAuth = null
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         enableEdgeToEdge()
         super.onCreate(savedInstanceState)
-        setContent { SettingsRoot() }
+        val start = intent.getStringExtra(EXTRA_SECTION)?.let { runCatching { Section.valueOf(it) }.getOrNull() } ?: Section.OVERVIEW
+        setContent { SettingsRoot(start) }
     }
 
     @Composable
-    private fun SettingsRoot() {
+    private fun SettingsRoot(start: Section) {
         val data by vm.data.collectAsStateWithLifecycle()
-        val dark = isDark(data?.settings?.theme ?: ThemeMode.SYSTEM)
+        val settings = data?.settings
+        val dark = isDark(settings?.theme ?: ThemeMode.SYSTEM)
         LaunchedEffect(dark) {
             val style = if (dark) SystemBarStyle.dark(Color.TRANSPARENT) else SystemBarStyle.light(Color.TRANSPARENT, Color.TRANSPARENT)
             enableEdgeToEdge(statusBarStyle = style, navigationBarStyle = style)
@@ -67,10 +82,51 @@ class SettingsActivity : ComponentActivity() {
                 requestDefault = { runCatching { roleLauncher.launch(DefaultLauncher.requestIntent(context)) } },
                 export = { runCatching { exportLauncher.launch(fileName) } },
                 import = { runCatching { importLauncher.launch(arrayOf("application/json", "text/plain", "application/octet-stream")) } },
+                authenticate = ::authenticate,
+                openIntent = { intent -> runCatching { startActivity(Intent(intent).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)) } },
             )
         }
-        TosTheme(dark = dark) {
-            SettingsScreen(vm, isDefault, versionName(), ::loadLicenses, actions)
+        val style = settings?.let { styleFor(it, null, false) } ?: de.umstieg.launcher.ui.theme.TosStyle()
+        TosTheme(dark = dark, style = style) {
+            SettingsScreen(vm, isDefault, versionName(), start, ::loadLicenses, actions)
+        }
+    }
+
+    /**
+     * Geräte-Sperre bestätigen (für versteckte Apps). Ohne eingerichtete Sperre gibt es nichts zu schützen:
+     * dann direkt weiter.
+     */
+    private fun authenticate(onSuccess: () -> Unit) {
+        val km = getSystemService(KeyguardManager::class.java)
+        if (km == null || !km.isDeviceSecure) {
+            onSuccess()
+            return
+        }
+        val title = getString(R.string.auth_title)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+            val prompt = BiometricPrompt.Builder(this)
+                .setTitle(title)
+                .setAllowedAuthenticators(
+                    android.hardware.biometrics.BiometricManager.Authenticators.BIOMETRIC_WEAK or
+                        android.hardware.biometrics.BiometricManager.Authenticators.DEVICE_CREDENTIAL,
+                )
+                .build()
+            prompt.authenticate(
+                CancellationSignal(),
+                mainExecutor,
+                object : BiometricPrompt.AuthenticationCallback() {
+                    override fun onAuthenticationSucceeded(result: BiometricPrompt.AuthenticationResult?) = onSuccess()
+                },
+            )
+        } else {
+            @Suppress("DEPRECATION")
+            val intent = km.createConfirmDeviceCredentialIntent(title, null)
+            if (intent == null) {
+                onSuccess()
+            } else {
+                pendingAuth = onSuccess
+                keyguardRequest.launch(intent)
+            }
         }
     }
 
@@ -80,5 +136,9 @@ class SettingsActivity : ComponentActivity() {
     /** Lizenztexte aus den Assets (beim Bau aus LICENSE und THIRD_PARTY_LICENSES kopiert). */
     private fun loadLicenses(): List<Pair<String, String>> = listOf("THIRD_PARTY_LICENSES", "LICENSE").mapNotNull { name ->
         runCatching { assets.open("licenses/$name").bufferedReader().use { it.readText() } }.getOrNull()?.let { name to it }
+    }
+
+    companion object {
+        const val EXTRA_SECTION = "de.umstieg.launcher.SECTION"
     }
 }

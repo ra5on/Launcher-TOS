@@ -47,6 +47,11 @@ class IconLoader(context: Context) {
     // Höchstens vier Icons gleichzeitig rendern.
     private val permits = Semaphore(4)
 
+    /** Hauptfarbe je App (für Badge-Farbe „aus Icon“), beim Rendern ermittelt. */
+    private val colors = java.util.concurrent.ConcurrentHashMap<String, Int>()
+
+    fun colorOf(app: AppInfo): Int? = colors[app.key.id]
+
     private fun cacheKey(app: AppInfo, legacy: IconOptions) = "${app.key.id}|$legacy"
 
     fun cached(app: AppInfo, legacy: IconOptions): ImageBitmap? = cache.get(cacheKey(app, legacy))
@@ -102,6 +107,7 @@ class IconLoader(context: Context) {
                 drawable.draw(canvas)
             }
         }
+        colors[app.key.id] = averageColor(bitmap)
         bitmap.prepareToDraw()
         return bitmap.asImageBitmap()
     }
@@ -127,6 +133,22 @@ class IconLoader(context: Context) {
         }
         val best = counts.maxByOrNull { it.value }?.key ?: return Color.WHITE
         return Color.rgb(((best shr 8) and 0xF) * 17, ((best shr 4) and 0xF) * 17, (best and 0xF) * 17)
+    }
+
+    /** Mittlere Farbe eines inneren Ausschnitts (kräftig genug für ein Badge). */
+    private fun averageColor(b: Bitmap): Int {
+        val small = Bitmap.createScaledBitmap(b, 8, 8, true)
+        var r = 0
+        var g = 0
+        var bl = 0
+        for (x in 1 until 7) for (y in 1 until 7) {
+            val p = small.getPixel(x, y)
+            r += Color.red(p)
+            g += Color.green(p)
+            bl += Color.blue(p)
+        }
+        if (small != b) small.recycle()
+        return Color.rgb(r / 36, g / 36, bl / 36)
     }
 
     private fun cacheBytes(): Int {

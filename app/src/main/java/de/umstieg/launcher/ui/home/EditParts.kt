@@ -57,7 +57,7 @@ private val ButtonText = TextStyle(fontFamily = Inter, fontWeight = FontWeight.S
 
 /** Leiste im Bearbeitungsmodus: „+“ (Apps hinzufügen), Zahnrad (Einstellungen), „Fertig“. */
 @Composable
-fun EditTopBar(vm: HomeViewModel, actions: HomeActions) {
+fun EditTopBar(vm: HomeViewModel, actions: HomeActions, onAddWidget: (() -> Unit)?) {
     Row(
         Modifier.fillMaxSize().padding(horizontal = 14.dp),
         verticalAlignment = Alignment.CenterVertically,
@@ -77,12 +77,25 @@ fun EditTopBar(vm: HomeViewModel, actions: HomeActions) {
             Spacer(Modifier.width(6.dp))
             Text(addLabel, style = ButtonText.copy(color = Tos.Ink))
         }
+        if (onAddWidget != null) {
+            val widgetLabel = stringResource(R.string.edit_add_widget)
+            Box(
+                Modifier
+                    .size(48.dp)
+                    .clip(CircleShape)
+                    .glass(CircleShape, Tos.GlassControl)
+                    .clickable(onClickLabel = widgetLabel, role = Role.Button, onClick = onAddWidget),
+                contentAlignment = Alignment.Center,
+            ) {
+                Icon(painterResource(R.drawable.ic_lucide_layout_dashboard), widgetLabel, tint = Tos.Ink, modifier = Modifier.size(22.dp))
+            }
+        }
         Box(
             Modifier
                 .size(48.dp)
                 .clip(CircleShape)
                 .glass(CircleShape, Tos.GlassControl)
-                .clickable(role = Role.Button) { actions.openSettings() },
+                .clickable(role = Role.Button) { actions.openSettings(null) },
             contentAlignment = Alignment.Center,
         ) {
             Icon(painterResource(R.drawable.ic_lucide_settings), stringResource(R.string.edit_settings), tint = Tos.Ink, modifier = Modifier.size(22.dp))
@@ -163,7 +176,7 @@ fun LockedHintCard(onOpenSettings: () -> Unit) {
 fun AddAppsSheet(d: LauncherData, apps: Map<AppKey, AppInfo>, shape: SuperellipseShape, vm: HomeViewModel, onAdd: (AppKey) -> Unit) {
     val c = LocalPanelColors.current
     val placed = remember(d.layout) { LayoutOps.placedApps(d.layout) }
-    val missing = remember(placed, apps) { apps.values.filter { it.key !in placed } }
+    val missing = remember(placed, apps, d.hiddenApps) { apps.values.filter { it.key !in placed && it.key !in d.hiddenApps } }
     Box(
         Modifier
             .fillMaxSize()

@@ -33,7 +33,9 @@ class SettingsViewModel(application: Application) : AndroidViewModel(application
             val dock = data.layout.dock.flatMap { LayoutOps.appsOf(it) }
             (grid + dock).mapNotNull { apps[it] }
         }.orEmpty()
-        ordered.ifEmpty { apps.values.toList() }
+        // Zuerst die Apps in Homescreen-Reihenfolge (für Vorschauen), dann alle übrigen (für Listen).
+        val placed = ordered.map { it.key }.toSet()
+        ordered + apps.values.filter { it.key !in placed }.sortedBy { it.label.lowercase() }
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList())
 
     private val _messages = Channel<Int>(Channel.BUFFERED)
@@ -42,6 +44,19 @@ class SettingsViewModel(application: Application) : AndroidViewModel(application
     val messages = _messages.receiveAsFlow()
 
     fun update(block: (LauncherSettings) -> LauncherSettings) = controller.updateSettings(block)
+
+    fun updateData(block: (de.umstieg.launcher.core.LauncherData) -> de.umstieg.launcher.core.LauncherData) = controller.updateData(block)
+
+    fun setHidden(app: de.umstieg.launcher.core.AppKey, hidden: Boolean) = controller.setHidden(app, hidden)
+
+    fun setBadgeDisabled(packageName: String, disabled: Boolean) = controller.setBadgeDisabled(packageName, disabled)
+
+    fun writeSettingsIntent() = controller.system.writeSettingsIntent()
+
+    /** Zustand der Sonderberechtigungen (für die Übersicht). */
+    class PermissionStatus(val policy: Boolean, val writeSettings: Boolean)
+
+    fun permissionStatus() = PermissionStatus(controller.system.hasPolicyAccess(), controller.system.canWriteSettings())
 
     fun export(uri: Uri) = viewModelScope.launch {
         val ok = runCatching {

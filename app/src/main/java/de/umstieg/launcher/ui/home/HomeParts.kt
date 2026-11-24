@@ -2,6 +2,8 @@ package de.umstieg.launcher.ui.home
 
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.ui.semantics.Role
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
@@ -67,20 +69,30 @@ fun PageIndicator(
     current: Int,
     hasNewPage: Boolean,
     modifier: Modifier = Modifier,
+    onSearch: (() -> Unit)? = null,
 ) {
-    if (style == IndicatorStyle.NONE || pageCount <= 0) return
+    if (pageCount <= 0) return
     val realPages = if (hasNewPage) pageCount - 1 else pageCount
-    if (realPages <= 1 && !hasNewPage) return
+    val showPages = style != IndicatorStyle.NONE && (realPages > 1 || hasNewPage)
+    if (!showPages && onSearch == null) return
     val description = stringResource(R.string.home_page_description, current + 1, pageCount)
     Row(
         modifier
             .semantics { contentDescription = description }
             .glass(Tos.PillShape, fill = Tos.GlassDark)
-            .padding(horizontal = 14.dp, vertical = 9.dp),
+            .padding(horizontal = 14.dp, vertical = if (onSearch != null) 6.dp else 9.dp),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(8.dp),
     ) {
-        when (style) {
+        if (onSearch != null) {
+            Icon(
+                painterResource(R.drawable.ic_lucide_search),
+                stringResource(R.string.search_open),
+                tint = Tos.Ink,
+                modifier = Modifier.size(18.dp).clickable(role = Role.Button, onClick = onSearch),
+            )
+        }
+        if (showPages) when (style) {
             IndicatorStyle.NUMBER -> Text(
                 text = "${current + 1} / $pageCount",
                 style = TextStyle(fontFamily = Inter, fontWeight = FontWeight.SemiBold, fontSize = 13.sp, color = Tos.Ink),

@@ -1,21 +1,21 @@
 package de.umstieg.launcher.ui.home
 
 import android.app.ActivityOptions
+import android.appwidget.AppWidgetProviderInfo
+import android.os.Build
 import android.widget.Toast
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
+import androidx.compose.foundation.background
 import androidx.compose.foundation.border
-import androidx.compose.foundation.gestures.detectDragGesturesAfterLongPress
 import androidx.compose.foundation.gestures.awaitEachGesture
 import androidx.compose.foundation.gestures.awaitFirstDown
+import androidx.compose.foundation.gestures.detectDragGesturesAfterLongPress
 import androidx.compose.foundation.gestures.detectTapGestures
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
@@ -27,101 +27,140 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.systemBars
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.pager.HorizontalPager
+import androidx.compose.foundation.pager.PagerState
 import androidx.compose.foundation.pager.rememberPagerState
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.blur
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Rect
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.TransformOrigin
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
+import androidx.compose.ui.input.nestedscroll.NestedScrollSource
+import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.input.pointer.PointerEventPass
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.input.pointer.positionChange
 import androidx.compose.ui.layout.boundsInRoot
-import androidx.compose.ui.layout.boundsInWindow
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.semantics.contentDescription
-import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.IntOffset
+import androidx.compose.ui.unit.Velocity
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import de.umstieg.launcher.R
 import de.umstieg.launcher.core.AppItem
-import de.umstieg.launcher.core.AppKey
+import de.umstieg.launcher.core.AppOpenAnimation
 import de.umstieg.launcher.core.DropTarget
 import de.umstieg.launcher.core.FolderItem
-import de.umstieg.launcher.core.HomeItem
-import de.umstieg.launcher.core.WidgetItem
+import de.umstieg.launcher.core.Gesture
+import de.umstieg.launcher.core.GestureAction
+import de.umstieg.launcher.core.GestureClassifier
 import de.umstieg.launcher.core.LauncherData
 import de.umstieg.launcher.core.LayoutOps
-import de.umstieg.launcher.core.iconOptions
+import de.umstieg.launcher.core.PageTransition
 import de.umstieg.launcher.core.Slot
+import de.umstieg.launcher.core.effective
 import de.umstieg.launcher.data.AppInfo
+import de.umstieg.launcher.data.NotificationCenter
+import de.umstieg.launcher.ui.drawer.DrawerPage
 import de.umstieg.launcher.ui.components.tosHaptic
-import de.umstieg.launcher.ui.icons.SuperellipseShape
 import de.umstieg.launcher.ui.icons.rememberSuperellipse
 import de.umstieg.launcher.ui.theme.Inter
+import de.umstieg.launcher.ui.theme.LocalTosStyle
 import de.umstieg.launcher.ui.theme.Tos
 import de.umstieg.launcher.ui.theme.TosTheme
-import de.umstieg.launcher.ui.theme.glass
 import de.umstieg.launcher.ui.theme.isDark
+import de.umstieg.launcher.ui.theme.styleFor
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
+import kotlin.math.abs
 import kotlin.math.roundToInt
 
 /** Aktionen, die die Activity bereitstellt. */
 class HomeActions(
-    val openSettings: () -> Unit,
+    val openSettings: (section: String?) -> Unit,
     val requestDefault: () -> Unit,
+    val setWindowBlur: (Boolean) -> Unit,
+    val addWidget: (AppWidgetProviderInfo, WidgetTarget) -> Unit,
+    val uninstall: (AppInfo) -> Unit,
+    val unlockHidden: (onSuccess: () -> Unit) -> Unit,
+    val wallpaperColor: Color?,
+    val systemReduceMotion: Boolean,
 )
 
-/** Homescreen: Seiten mit Raster, Seitenindikator, Dock, Bearbeitungsmodus mit Ziehen & Ablegen. */
+/** Zuordnung der Pager-Seiten: Widget-Seite (links), Homescreen-Seiten, App-Übersicht (rechts). */
+class PageMap(val widgetPage: Boolean, val homePages: Int, val drawer: Boolean) {
+    val firstHome: Int get() = if (widgetPage) 1 else 0
+    val count: Int get() = firstHome + homePages + if (drawer) 1 else 0
+    val drawerIndex: Int get() = if (drawer) count - 1 else -1
+    fun homeIndex(pagerIndex: Int): Int? = (pagerIndex - firstHome).takeIf { it in 0 until homePages }
+}
+
+/** Homescreen: Seiten, Gesten, Panels, Bearbeitungsmodus mit Ziehen & Ablegen. */
 @Composable
 fun HomeScreen(vm: HomeViewModel, isDefault: Boolean, actions: HomeActions) {
     val data by vm.data.collectAsStateWithLifecycle()
-    val apps by vm.apps.collectAsStateWithLifecycle()
     val d = data ?: return
-    TosTheme(dark = isDark(d.settings.theme)) {
-        HomeContent(vm, d, apps, isDefault, actions)
+    val s = d.settings.effective()
+    val dark = isDark(s.theme)
+    TosTheme(dark = dark, style = styleFor(s, actions.wallpaperColor, actions.systemReduceMotion)) {
+        HomeContent(vm, d.copy(settings = s), isDefault, actions)
     }
 }
 
-/** Ein Treffer bei der Trefferprüfung: Element, Herkunft, Icon-Mitte. */
-private class Hit(val item: HomeItem, val slot: Slot, val center: Offset)
+private class Hit(val item: de.umstieg.launcher.core.HomeItem, val slot: Slot, val center: Offset)
 
 @Composable
-private fun HomeContent(vm: HomeViewModel, d: LauncherData, apps: Map<AppKey, AppInfo>, isDefault: Boolean, actions: HomeActions) {
+private fun HomeContent(vm: HomeViewModel, d: LauncherData, isDefault: Boolean, actions: HomeActions) {
     val s = d.settings
     val context = LocalContext.current
     val view = LocalView.current
     val density = LocalDensity.current
+    val tosStyle = LocalTosStyle.current
+    val scope = rememberCoroutineScope()
+    val apps by vm.apps.collectAsStateWithLifecycle()
+    val badges by vm.badges.collectAsStateWithLifecycle()
     val editMode by vm.editMode.collectAsStateWithLifecycle()
     val openFolderId by vm.openFolder.collectAsStateWithLifecycle()
     val addSheet by vm.addSheet.collectAsStateWithLifecycle()
-    val pageCount = d.layout.pages.size + if (editMode) 1 else 0
-    val pagerState = rememberPagerState { pageCount }
+    val overlay by vm.overlay.collectAsStateWithLifecycle()
+    val menuApp by vm.menuApp.collectAsStateWithLifecycle()
+    val customize by vm.customize.collectAsStateWithLifecycle()
+    val widgetPicker by vm.widgetPicker.collectAsStateWithLifecycle()
+    val quietApp by vm.quietApp.collectAsStateWithLifecycle()
+    val resizeWidget by vm.resizeWidget.collectAsStateWithLifecycle()
+
+    val map = PageMap(
+        widgetPage = s.widgetPageEnabled,
+        homePages = d.layout.pages.size + if (editMode) 1 else 0,
+        drawer = s.drawerEnabled && !editMode,
+    )
+    val pagerState = rememberPagerState(initialPage = map.firstHome) { map.count }
     val shape = rememberSuperellipse(s.iconRounding)
     val drag = remember { DragState() }
     var lockedHint by remember { mutableStateOf(false) }
 
-    // Geometrie in Wurzel-Koordinaten (wird beim Layout gemessen).
+    // Geometrie in Wurzel-Koordinaten.
     var pagerBounds by remember { mutableStateOf(Rect.Zero) }
     var gridMetrics by remember { mutableStateOf(0f to 0f) }
     val marginPx = with(density) { s.sideMarginDp.dp.toPx() }
@@ -139,17 +178,23 @@ private fun HomeContent(vm: HomeViewModel, d: LauncherData, apps: Map<AppKey, Ap
     var folderGeo by remember { mutableStateOf<GridGeometry?>(null) }
     var folderPanel by remember { mutableStateOf(Rect.Zero) }
 
-    // Für die Gesten-Lambdas immer die aktuellen Werte.
     val current by rememberUpdatedState(d)
     val currentEdit by rememberUpdatedState(editMode)
     val currentFolder by rememberUpdatedState(openFolderId)
+    val currentMap by rememberUpdatedState(map)
+    val currentOverlay by rememberUpdatedState(overlay)
 
     LaunchedEffect(pagerState) {
-        vm.toFirstPage.collect { animate -> if (animate) pagerState.animateScrollToPage(0) else pagerState.scrollToPage(0) }
+        vm.toFirstPage.collect { animate ->
+            val target = currentMap.firstHome
+            if (animate && !tosStyle.reduceMotion) pagerState.animateScrollToPage(target) else pagerState.scrollToPage(target)
+        }
     }
-    // Nach „Fertig“ verschwindet die leere Zusatzseite: nicht auf ihr stehen bleiben.
-    LaunchedEffect(pageCount) {
-        if (pagerState.currentPage >= pageCount) pagerState.scrollToPage((pageCount - 1).coerceAtLeast(0))
+    LaunchedEffect(pagerState) {
+        vm.toDrawer.collect { if (currentMap.drawer) pagerState.animateScrollToPage(currentMap.drawerIndex) }
+    }
+    LaunchedEffect(map.count) {
+        if (pagerState.currentPage >= map.count) pagerState.scrollToPage((map.count - 1).coerceAtLeast(0))
     }
     LaunchedEffect(lockedHint) {
         if (lockedHint) {
@@ -157,13 +202,50 @@ private fun HomeContent(vm: HomeViewModel, d: LauncherData, apps: Map<AppKey, Ap
             lockedHint = false
         }
     }
+    // Im Bearbeitungsmodus nicht auf Widget-Seite oder Übersicht hängen bleiben.
+    LaunchedEffect(editMode) {
+        if (editMode && map.homeIndex(pagerState.currentPage) == null) pagerState.scrollToPage(map.firstHome)
+    }
     BackHandler(enabled = true) { vm.onBack() }
+
+    val blurOn = overlay != Overlay.NONE || openFolderId != null || menuApp != null || customize != null ||
+        addSheet || widgetPicker != null
+    LaunchedEffect(blurOn) { actions.setWindowBlur(blurOn) }
 
     fun launch(app: AppInfo, bounds: Rect) {
         val r = android.graphics.Rect(bounds.left.toInt(), bounds.top.toInt(), bounds.right.toInt(), bounds.bottom.toInt())
-        val options = ActivityOptions.makeScaleUpAnimation(view, r.left, r.top, r.width(), r.height())
+        val options = when (if (tosStyle.reduceMotion) AppOpenAnimation.FADE else s.appOpenAnimation) {
+            AppOpenAnimation.ZOOM -> ActivityOptions.makeScaleUpAnimation(view, r.left, r.top, r.width(), r.height())
+            AppOpenAnimation.FADE -> ActivityOptions.makeCustomAnimation(context, android.R.anim.fade_in, android.R.anim.fade_out)
+            AppOpenAnimation.NONE -> ActivityOptions.makeCustomAnimation(context, 0, 0)
+        }
         if (!vm.launch(app, r, options)) Toast.makeText(context, R.string.app_not_startable, Toast.LENGTH_SHORT).show()
     }
+
+    fun perform(action: GestureAction, binding: de.umstieg.launcher.core.GestureBinding?) {
+        when (action) {
+            GestureAction.NOTIFICATIONS -> {
+                val own = s.ownNotificationList && NotificationCenter.isPermissionGranted(context)
+                if (own || !vm.system.expandStatusBar(false)) vm.showOverlay(Overlay.NOTIFICATIONS)
+            }
+            GestureAction.QUICK_SETTINGS -> vm.showOverlay(Overlay.QUICK_SETTINGS)
+            GestureAction.SEARCH -> vm.showOverlay(Overlay.SEARCH)
+            GestureAction.APP_DRAWER -> if (s.drawerEnabled) vm.goToDrawer() else vm.showOverlay(Overlay.SEARCH)
+            GestureAction.OPEN_APP -> binding?.app?.let { apps[it] }?.let { launch(it, Rect.Zero) }
+            GestureAction.ASSISTANT -> if (!vm.system.openAssistant(context)) {
+                Toast.makeText(context, R.string.assistant_missing, Toast.LENGTH_SHORT).show()
+            }
+            GestureAction.NOTHING -> Unit
+        }
+    }
+
+    fun gesture(g: Gesture) {
+        val b = GestureClassifier.binding(s, g)
+        if (b.action != GestureAction.NOTHING) view.tosHaptic(s)
+        perform(b.action, b)
+    }
+
+    fun homePage(): Int? = currentMap.homeIndex(pagerState.currentPage)
 
     fun hitTest(p: Offset): Hit? {
         val layout = current.layout
@@ -171,6 +253,7 @@ private fun HomeContent(vm: HomeViewModel, d: LauncherData, apps: Map<AppKey, Ap
         if (folderId != null) {
             val folder = LayoutOps.findFolder(layout, folderId) ?: return null
             val geo = folderGeo ?: return null
+            if (!folderPanel.contains(p)) return null
             val (x, y) = geo.cellAt(p) ?: return null
             val index = y * geo.columns + x
             val app = folder.apps.getOrNull(index) ?: return null
@@ -184,10 +267,15 @@ private fun HomeContent(vm: HomeViewModel, d: LauncherData, apps: Map<AppKey, Ap
             }
         }
         val geo = gridGeo ?: return null
+        val page = homePage() ?: return null
         val (x, y) = geo.cellAt(p) ?: return null
-        val page = pagerState.currentPage
-        val item = LayoutOps.itemAt(layout, page, x, y) ?: return null
-        return Hit(item, Slot.Grid(page, x, y), geo.iconCenter(x, y))
+        val placed = LayoutOps.placedAt(layout, page, x, y) ?: return null
+        val center = if (placed.item is de.umstieg.launcher.core.WidgetItem) {
+            geo.iconCenter(placed.x, placed.y)
+        } else {
+            geo.iconCenter(x, y)
+        }
+        return Hit(placed.item, Slot.Grid(page, placed.x, placed.y), center)
     }
 
     fun targetAt(p: Offset): DropTarget? {
@@ -199,10 +287,11 @@ private fun HomeContent(vm: HomeViewModel, d: LauncherData, apps: Map<AppKey, Ap
             }
         }
         val geo = gridGeo ?: return null
+        val page = homePage() ?: return null
         val (x, y) = geo.cellAt(p) ?: return null
-        val page = pagerState.currentPage
-        val occupied = LayoutOps.itemAt(layout, page, x, y) != null
-        return DropTarget.Grid(page, x, y, merge = occupied && geo.isOnIcon(p, x, y))
+        val occupant = LayoutOps.itemAt(layout, page, x, y)
+        val canMerge = occupant != null && occupant !is de.umstieg.launcher.core.WidgetItem && drag.item is AppItem
+        return DropTarget.Grid(page, x, y, merge = canMerge && current.settings.folderByDrag && geo.isOnIcon(p, x, y))
     }
 
     fun finishDrag() {
@@ -212,7 +301,6 @@ private fun HomeContent(vm: HomeViewModel, d: LauncherData, apps: Map<AppKey, Ap
             val folderId = currentFolder
             val fGeo = folderGeo
             if (from is Slot.InFolder && folderId != null && fGeo != null && folderPanel.contains(drag.pointer)) {
-                // Innerhalb des geöffneten Ordners umsortieren.
                 val (x, y) = fGeo.cellAt(drag.pointer) ?: (0 to 0)
                 vm.moveInFolder(folderId, from.index, y * fGeo.columns + x)
             } else {
@@ -223,7 +311,26 @@ private fun HomeContent(vm: HomeViewModel, d: LauncherData, apps: Map<AppKey, Ap
         drag.clear()
     }
 
-    // Seitenwechsel, wenn das gezogene Icon am linken/rechten Rand verweilt.
+    // Vorschau des Ergebnisses: andere Icons weichen aus.
+    val preview by remember {
+        derivedStateOf {
+            val from = drag.from
+            val t = drag.target
+            val l = current.layout
+            if (from == null || t == null || t.merge) {
+                l
+            } else {
+                LayoutOps.drop(l, current.settings.grid, current.settings.dockCapacity, from, t, false) { a, b ->
+                    FolderItem("preview", "", listOf(a, b))
+                }
+            }
+        }
+    }
+    // Haptik, wenn das Ziel ein Ordner-Ziel wird.
+    val mergeTarget by remember { derivedStateOf { drag.target?.merge == true } }
+    LaunchedEffect(mergeTarget) { if (mergeTarget) view.tosHaptic(s) }
+
+    // Seitenwechsel, wenn das gezogene Icon am Rand verweilt.
     val edge by remember {
         derivedStateOf {
             val geo = gridGeo
@@ -246,26 +353,58 @@ private fun HomeContent(vm: HomeViewModel, d: LauncherData, apps: Map<AppKey, Ap
         while (true) {
             delay(EDGE_DWELL_MS)
             val target = pagerState.currentPage + edge
-            if (target !in 0 until pagerState.pageCount) break
+            if (currentMap.homeIndex(target) == null) break
             pagerState.animateScrollToPage(target)
+            view.tosHaptic(current.settings)
             drag.target = targetAt(drag.pointer)
         }
     }
 
+    // Endlos blättern: am Ende weiter wischen springt an den Anfang (und umgekehrt).
+    val wrap = remember(pagerState) {
+        object : NestedScrollConnection {
+            var acc = 0f
+            override fun onPostScroll(consumed: Offset, available: Offset, source: NestedScrollSource): Offset {
+                if (!current.settings.infiniteScroll || currentEdit) return Offset.Zero
+                acc += available.x
+                val threshold = 120f
+                val last = pagerState.pageCount - 1
+                if (acc < -threshold && pagerState.currentPage == last) {
+                    acc = 0f
+                    scope.launch { pagerState.scrollToPage(0) }
+                } else if (acc > threshold && pagerState.currentPage == 0) {
+                    acc = 0f
+                    scope.launch { pagerState.scrollToPage(last) }
+                }
+                return Offset.Zero
+            }
+
+            override suspend fun onPreFling(available: Velocity): Velocity {
+                acc = 0f
+                return Velocity.Zero
+            }
+        }
+    }
+
+    val env = GridEnv(d, s, apps, badges, shape, editMode, drag, vm, ::launch)
+    val hasDoubleTap = s.gestures[Gesture.DOUBLE_TAP]?.action != GestureAction.NOTHING ||
+        s.gestures[Gesture.DOUBLE_TAP_BOTTOM]?.action != GestureAction.NOTHING
+    val blurRadius = if (blurOn && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) (28 * tosStyle.blur).dp else 0.dp
+
     Box(
         Modifier
             .fillMaxSize()
-            // Jede neue Berührung setzt die Markierung „langes Drücken“ zurück (vor allen Kindern, Initial-Phase).
             .pointerInput(Unit) {
                 awaitEachGesture {
                     awaitFirstDown(requireUnconsumed = false, pass = PointerEventPass.Initial)
                     drag.longPressed = false
                 }
             }
-            // Langes Drücken: Bearbeitungsmodus starten und (auf einem Element) direkt ziehen.
             .pointerInput(Unit) {
                 detectDragGesturesAfterLongPress(
                     onDragStart = { p ->
+                        if (currentOverlay != Overlay.NONE) return@detectDragGesturesAfterLongPress
+                        if (homePage() == null && currentFolder == null) return@detectDragGesturesAfterLongPress
                         drag.longPressed = true
                         if (current.settings.layoutLocked) {
                             lockedHint = true
@@ -284,7 +423,7 @@ private fun HomeContent(vm: HomeViewModel, d: LauncherData, apps: Map<AppKey, Ap
                             change.consume()
                             drag.pointer = change.position
                             if (currentFolder != null && !folderPanel.inflate(24f).contains(change.position)) {
-                                vm.openFolder(null) // aus dem Ordner herausgezogen
+                                vm.openFolder(null)
                             }
                             drag.target = if (currentFolder != null) null else targetAt(change.position)
                         }
@@ -293,34 +432,86 @@ private fun HomeContent(vm: HomeViewModel, d: LauncherData, apps: Map<AppKey, Ap
                     onDragCancel = { drag.clear() },
                 )
             }
-            // Tipp auf eine leere Fläche beendet den Bearbeitungsmodus.
+            // Wischgesten (oben links/rechts, Mitte nach unten, nach oben) auf dem Homescreen.
             .pointerInput(Unit) {
+                awaitEachGesture {
+                    val down = awaitFirstDown(requireUnconsumed = false)
+                    val allowed = currentOverlay == Overlay.NONE && !currentEdit && currentFolder == null &&
+                        homePage() != null && !drag.active
+                    if (!allowed) return@awaitEachGesture
+                    var total = Offset.Zero
+                    while (true) {
+                        val ev = awaitPointerEvent()
+                        val ch = ev.changes.firstOrNull { it.id == down.id } ?: break
+                        if (!ch.pressed || ch.isConsumed) break
+                        total += ch.positionChange()
+                        val g = GestureClassifier.classify(
+                            down.position.x / size.width, down.position.y / size.height,
+                            total.x / size.height, total.y / size.height,
+                            current.settings.swipeZoneLeft, current.settings.swipeZoneRight,
+                        )
+                        if (g != null) {
+                            ch.consume()
+                            gesture(g)
+                            do {
+                                val rest = awaitPointerEvent()
+                                rest.changes.forEach { it.consume() }
+                            } while (rest.changes.any { it.pressed })
+                            break
+                        }
+                    }
+                }
+            }
+            .pointerInput(hasDoubleTap) {
                 detectTapGestures(
+                    onDoubleTap = if (hasDoubleTap) {
+                        { p ->
+                            if (currentOverlay == Overlay.NONE && !currentEdit && homePage() != null) {
+                                gesture(GestureClassifier.doubleTap(p.y / size.height))
+                            }
+                        }
+                    } else {
+                        null
+                    },
                     onTap = { if (!drag.longPressed && currentEdit && currentFolder == null) vm.setEditMode(false) },
                 )
             },
     ) {
+        // Hintergrund abdunkeln (Einstellung).
+        if (tosStyle.dim > 0f) Box(Modifier.fillMaxSize().background(Color.Black.copy(alpha = tosStyle.dim)))
+
         Column(
             Modifier
                 .fillMaxSize()
-                .graphicsLayer { alpha = if (openFolderId != null) 0.35f else 1f }
-                .windowInsetsPadding(WindowInsets.systemBars),
+                .blur(blurRadius)
+                .graphicsLayer { alpha = if (openFolderId != null && Build.VERSION.SDK_INT < Build.VERSION_CODES.S) 0.35f else 1f }
+                .windowInsetsPadding(WindowInsets.systemBars)
+                .padding(vertical = (s.topBottomPaddingDp / 2).dp),
         ) {
             Box(Modifier.fillMaxWidth().height(TOP_BAR_HEIGHT)) {
-                if (editMode) EditTopBar(vm, actions)
+                if (editMode) {
+                    EditTopBar(vm, actions, if (s.widgetsOnHome) ({ vm.showWidgetPicker(WidgetTarget.Grid(map.homeIndex(pagerState.currentPage) ?: 0)) }) else null)
+                }
             }
             HorizontalPager(
                 state = pagerState,
-                modifier = Modifier.weight(1f).fillMaxWidth().onGloballyPositioned { pagerBounds = it.boundsInRoot() },
+                modifier = Modifier
+                    .weight(1f)
+                    .fillMaxWidth()
+                    .nestedScroll(wrap)
+                    .onGloballyPositioned { pagerBounds = it.boundsInRoot() },
                 userScrollEnabled = !drag.active,
                 beyondViewportPageCount = 1,
                 key = { it },
-            ) { page ->
-                PageGrid(
-                    page = page, d = d, apps = apps, shape = shape, editMode = editMode, drag = drag,
-                    onMetrics = { dy, iconPx -> gridMetrics = dy to iconPx },
-                    onLaunch = ::launch, vm = vm,
-                )
+            ) { index ->
+                Box(Modifier.fillMaxSize().pageTransition(pagerState, index, if (tosStyle.reduceMotion) PageTransition.SLIDE else s.pageTransition)) {
+                    val home = map.homeIndex(index)
+                    when {
+                        home != null -> PageGrid(home, if (drag.active) preview else d.layout, env) { dy, px -> gridMetrics = dy to px }
+                        index == map.drawerIndex -> DrawerPage(vm, d, apps, shape, actions)
+                        else -> WidgetPage(vm, d, actions)
+                    }
+                }
             }
             if (editMode && drag.active && currentFolder == null) {
                 Text(
@@ -329,229 +520,129 @@ private fun HomeContent(vm: HomeViewModel, d: LauncherData, apps: Map<AppKey, Ap
                     modifier = Modifier.fillMaxWidth().padding(top = 4.dp),
                 )
             }
-            PageIndicator(
-                style = s.indicator,
-                pageCount = pageCount,
-                current = pagerState.currentPage,
-                hasNewPage = editMode,
-                modifier = Modifier.align(Alignment.CenterHorizontally).padding(vertical = 10.dp),
-            )
-            if (s.dockEnabled) {
-                Dock(d, apps, shape, editMode, drag, vm, ::launch) { dockGeo = it }
+            val homeNow = map.homeIndex(pagerState.currentPage)
+            if (homeNow != null) {
+                PageIndicator(
+                    style = s.indicator,
+                    pageCount = map.homePages,
+                    current = homeNow,
+                    hasNewPage = editMode,
+                    modifier = Modifier.align(Alignment.CenterHorizontally).padding(vertical = 10.dp),
+                    onSearch = if (editMode) null else ({ vm.showOverlay(Overlay.SEARCH) }),
+                )
+            } else {
+                Spacer(Modifier.height(12.dp))
+            }
+            if (s.dockEnabled && homeNow != null) {
+                Dock(env, if (drag.active) preview else d.layout) { dockGeo = it }
             } else {
                 SideEffect { dockGeo = null }
-                Spacer(Modifier.height(12.dp))
             }
         }
 
-        // Geöffneter Ordner (Glas-Panel).
+        // Geöffneter Ordner.
         val folder = openFolderId?.let { LayoutOps.findFolder(d.layout, it) }
         if (openFolderId != null && folder == null) LaunchedEffect(openFolderId) { vm.openFolder(null) }
         if (folder != null) {
-            FolderOverlay(
-                folder = folder, apps = apps, settings = s, shape = shape, editMode = editMode, drag = drag, vm = vm,
-                onLaunch = ::launch,
-                onGeometry = { panel, grid ->
-                    folderPanel = panel
-                    folderGeo = grid
-                },
-            )
+            FolderOverlay(folder, env) { panel, grid ->
+                folderPanel = panel
+                folderGeo = grid
+            }
         } else {
             SideEffect { folderGeo = null }
         }
 
-        // Hinweis: Standard-Launcher festlegen (beim ersten Start, falls nicht Standard).
-        if (!isDefault && !d.defaultHintDismissed && !editMode) {
+        if (!isDefault && !d.defaultHintDismissed && !editMode && overlay == Overlay.NONE) {
             DefaultHintCard(actions.requestDefault, vm::dismissDefaultHint, Modifier.align(Alignment.TopCenter))
         }
 
         AnimatedVisibility(lockedHint, Modifier.align(Alignment.BottomCenter), enter = fadeIn(), exit = fadeOut()) {
-            LockedHintCard { lockedHint = false; actions.openSettings() }
+            LockedHintCard {
+                lockedHint = false
+                actions.openSettings(null)
+            }
         }
 
         if (addSheet) {
-            AddAppsSheet(d, apps, shape, vm) { key -> vm.addApp(key, pagerState.currentPage.coerceAtMost(d.layout.pages.size)) }
+            AddAppsSheet(d, apps, shape, vm) { key -> vm.addApp(key, map.homeIndex(pagerState.currentPage) ?: 0) }
         }
 
         // Gezogenes Icon über allem.
         drag.item?.let { item ->
             val geo = gridGeo
-            val iconDp = with(density) { (geo?.iconPx ?: 150f).toDp() }
-            val style = IconStyle(vm.icons, s.iconOptions(), shape, iconDp, s.fontScale, s.largeTouch)
-            val half = (geo?.iconPx ?: 150f) / 2f
-            Box(
-                Modifier
-                    .offset { IntOffset((drag.pointer.x - drag.grab.x - half).roundToInt(), (drag.pointer.y - drag.grab.y - half).roundToInt()) }
-                    .graphicsLayer {
-                        scaleX = 1.1f
-                        scaleY = 1.1f
-                    },
-            ) {
-                HomeItemView(
-                    item = item, apps = apps, style = style, showLabel = false, editMode = false, wobble = false,
-                    removeDescription = null, highlighted = false, hidden = false, onClick = {}, onRemove = {}, onStartEdit = null,
+            val iconPx = geo?.iconPx ?: 150f
+            val half = iconPx / 2f
+            if (item is de.umstieg.launcher.core.WidgetItem) {
+                val w = with(density) { ((geo?.cellW ?: 200f) * item.spanX).toDp() }
+                val h = with(density) { ((geo?.cellH ?: 200f) * item.spanY).toDp() }
+                val ws = androidx.compose.foundation.shape.RoundedCornerShape(22.dp)
+                Box(
+                    Modifier
+                        .offset { IntOffset((drag.pointer.x - drag.grab.x - half).roundToInt(), (drag.pointer.y - drag.grab.y - half).roundToInt()) }
+                        .size(w, h)
+                        .padding(4.dp)
+                        .background(Tos.Accent.copy(alpha = 0.25f), ws)
+                        .border(2.dp, Tos.Accent, ws),
                 )
-            }
-        }
-    }
-}
-
-/** Eine Seite des Rasters. */
-@Composable
-private fun PageGrid(
-    page: Int,
-    d: LauncherData,
-    apps: Map<AppKey, AppInfo>,
-    shape: SuperellipseShape,
-    editMode: Boolean,
-    drag: DragState,
-    onMetrics: (Float, Float) -> Unit,
-    onLaunch: (AppInfo, Rect) -> Unit,
-    vm: HomeViewModel,
-) {
-    val s = d.settings
-    val items = d.layout.pages.getOrNull(page).orEmpty()
-    val density = LocalDensity.current
-    BoxWithConstraints(Modifier.fillMaxSize().padding(horizontal = s.sideMarginDp.dp)) {
-        val cellW = maxWidth / s.columns
-        val cellH = maxHeight / s.rows
-        val labelSpace = if (s.labelsHome) (labelHeight(s.fontScale).value * density.fontScale).dp + 6.dp else 0.dp
-        val iconSize = iconDp(s.iconSize, minOf(cellW * 0.86f, cellH - labelSpace - 4.dp))
-        val style = IconStyle(vm.icons, s.iconOptions(), shape, iconSize, s.fontScale, s.largeTouch)
-        val iconPx = with(density) { iconSize.toPx() }
-        val dy = with(density) { -labelSpace.toPx() / 2f }
-        SideEffect { onMetrics(dy, iconPx) }
-        // Ablageziel hervorheben (leere Zelle: Umriss in Akzentfarbe).
-        val target = drag.target
-        if (drag.active && target is DropTarget.Grid && target.page == page && !target.merge &&
-            LayoutOps.itemAt(d.layout, page, target.x, target.y) == null
-        ) {
-            Box(Modifier.offset(cellW * target.x, cellH * target.y).size(cellW, cellH), contentAlignment = Alignment.Center) {
-                Box(Modifier.offset(y = -labelSpace / 2).size(iconSize).border(2.dp, Tos.Accent, shape))
-            }
-        }
-        items.forEach { placed ->
-            key(placed.item.id) {
-                val slot = Slot.Grid(page, placed.x, placed.y)
-                Box(Modifier.offset(cellW * placed.x, cellH * placed.y).size(cellW, cellH), contentAlignment = Alignment.Center) {
-                    ItemCell(
-                        item = placed.item, slot = slot, apps = apps, style = style, showLabel = s.labelsHome,
-                        editMode = editMode, wobble = s.wobble, drag = drag,
-                        highlighted = target is DropTarget.Grid && target.merge && target.page == page && target.x == placed.x && target.y == placed.y,
-                        onLaunch = onLaunch, vm = vm,
+            } else {
+                val iconDp = with(density) { iconPx.toDp() }
+                Box(
+                    Modifier
+                        .offset { IntOffset((drag.pointer.x - drag.grab.x - half).roundToInt(), (drag.pointer.y - drag.grab.y - half).roundToInt()) }
+                        .graphicsLayer {
+                            scaleX = 1.1f
+                            scaleY = 1.1f
+                        },
+                ) {
+                    HomeItemView(
+                        item = item, apps = apps, style = iconStyle(vm.icons, s, shape, iconDp), showLabel = false,
+                        editMode = false, wobble = false, removeDescription = null, highlighted = false, hidden = false,
+                        onClick = {}, onRemove = {}, onStartEdit = null,
                     )
                 }
             }
         }
-    }
-}
 
-/** Element mit Tipp-Verhalten: App starten bzw. Ordner öffnen; im Bearbeitungsmodus „–“. */
-@Composable
-internal fun ItemCell(
-    item: HomeItem,
-    slot: Slot,
-    apps: Map<AppKey, AppInfo>,
-    style: IconStyle,
-    showLabel: Boolean,
-    editMode: Boolean,
-    wobble: Boolean,
-    drag: DragState,
-    highlighted: Boolean,
-    onLaunch: (AppInfo, Rect) -> Unit,
-    vm: HomeViewModel,
-    modifier: Modifier = Modifier,
-    labelColor: androidx.compose.ui.graphics.Color = Tos.Ink,
-) {
-    val bounds = remember { arrayOf(Rect.Zero) }
-    val label = when (item) {
-        is AppItem -> apps[item.app]?.label.orEmpty()
-        is FolderItem -> item.name
-        is WidgetItem -> ""
-    }
-    val removeDescription = when {
-        item is FolderItem -> stringResource(R.string.edit_remove_folder, label)
-        slot is Slot.InFolder -> stringResource(R.string.edit_remove_from_folder, label)
-        slot is Slot.Dock -> stringResource(R.string.edit_remove_from_dock, label)
-        else -> stringResource(R.string.edit_remove_app, label)
-    }
-    HomeItemView(
-        item = item,
-        apps = apps,
-        style = style,
-        showLabel = showLabel,
-        editMode = editMode,
-        wobble = wobble,
-        removeDescription = removeDescription,
-        highlighted = highlighted,
-        hidden = drag.item?.id == item.id,
-        onClick = {
-            when (item) {
-                // Loslassen nach langem Drücken ist kein Tipp.
-                is AppItem -> if (!editMode && !drag.longPressed) apps[item.app]?.let { onLaunch(it, bounds[0]) }
-                is FolderItem -> if (!drag.longPressed) vm.openFolder(item.folderId)
-                is WidgetItem -> Unit
-            }
-        },
-        onRemove = { vm.remove(slot) },
-        onStartEdit = { vm.setEditMode(true) },
-        modifier = modifier.onGloballyPositioned { bounds[0] = it.boundsInWindow() },
-        labelColor = labelColor,
-    )
-}
+        // Vollbild-Panels.
+        OverlayHost(overlay, vm, d, apps, shape, actions, ::launch)
 
-/** Festes Dock unten (Glas-Fläche), Elemente zentriert. */
-@Composable
-private fun Dock(
-    d: LauncherData,
-    apps: Map<AppKey, AppInfo>,
-    shape: SuperellipseShape,
-    editMode: Boolean,
-    drag: DragState,
-    vm: HomeViewModel,
-    onLaunch: (AppInfo, Rect) -> Unit,
-    onGeometry: (DockGeometry) -> Unit,
-) {
-    val s = d.settings
-    val density = LocalDensity.current
-    val dockDescription = stringResource(R.string.home_dock_description)
-    BoxWithConstraints(
-        Modifier
-            .fillMaxWidth()
-            .padding(start = 10.dp, end = 10.dp, bottom = 8.dp)
-            .glass(RoundedCornerShape(34.dp), Tos.Glass, Tos.GlassLine)
-            .semantics { contentDescription = dockDescription }
-            .padding(vertical = 14.dp, horizontal = 8.dp),
-    ) {
-        val slotW = maxWidth / s.dockCount
-        val iconSize = iconDp(s.iconSize, slotW * 0.86f)
-        val style = IconStyle(vm.icons, s.iconOptions(), shape, iconSize, s.fontScale, s.largeTouch)
-        val labelSpace = if (s.labelsDock) (labelHeight(s.fontScale).value * density.fontScale).dp + 6.dp else 0.dp
-        val iconPx = with(density) { iconSize.toPx() }
-        val target = drag.target
-        Row(
-            Modifier
-                .fillMaxWidth()
-                .height(iconSize + labelSpace)
-                .onGloballyPositioned { onGeometry(DockGeometry(it.boundsInRoot(), s.dockCount, d.layout.dock.size, iconPx)) },
-            horizontalArrangement = Arrangement.Center,
-        ) {
-            d.layout.dock.forEachIndexed { i, item ->
-                key(item.id) {
-                    Box(Modifier.size(width = slotW, height = iconSize + labelSpace), contentAlignment = Alignment.TopCenter) {
-                        ItemCell(
-                            item = item, slot = Slot.Dock(i), apps = apps, style = style, showLabel = s.labelsDock,
-                            editMode = editMode, wobble = s.wobble, drag = drag,
-                            highlighted = target is DropTarget.Dock && target.merge && target.index == i,
-                            onLaunch = onLaunch, vm = vm,
-                        )
-                    }
-                }
-            }
+        widgetPicker?.let { target -> WidgetPicker(vm, target, actions) }
+        resizeWidget?.let { id -> ResizeWidgetDialog(vm, d, id) }
+        menuApp?.let { app -> AppMenuSheet(vm, d, app, actions, map.homeIndex(pagerState.currentPage) ?: 0) }
+        customize?.let { app -> CustomizeDialog(vm, d, app) }
+        quietApp?.let { app -> QuietProfileDialog(vm, app) }
+
+        if (!d.onboardingDone && (isDefault || d.defaultHintDismissed) && !editMode && overlay == Overlay.NONE) {
+            Onboarding { vm.controller.setOnboardingDone(true) }
         }
+    }
+}
+
+/** Seitenübergang beim Blättern: Schieben, Stapeln, Blenden, Würfel. */
+private fun Modifier.pageTransition(state: PagerState, page: Int, transition: PageTransition): Modifier = graphicsLayer {
+    if (transition == PageTransition.SLIDE) return@graphicsLayer
+    val offset = (state.currentPage - page) + state.currentPageOffsetFraction
+    if (abs(offset) >= 1f) return@graphicsLayer
+    when (transition) {
+        PageTransition.FADE -> {
+            translationX = offset * size.width
+            alpha = 1f - abs(offset)
+        }
+        PageTransition.STACK -> if (offset > 0f) {
+            translationX = offset * size.width
+            val sc = 1f - 0.12f * offset
+            scaleX = sc
+            scaleY = sc
+            alpha = 1f - offset
+        }
+        PageTransition.CUBE -> {
+            cameraDistance = 12f * density
+            transformOrigin = TransformOrigin(if (offset < 0f) 0f else 1f, 0.5f)
+            rotationY = -offset * 70f
+        }
+        PageTransition.SLIDE -> Unit
     }
 }
 
 val TOP_BAR_HEIGHT = 64.dp
 private const val EDGE_DWELL_MS = 600L
-

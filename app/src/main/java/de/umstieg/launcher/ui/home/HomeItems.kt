@@ -16,6 +16,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
@@ -23,6 +24,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.Icon
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.getValue
@@ -40,21 +42,48 @@ import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.customActions
 import androidx.compose.ui.semantics.role
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import de.umstieg.launcher.R
 import de.umstieg.launcher.core.AppItem
 import de.umstieg.launcher.core.AppKey
+import de.umstieg.launcher.core.BadgeColor
+import de.umstieg.launcher.core.BadgeCounter
+import de.umstieg.launcher.core.BadgeStyle
 import de.umstieg.launcher.core.FolderItem
+import de.umstieg.launcher.core.FontWeightSetting
 import de.umstieg.launcher.core.HomeItem
-import de.umstieg.launcher.core.WidgetItem
 import de.umstieg.launcher.core.IconOptions
+import de.umstieg.launcher.core.LabelColor
+import de.umstieg.launcher.core.LauncherSettings
+import de.umstieg.launcher.core.Shadow
+import de.umstieg.launcher.core.WidgetItem
+import de.umstieg.launcher.core.iconOptions
 import de.umstieg.launcher.data.AppInfo
 import de.umstieg.launcher.data.IconLoader
 import de.umstieg.launcher.ui.icons.AppIconImage
 import de.umstieg.launcher.ui.icons.SuperellipseShape
+import de.umstieg.launcher.ui.theme.Inter
+import de.umstieg.launcher.ui.theme.LocalTosStyle
 import de.umstieg.launcher.ui.theme.Tos
 import kotlin.math.abs
+
+/** Beschriftungs-Stil aus den Einstellungen (Stärke, Zeilen, Schatten, Farbe). */
+@Immutable
+data class LabelLook(
+    val fontScale: Int = 100,
+    val weight: FontWeightSetting = FontWeightSetting.MEDIUM,
+    val lines: Int = 1,
+    val shadow: Boolean = true,
+    val color: LabelColor = LabelColor.AUTO,
+)
+
+/** Badge-Stil aus den Einstellungen. */
+@Immutable
+data class BadgeLook(val enabled: Boolean = true, val style: BadgeStyle = BadgeStyle.NUMBER, val color: BadgeColor = BadgeColor.RED)
 
 /** Alles, was ein Icon zum Zeichnen braucht (vermeidet lange Parameterlisten). */
 @Immutable
@@ -65,12 +94,30 @@ data class IconStyle(
     val iconSize: Dp,
     val fontScale: Int,
     val largeTouch: Boolean,
+    val shadow: Shadow = Shadow.LIGHT,
+    val label: LabelLook = LabelLook(fontScale),
+    val badge: BadgeLook = BadgeLook(),
+    val folder3x3: Boolean = false,
+)
+
+/** IconStyle aus den Einstellungen für eine bestimmte Icongröße. */
+fun iconStyle(loader: IconLoader, s: LauncherSettings, shape: SuperellipseShape, size: Dp, dark: Boolean = true) = IconStyle(
+    loader = loader,
+    legacy = s.iconOptions(dark),
+    shape = shape,
+    iconSize = size,
+    fontScale = s.fontScale,
+    largeTouch = s.largeTouch,
+    shadow = s.iconShadow,
+    label = LabelLook(s.fontScale, s.labelWeight, s.labelLines, s.labelShadow, s.labelColor),
+    badge = BadgeLook(s.badgesEnabled, s.badgeStyle, s.badgeColor),
+    folder3x3 = s.folderPreview3x3,
 )
 
 /** Wackeln im Bearbeitungsmodus (je Element leicht versetzt). */
 @Composable
 fun Modifier.wobble(active: Boolean, seed: String): Modifier {
-    if (!active) return this
+    if (!active || LocalTosStyle.current.reduceMotion) return this
     val h = abs(seed.hashCode())
     val transition = rememberInfiniteTransition(label = "wobble")
     val angle by transition.animateFloat(
@@ -113,24 +160,47 @@ fun MinusBadge(description: String, large: Boolean, onClick: () -> Unit, modifie
     }
 }
 
-/** Ordner-Icon: Glas-Fläche in Icon-Form mit Mini-Icons der ersten vier Apps. */
+/** Zahl oder Punkt oben rechts am Icon. */
+@Composable
+fun CountBadge(count: Int, look: BadgeLook, iconColor: Color?, modifier: Modifier = Modifier) {
+    if (!look.enabled || count <= 0) return
+    val bg = when (look.color) {
+        BadgeColor.RED -> Tos.Danger
+        BadgeColor.ACCENT -> Tos.Accent
+        BadgeColor.ICON -> iconColor ?: Tos.Danger
+    }
+    val ink = if (look.color == BadgeColor.ACCENT) Tos.AccentInk else Color.White
+    if (look.style == BadgeStyle.DOT) {
+        Box(modifier.size(12.dp).background(bg, CircleShape).border(1.5.dp, Color.White.copy(alpha = 0.85f), CircleShape))
+    } else {
+        Box(
+            modifier.defaultMinSize(minWidth = 22.dp, minHeight = 22.dp).background(bg, CircleShape).padding(horizontal = 6.dp),
+            contentAlignment = Alignment.Center,
+        ) {
+            Text(BadgeCounter.label(count), style = TextStyle(fontFamily = Inter, fontWeight = FontWeight.Bold, fontSize = 12.sp, color = ink))
+        }
+    }
+}
+
+/** Ordner-Icon: Glas-Fläche in Icon-Form mit Mini-Icons der ersten vier (oder neun) Apps. */
 @Composable
 fun FolderIcon(folder: FolderItem, apps: Map<AppKey, AppInfo>, style: IconStyle, modifier: Modifier = Modifier) {
+    val n = if (style.folder3x3) 3 else 2
     val size = style.iconSize
-    val mini = size * 0.32f
-    val gap = size * 0.08f
-    val shown = folder.apps.mapNotNull { apps[it] }.take(4)
+    val gap = size * (if (n == 3) 0.05f else 0.08f)
+    val mini = (size * 0.8f - gap * (n - 1)) / n
+    val shown = folder.apps.mapNotNull { apps[it] }.take(n * n)
     Box(
         modifier.size(size).background(Color.White.copy(alpha = 0.22f), style.shape),
         contentAlignment = Alignment.Center,
     ) {
         Column(verticalArrangement = Arrangement.spacedBy(gap)) {
-            for (row in 0 until 2) {
+            for (row in 0 until n) {
                 Row(horizontalArrangement = Arrangement.spacedBy(gap)) {
-                    for (col in 0 until 2) {
-                        val app = shown.getOrNull(row * 2 + col)
+                    for (col in 0 until n) {
+                        val app = shown.getOrNull(row * n + col)
                         if (app != null) {
-                            AppIconImage(style.loader, app, style.legacy, style.shape, mini)
+                            AppIconImage(style.loader, app, style.legacy, style.shape, mini, shadow = Shadow.NONE)
                         } else {
                             Spacer(Modifier.size(mini))
                         }
@@ -141,9 +211,31 @@ fun FolderIcon(folder: FolderItem, apps: Map<AppKey, AppInfo>, style: IconStyle,
     }
 }
 
+/** Beschriftungs-Textstil aus [LabelLook]. */
+@Composable
+fun labelTextStyle(look: LabelLook, override: Color?): TextStyle {
+    val color = override ?: when (look.color) {
+        LabelColor.AUTO, LabelColor.LIGHT -> Tos.Ink
+        LabelColor.DARK -> Color(0xFF10141C)
+    }
+    val weight = when (look.weight) {
+        FontWeightSetting.NORMAL -> FontWeight.Normal
+        FontWeightSetting.MEDIUM -> FontWeight.Medium
+        FontWeightSetting.BOLD -> FontWeight.Bold
+    }
+    val base = labelStyle(look.fontScale, color).copy(fontWeight = weight)
+    val strong = LocalTosStyle.current.highContrast
+    return when {
+        !look.shadow -> base.copy(shadow = null)
+        color.red < 0.3f -> base.copy(shadow = androidx.compose.ui.graphics.Shadow(Color.White.copy(alpha = 0.6f), androidx.compose.ui.geometry.Offset(0f, 1f), 4f))
+        strong -> base.copy(shadow = androidx.compose.ui.graphics.Shadow(Color.Black.copy(alpha = 0.8f), androidx.compose.ui.geometry.Offset(0f, 2f), 8f))
+        else -> base
+    }
+}
+
 /**
- * Ein Element auf dem Homescreen, im Dock oder im Ordner: Icon (App oder Ordner), Beschriftung,
- * im Bearbeitungsmodus wackelnd mit „–“-Badge.
+ * Ein Element auf dem Homescreen, im Dock oder im Ordner: Icon (App oder Ordner), Badge,
+ * Beschriftung, im Bearbeitungsmodus wackelnd mit „–“-Badge.
  */
 @Composable
 fun HomeItemView(
@@ -160,19 +252,26 @@ fun HomeItemView(
     onRemove: () -> Unit,
     onStartEdit: (() -> Unit)?,
     modifier: Modifier = Modifier,
-    labelColor: Color = Tos.Ink,
+    labelColor: Color? = null,
+    badge: Int = 0,
 ) {
+    if (item is WidgetItem) return
     val app = (item as? AppItem)?.let { apps[it.app] }
     if (item is AppItem && app == null) return
     val label = when (item) {
         is AppItem -> app!!.label
         is FolderItem -> item.name
-        is WidgetItem -> ""
+        else -> ""
     }
-    val description = when (item) {
+    val base = when (item) {
         is AppItem -> if (app!!.isWorkProfile) stringResource(R.string.work_app_description, label) else label
         is FolderItem -> stringResource(R.string.folder_description, item.name, item.apps.size)
-        is WidgetItem -> ""
+        else -> ""
+    }
+    val description = if (badge > 0 && style.badge.enabled) {
+        base + ", " + pluralStringResource(R.plurals.badge_description, badge, badge)
+    } else {
+        base
     }
     val editLabel = stringResource(R.string.edit_start_action)
     val scale by animateFloatAsState(if (highlighted) 1.12f else 1f, label = "hoverScale")
@@ -205,9 +304,9 @@ fun HomeItemView(
                 },
         ) {
             when (item) {
-                is AppItem -> AppIconImage(style.loader, app!!, style.legacy, style.shape, style.iconSize)
+                is AppItem -> AppIconImage(style.loader, app!!, style.legacy, style.shape, style.iconSize, shadow = style.shadow)
                 is FolderItem -> FolderIcon(item, apps, style)
-                is WidgetItem -> Unit
+                else -> Unit
             }
             if (app?.isWorkProfile == true) {
                 Box(
@@ -221,6 +320,10 @@ fun HomeItemView(
                     Icon(painterResource(R.drawable.ic_lucide_briefcase), null, tint = Color(0xFF1D6FD8))
                 }
             }
+            if (!editMode) {
+                val iconColor = app?.let { style.loader.colorOf(it) }?.let { Color(it) }
+                CountBadge(badge, style.badge, iconColor, Modifier.align(Alignment.TopEnd).offset(x = 6.dp, y = (-5).dp))
+            }
             if (editMode && removeDescription != null) {
                 val badgeTouch = if (style.largeTouch) 56.dp else 48.dp
                 MinusBadge(
@@ -233,7 +336,13 @@ fun HomeItemView(
         }
         if (showLabel) {
             Spacer(Modifier.height(6.dp))
-            IconLabel(label, style.fontScale, Modifier.width(style.iconSize * 1.45f), labelColor)
+            Text(
+                text = label,
+                style = labelTextStyle(style.label, labelColor),
+                maxLines = style.label.lines,
+                overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis,
+                modifier = Modifier.width(style.iconSize * 1.45f),
+            )
         }
     }
 }

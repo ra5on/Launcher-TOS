@@ -313,3 +313,22 @@ data class IconOptions(
 )
 
 fun LauncherSettings.iconOptions(dark: Boolean = true): IconOptions = IconOptions(legacyBackground, legacyColor, themedIcons, dark)
+
+/**
+ * Wirksame Einstellungen: der einfache Modus vergrößert Icons und Schrift, schaltet Beschriftungen an
+ * und lässt nur „nach unten wischen = Suche“ als Geste. Das Raster selbst bleibt unverändert.
+ */
+fun LauncherSettings.effective(): LauncherSettings = if (!simpleMode) {
+    this
+} else {
+    copy(
+        iconSize = maxOf(iconSize, 120),
+        fontScale = maxOf(fontScale, 120),
+        labelsHome = true,
+        labelsDock = true,
+        labelsFolder = true,
+        wobble = false,
+        gestures = Gesture.entries.associateWith { GestureBinding(GestureAction.NOTHING) } +
+            (Gesture.SWIPE_DOWN to GestureBinding(GestureAction.SEARCH)),
+    )
+}

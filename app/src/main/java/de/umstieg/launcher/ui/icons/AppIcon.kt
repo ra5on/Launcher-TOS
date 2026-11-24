@@ -20,14 +20,16 @@ import androidx.compose.ui.graphics.drawscope.translate
 import androidx.compose.ui.graphics.nativeCanvas
 import androidx.compose.ui.unit.Dp
 import de.umstieg.launcher.core.IconOptions
+import de.umstieg.launcher.core.Shadow
 import de.umstieg.launcher.data.AppInfo
 import de.umstieg.launcher.data.IconLoader
 
 /** Lädt das Icon asynchron (Cache zuerst, sonst im Hintergrund). */
 @Composable
 fun rememberAppIcon(loader: IconLoader, app: AppInfo, legacy: IconOptions): ImageBitmap? {
-    val icon by produceState(loader.cached(app, legacy), app.key, legacy, loader.generation) {
-        value = loader.load(app, legacy)
+    val options = if (app.monochrome && !legacy.themed) legacy.copy(themed = true) else legacy
+    val icon by produceState(loader.cached(app, options), app.key, options, loader.generation) {
+        value = loader.load(app, options)
     }
     return icon
 }
@@ -41,12 +43,28 @@ fun rememberSuperellipse(roundingPercent: Int): SuperellipseShape =
  * Zeichnet [bitmap] zugeschnitten auf die Superellipse – mit Kantenglättung über einen
  * Bitmap-Shader statt clipPath, plus leichtem Schatten.
  */
-fun Modifier.squircleBitmap(bitmap: ImageBitmap?, shape: SuperellipseShape, placeholder: Color = Color.White.copy(alpha = 0.18f)): Modifier =
+fun Modifier.squircleBitmap(
+    bitmap: ImageBitmap?,
+    shape: SuperellipseShape,
+    placeholder: Color = Color.White.copy(alpha = 0.18f),
+    shadow: Shadow = Shadow.LIGHT,
+    dimmed: Boolean = false,
+): Modifier =
     drawWithCache {
         val path = shape.path(size)
         val androidPath = path.asAndroidPath()
-        val shadowPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply { color = android.graphics.Color.argb(46, 0, 0, 0) }
+        val shadowAlpha = when (shadow) {
+            Shadow.NONE -> 0
+            Shadow.LIGHT -> 46
+            Shadow.STRONG -> 96
+        }
+        val shadowPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply { color = android.graphics.Color.argb(shadowAlpha, 0, 0, 0) }
         val paint = Paint(Paint.ANTI_ALIAS_FLAG or Paint.FILTER_BITMAP_FLAG)
+        if (dimmed) {
+            // Pausiertes Profil: grau und blasser.
+            paint.colorFilter = android.graphics.ColorMatrixColorFilter(android.graphics.ColorMatrix().apply { setSaturation(0f) })
+            paint.alpha = 140
+        }
         if (bitmap != null) {
             val ab = bitmap.asAndroidBitmap()
             paint.shader = BitmapShader(ab, Shader.TileMode.CLAMP, Shader.TileMode.CLAMP).apply {
@@ -58,17 +76,25 @@ fun Modifier.squircleBitmap(bitmap: ImageBitmap?, shape: SuperellipseShape, plac
                 (placeholder.green * 255).toInt(), (placeholder.blue * 255).toInt(),
             )
         }
-        val shadowDy = size.height * 0.035f
+        val shadowDy = size.height * if (shadow == Shadow.STRONG) 0.06f else 0.035f
         onDrawBehind {
-            translate(0f, shadowDy) { drawContext.canvas.nativeCanvas.drawPath(androidPath, shadowPaint) }
+            if (shadowAlpha > 0) translate(0f, shadowDy) { drawContext.canvas.nativeCanvas.drawPath(androidPath, shadowPaint) }
             drawContext.canvas.nativeCanvas.drawPath(androidPath, paint)
         }
     }
 
 /** Reines Icon (ohne Beschriftung) in der Größe [size]. */
 @Composable
-fun AppIconImage(loader: IconLoader, app: AppInfo, legacy: IconOptions, shape: SuperellipseShape, size: Dp, modifier: Modifier = Modifier) {
+fun AppIconImage(
+    loader: IconLoader,
+    app: AppInfo,
+    legacy: IconOptions,
+    shape: SuperellipseShape,
+    size: Dp,
+    modifier: Modifier = Modifier,
+    shadow: Shadow = Shadow.LIGHT,
+) {
     val bitmap = rememberAppIcon(loader, app, legacy)
-    Box(modifier.size(size).squircleBitmap(bitmap, shape))
+    Box(modifier.size(size).squircleBitmap(bitmap, shape, shadow = shadow, dimmed = app.quiet))
 }
 

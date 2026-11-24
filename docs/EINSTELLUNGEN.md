@@ -79,19 +79,41 @@ Einstellbar ist nur, wie sie dargestellt werden.
 | Kontrast erhöhen | an/aus | P2 |
 
 ## 8. Gesten
-Jede Geste lässt sich frei belegen: Benachrichtigungen, Schnellzugriff, Suche,
-App-Übersicht, App öffnen, Assistent, Bildschirm sperren*, nichts.
+Grundsatz: möglichst viel einstellbar, damit man sich aus beiden Welten das Beste aussuchen kann.
+Jede Geste lässt sich frei belegen: eigene Benachrichtigungen, eigener Schnellzugriff,
+System-Benachrichtigungen, System-Schnelleinstellungen, Suche, App-Übersicht, App öffnen,
+Assistent, Bildschirm sperren*, nichts.
+
+„Oberer Rand“ (Wisch, der in der Randzone oben beginnt) und „Nach unten wischen (Bildschirmmitte)“
+sind zwei getrennte Gesten. Der obere Rand ist geteilt (links/Mitte/rechts) oder ungeteilt (eine Zone).
 
 | Geste | Standard | Phase |
 |---|---|---|
-| Wisch von oben links | Benachrichtigungen | P2 |
-| Wisch von oben rechts | Schnellzugriff | P2 |
-| Wisch nach unten (Mitte) | Suche | P2 |
-| Wisch nach oben | nichts / App-Übersicht | P2 |
+| Oberer Rand links (geteilt) | eigene Benachrichtigungen | P2 |
+| Oberer Rand Mitte (geteilt) | Suche | P2 |
+| Oberer Rand rechts (geteilt) | eigener Schnellzugriff | P2 |
+| Oberer Rand (ungeteilt) | System-Benachrichtigungen | P2 |
+| Nach unten wischen (Bildschirmmitte) | Suche | P2 |
+| Nach oben wischen | nichts | P2 |
 | Doppeltipp auf leere Fläche | nichts | P2 |
 | Doppeltipp unten | Assistent (Standard-Assistent von Android) | P2 |
 | Zwei-Finger-Zoom | Seitenübersicht | P3 |
-| Breite des Wisch-Bereichs oben | 20–50 % je Seite | P2 |
+| Oberer Rand geteilt / ungeteilt | geteilt | P2 |
+| Breite der Bereiche links/rechts (geteilt) | 20–50 % je Seite | P2 |
+| Höhe der Randzone | 24–64 dp (Standard 40) | P2 |
+
+Vorlagen (Schnellwahl oben auf der Gesten-Seite; einzelne Änderung → „Eigen“):
+
+| Vorlage | Oberer Rand | Bildschirmmitte nach unten | Nach oben |
+|---|---|---|---|
+| Launcher TOS (Standard) | geteilt: links eigene Benachrichtigungen, Mitte Suche, rechts eigener Schnellzugriff | Suche | nichts |
+| Android-Standard | ungeteilt: System-Benachrichtigungen | System-Benachrichtigungen | Suche |
+| Android + Suche | ungeteilt: System-Benachrichtigungen | Suche | nichts |
+| Eigen | jede Geste einzeln | | |
+
+Die Suche bleibt immer erreichbar (Lupe im Seitenindikator), auch wenn keine Geste sie öffnet.
+System-Panels werden über die Statusleiste geöffnet (EXPAND_STATUS_BAR); klappt das auf einem Gerät
+nicht, erscheint ein Hinweis (kein Bedienungshilfe-Dienst).
 
 \* „Bildschirm sperren“ braucht einen Bedienungshilfe-Dienst und ist deshalb optional.
 

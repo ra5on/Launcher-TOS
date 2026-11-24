@@ -59,6 +59,14 @@ Einstellungen, 13 Widget-Seite), Einstellungs-Katalog `docs/EINSTELLUNGEN.md` (P
 - Alle Gesten frei belegbar (Katalog §8): oben links, oben rechts, Mitte nach unten, nach oben, Doppeltipp leer,
   Doppeltipp unten (Standard: Assistent über `Intent.ACTION_ASSIST`/`ACTION_VOICE_COMMAND`), Aktionen:
   Benachrichtigungen, Schnellzugriff, Suche, App-Übersicht, App öffnen, Assistent, nichts.
+- Nachtrag Inhaber: Wisch vom oberen RAND und Wisch nach unten in der BILDSCHIRMMITTE sind getrennte Gesten:
+  „Oberer Rand links/Mitte/rechts“ (geteilt) bzw. „Oberer Rand“ (ungeteilt), „Nach unten wischen (Bildschirmmitte)“,
+  „Nach oben wischen“, „Doppeltipp leer“, „Doppeltipp unten“. Randzone geteilt/ungeteilt, Höhe 24–64 dp.
+  Zusätzliche Aktionen: „System-Benachrichtigungen“ und „System-Schnelleinstellungen“ (StatusBarManager
+  expandNotificationsPanel/expandSettingsPanel per Reflection mit EXPAND_STATUS_BAR, try/catch; kein
+  AccessibilityService – sonst Hinweis). Vorlagen als Schnellwahl: „Launcher TOS“ (Standard), „Android-Standard“,
+  „Android + Suche“, „Eigen“ (eine einzelne Änderung springt auf „Eigen“). Die Suche bleibt immer über die Lupe im
+  Seitenindikator erreichbar (Hinweis auf der Gesten-Seite). Unit-Tests für Vorlage → Gesten und das Umspringen.
 
 ## 6. Blur (Funktion 15)
 - Ordner, Suche, Panels, Widget-/App-Übersicht-Overlays: Homescreen-Inhalt dahinter mit `RenderEffect`/

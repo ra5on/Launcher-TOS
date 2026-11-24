@@ -8,17 +8,23 @@ import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.systemBars
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.windowInsetsPadding
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -38,6 +44,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.layout.boundsInRoot
 import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -53,51 +60,41 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import de.umstieg.launcher.R
 import de.umstieg.launcher.core.AppItem
-import de.umstieg.launcher.core.AppKey
+import de.umstieg.launcher.core.FolderBackground
 import de.umstieg.launcher.core.FolderItem
-import de.umstieg.launcher.core.LauncherSettings
-import de.umstieg.launcher.core.iconOptions
 import de.umstieg.launcher.core.Slot
-import de.umstieg.launcher.data.AppInfo
-import de.umstieg.launcher.ui.icons.SuperellipseShape
 import de.umstieg.launcher.ui.theme.Inter
-import de.umstieg.launcher.ui.theme.Tos
 import de.umstieg.launcher.ui.theme.LocalPanelColors
+import de.umstieg.launcher.ui.theme.Tos
 import de.umstieg.launcher.ui.theme.glass
 import kotlin.math.ceil
 
 /**
- * Geöffneter Ordner als Glas-Panel: Name (antippen zum Umbenennen), Anzahl, Raster der Apps.
- * Ziehen innerhalb sortiert um, Herausziehen schließt das Panel und legt auf dem Homescreen ab.
+ * Geöffneter Ordner als Glas-Panel: Name (antippen zum Umbenennen), Anzahl, Raster der Apps (scrollt
+ * bei vielen Apps). Ziehen innerhalb sortiert um, Herausziehen schließt das Panel.
  */
 @Composable
-fun FolderOverlay(
-    folder: FolderItem,
-    apps: Map<AppKey, AppInfo>,
-    settings: LauncherSettings,
-    shape: SuperellipseShape,
-    editMode: Boolean,
-    drag: DragState,
-    vm: HomeViewModel,
-    onLaunch: (AppInfo, Rect) -> Unit,
-    onGeometry: (Rect, GridGeometry) -> Unit,
-) {
+fun FolderOverlay(folder: FolderItem, env: GridEnv, onGeometry: (Rect, GridGeometry) -> Unit) {
     val c = LocalPanelColors.current
     val density = LocalDensity.current
-    val columns = when {
-        folder.apps.size > 16 -> 5
-        folder.apps.size > 9 -> 4
-        else -> 3
-    }
+    val settings = env.settings
+    val vm = env.vm
+    val columns = settings.folderColumns
     val rows = ceil(folder.apps.size / columns.toFloat()).toInt().coerceAtLeast(1)
     val ink = if (c.dark) Tos.Ink else c.content
     var panelBounds by remember { mutableStateOf(Rect.Zero) }
+    val maxPanel = (LocalConfiguration.current.screenHeightDp * 0.62f).dp
+    val bg = when (settings.folderBackground) {
+        FolderBackground.GLASS -> if (c.dark) Color.White.copy(alpha = 0.14f) else Color.White.copy(alpha = 0.95f)
+        FolderBackground.SOLID -> if (c.dark) Color(0xF2182233) else Color(0xFAF2F4F7)
+    }
 
     Box(
         Modifier
             .fillMaxSize()
             .background(c.scrim)
-            .clickable(interactionSource = remember { MutableInteractionSource() }, indication = null) { vm.openFolder(null) },
+            .clickable(interactionSource = remember { MutableInteractionSource() }, indication = null) { vm.openFolder(null) }
+            .windowInsetsPadding(WindowInsets.systemBars),
         contentAlignment = Alignment.Center,
     ) {
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
@@ -106,28 +103,25 @@ fun FolderOverlay(
                     .padding(horizontal = 24.dp)
                     .fillMaxWidth()
                     .onGloballyPositioned { panelBounds = it.boundsInRoot() }
-                    .glass(Tos.PanelShape, if (c.dark) Color.White.copy(alpha = 0.14f) else Color.White.copy(alpha = 0.95f), c.glassLine)
-                    // Tipps im Panel schließen den Ordner nicht.
+                    .glass(Tos.PanelShape, bg, c.glassLine)
                     .clickable(interactionSource = remember { MutableInteractionSource() }, indication = null) {}
                     .padding(horizontal = 18.dp, vertical = 22.dp),
             ) {
                 FolderTitle(folder, ink, c.secondary, vm)
                 Spacer(Modifier.height(18.dp))
-                BoxWithConstraints(Modifier.fillMaxWidth()) {
+                BoxWithConstraints(Modifier.fillMaxWidth().heightIn(max = maxPanel).verticalScroll(rememberScrollState())) {
                     val cellW = maxWidth / columns
-                    val labelSpace = if (settings.labelsFolder) (labelHeight(settings.fontScale).value * density.fontScale).dp + 6.dp else 0.dp
+                    val labelSpace = if (settings.labelsFolder) (labelHeight(settings.fontScale).value * density.fontScale * settings.labelLines).dp + 6.dp else 0.dp
                     val iconSize = iconDp(settings.iconSize, cellW * 0.78f)
                     val cellH = iconSize + labelSpace + 18.dp
-                    val style = IconStyle(vm.icons, settings.iconOptions(), shape, iconSize, settings.fontScale, settings.largeTouch)
+                    val style = iconStyle(vm.icons, settings, env.shape, iconSize, c.dark)
                     val iconPx = with(density) { iconSize.toPx() }
                     val dy = with(density) { -(labelSpace.toPx() / 2f) }
                     Box(
                         Modifier
                             .fillMaxWidth()
                             .height(cellH * rows)
-                            .onGloballyPositioned { coords ->
-                                onGeometry(panelBounds, GridGeometry(coords.boundsInRoot(), columns, rows, dy, iconPx))
-                            },
+                            .onGloballyPositioned { coords -> onGeometry(panelBounds, GridGeometry(coords.boundsInRoot(), columns, rows, dy, iconPx)) },
                     ) {
                         folder.apps.forEachIndexed { index, appKey ->
                             key(appKey.id) {
@@ -136,14 +130,12 @@ fun FolderOverlay(
                                     contentAlignment = Alignment.Center,
                                 ) {
                                     ItemCell(
-                                        item = AppItem(appKey), slot = Slot.InFolder(folder.folderId, index), apps = apps,
-                                        style = style, showLabel = settings.labelsFolder, editMode = editMode, wobble = settings.wobble,
-                                        drag = drag, highlighted = false,
-                                        onLaunch = { app, bounds ->
+                                        item = AppItem(appKey), slot = Slot.InFolder(folder.folderId, index), env = env,
+                                        style = style, showLabel = settings.labelsFolder, highlighted = false, labelColor = ink,
+                                        onLaunchOverride = { app, bounds ->
                                             vm.openFolder(null)
-                                            onLaunch(app, bounds)
+                                            env.onLaunch(app, bounds)
                                         },
-                                        vm = vm, labelColor = ink,
                                     )
                                 }
                             }
