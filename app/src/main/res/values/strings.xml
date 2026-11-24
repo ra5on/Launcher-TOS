@@ -670,4 +670,13 @@
     <string name="settings_reset_section_info">Setzt nur die Einstellungen dieser Seite zurück, das Layout bleibt.</string>
     <string name="restricted_step2">Schritt 2 von 2</string>
     <string name="restricted_missing_entry">Kein Eintrag unter ⋮? Erst einmal Zugriff versuchen</string>
+    <string name="category_browser">Internet &amp; Browser</string>
+    <string name="category_ai">KI-Assistenten</string>
+    <string name="category_tools">Werkzeuge</string>
+    <string name="category_finance">Banking &amp; Finanzen</string>
+    <string name="category_shopping">Einkaufen</string>
+    <string name="category_travel">Auto &amp; Verkehr</string>
+    <string name="category_smart_home">Smart Home</string>
+    <string name="category_health">Gesundheit &amp; Fitness</string>
+    <string name="menu_change_category">Kategorie ändern</string>
 </resources>

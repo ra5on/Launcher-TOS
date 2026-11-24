@@ -81,9 +81,9 @@ import de.umstieg.launcher.ui.theme.glass
 import kotlinx.coroutines.launch
 
 /** Gruppen der App-Übersicht (Zuletzt installiert zuerst). */
-fun categoryGroups(list: List<AppInfo>): List<Pair<AppCategory, List<AppInfo>>> {
+fun categoryGroups(list: List<AppInfo>, overrides: Map<String, AppCategory> = emptyMap()): List<Pair<AppCategory, List<AppInfo>>> {
     val byKey = list.associateBy { it.key }
-    return Categories.group(list.map { AppMeta(it.key, it.label, it.category, it.firstInstallTime) }).map { (cat, metas) ->
+    return Categories.group(list.map { AppMeta(it.key, it.label, overrides[it.key.packageName] ?: it.category, it.firstInstallTime) }).map { (cat, metas) ->
         cat to metas.mapNotNull { byKey[it.key] }
     }
 }
@@ -98,7 +98,7 @@ private fun tileGrid(n: Int): Pair<Int, Int> = when (n) {
 /** App-Übersicht als Kacheln: zwei Spalten, Kategoriename darunter; „+N“ öffnet die Kategorie. */
 @Composable
 fun TileGrid(vm: HomeViewModel, d: LauncherData, list: List<AppInfo>, shape: SuperellipseShape) {
-    val groups = remember(list) { categoryGroups(list) }
+    val groups = remember(list, d.categoryOverrides) { categoryGroups(list, d.categoryOverrides) }
     LazyVerticalGrid(
         GridCells.Fixed(2),
         Modifier.fillMaxSize(),
@@ -126,12 +126,13 @@ private fun CategoryTile(vm: HomeViewModel, d: LauncherData, cat: AppCategory, a
         BoxWithConstraints(
             Modifier
                 .fillMaxWidth()
-                .aspectRatio(cols.toFloat() / rows)
+                // Fest quadratisch, unabhängig von der Anzahl der Apps (keine Riesenflächen bei 1–2 Apps).
+                .aspectRatio(1f)
                 .onGloballyPositioned { bounds = it.boundsInWindow() }
                 .glass(RoundedCornerShape(30.dp), Tos.Glass, Tos.GlassLine)
                 .padding(12.dp),
         ) {
-            val cell: Dp = minOf(maxWidth / cols, maxHeight / rows)
+            val cell: Dp = minOf(maxWidth / cols, maxHeight / maxOf(cols, rows))
             val icon = cell * 0.84f
             Column(Modifier.fillMaxSize(), verticalArrangement = Arrangement.SpaceEvenly) {
                 for (r in 0 until rows) {
@@ -158,6 +159,8 @@ private fun CategoryTile(vm: HomeViewModel, d: LauncherData, cat: AppCategory, a
                                     overflow && i == n - 1 -> MoreSlot(vm, d, apps.drop(shown.size).take(4), rest, shape, icon) {
                                         vm.openCategory(cat, bounds)
                                     }
+                                    // Freier Platz: dezent angedeutet.
+                                    else -> Box(Modifier.size(icon).background(Color.White.copy(alpha = 0.06f), shape))
                                 }
                             }
                         }
@@ -247,7 +250,7 @@ fun rememberZoomFrom(origin: Rect?): ZoomState {
 fun CategoryPanel(vm: HomeViewModel, d: LauncherData, apps: Map<de.umstieg.launcher.core.AppKey, AppInfo>, cat: AppCategory, origin: Rect?, shape: SuperellipseShape) {
     val c = LocalPanelColors.current
     val list = remember(apps, d.hiddenApps) { visibleApps(d, apps) }
-    val members = remember(list, cat) { categoryGroups(list).firstOrNull { it.first == cat }?.second.orEmpty() }
+    val members = remember(list, cat, d.categoryOverrides) { categoryGroups(list, d.categoryOverrides).firstOrNull { it.first == cat }?.second.orEmpty() }
     val zoom = rememberZoomFrom(origin)
     val columns = 3
     val maxPanel = (LocalConfiguration.current.screenHeightDp * 0.62f).dp

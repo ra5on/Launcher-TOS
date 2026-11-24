@@ -133,16 +133,11 @@ fun accentColor(s: LauncherSettings, wallpaper: Color?): Color = when (s.accent)
 
 fun styleFor(s: LauncherSettings, wallpaper: Color?, systemReduceMotion: Boolean, lightWallpaper: Boolean = false): TosStyle {
     val accent = accentColor(s, wallpaper)
-    val t = s.glassTint / 100f
-    val clear = Color.White.copy(alpha = 0.10f)
-    val tinted = Color(0xFF0E121A).copy(alpha = 0.45f)
-    var fill = lerp(clear, tinted, t)
-    var line = Color.White.copy(alpha = 0.16f)
-    if (lightWallpaper) {
-        // Auf hellen Fotos sonst kaum lesbar: deutlich dunkler tönen.
-        fill = lerp(fill, Color(0xFF0E121A).copy(alpha = 0.62f), 0.6f)
-        line = Color.White.copy(alpha = 0.22f)
-    }
+    // Farbton: bei sehr wenig Tönung leicht hell, sonst dunkel; Deckkraft aus GlassLogic (50 % deutlich sichtbar,
+    // auf hellen Fotos kräftiger).
+    val tone = lerp(Color(0xFF0E121A), Color.White, de.umstieg.launcher.core.GlassLogic.whiteShare(s.glassTint))
+    var fill = tone.copy(alpha = de.umstieg.launcher.core.GlassLogic.fillAlpha(s.glassTint, lightWallpaper))
+    var line = Color.White.copy(alpha = if (lightWallpaper) 0.24f else 0.16f)
     if (s.highContrast) {
         fill = fill.copy(alpha = (fill.alpha + 0.25f).coerceAtMost(0.85f))
         line = Color.White.copy(alpha = 0.40f)

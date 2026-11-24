@@ -63,6 +63,14 @@ fun categoryName(c: AppCategory): String = stringResource(
     when (c) {
         AppCategory.RECENT -> R.string.category_recent
         AppCategory.SOCIAL -> R.string.category_social
+        AppCategory.BROWSER -> R.string.category_browser
+        AppCategory.AI -> R.string.category_ai
+        AppCategory.TOOLS -> R.string.category_tools
+        AppCategory.FINANCE -> R.string.category_finance
+        AppCategory.SHOPPING -> R.string.category_shopping
+        AppCategory.TRAVEL -> R.string.category_travel
+        AppCategory.SMART_HOME -> R.string.category_smart_home
+        AppCategory.HEALTH -> R.string.category_health
         AppCategory.PRODUCTIVITY -> R.string.category_productivity
         AppCategory.IMAGES -> R.string.category_images
         AppCategory.VIDEO -> R.string.category_video
@@ -78,6 +86,14 @@ fun categoryName(c: AppCategory): String = stringResource(
 fun categoryIcon(c: AppCategory): Int = when (c) {
     AppCategory.RECENT -> R.drawable.ic_lucide_sparkles
     AppCategory.SOCIAL -> R.drawable.ic_lucide_message_circle
+    AppCategory.BROWSER -> R.drawable.ic_lucide_globe
+    AppCategory.AI -> R.drawable.ic_lucide_bot
+    AppCategory.TOOLS -> R.drawable.ic_lucide_wrench
+    AppCategory.FINANCE -> R.drawable.ic_lucide_wallet
+    AppCategory.SHOPPING -> R.drawable.ic_lucide_shopping_cart
+    AppCategory.TRAVEL -> R.drawable.ic_lucide_car
+    AppCategory.SMART_HOME -> R.drawable.ic_lucide_house_plug
+    AppCategory.HEALTH -> R.drawable.ic_lucide_heart_pulse
     AppCategory.PRODUCTIVITY -> R.drawable.ic_lucide_list_todo
     AppCategory.IMAGES -> R.drawable.ic_lucide_image
     AppCategory.VIDEO -> R.drawable.ic_lucide_clapperboard

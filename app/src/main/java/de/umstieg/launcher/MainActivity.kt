@@ -131,12 +131,13 @@ class MainActivity : ComponentActivity() {
             val colors = runCatching { WallpaperManager.getInstance(this).getWallpaperColors(WallpaperManager.FLAG_SYSTEM) }.getOrNull()
             wallpaperColor.value = colors?.primaryColor?.toArgb()?.let { androidx.compose.ui.graphics.Color(it) }
             // Hell? Ab Android 12 sagt es das System (dunkle Schrift passt), sonst nach Helligkeit der Hauptfarbe.
-            lightWallpaper.value = when {
-                colors == null -> false
-                Build.VERSION.SDK_INT >= Build.VERSION_CODES.S ->
-                    colors.colorHints and android.app.WallpaperColors.HINT_SUPPORTS_DARK_TEXT != 0
-                else -> colors.primaryColor.luminance() > 0.55f
-            }
+            lightWallpaper.value = colors != null && de.umstieg.launcher.core.GlassLogic.isLightWallpaper(
+                hintDarkText = Build.VERSION.SDK_INT >= Build.VERSION_CODES.S &&
+                    colors.colorHints and android.app.WallpaperColors.HINT_SUPPORTS_DARK_TEXT != 0,
+                primary = colors.primaryColor.luminance(),
+                secondary = colors.secondaryColor?.luminance(),
+                tertiary = colors.tertiaryColor?.luminance(),
+            )
         }
     }
 

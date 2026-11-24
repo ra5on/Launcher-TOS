@@ -8,6 +8,12 @@ import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
+import de.umstieg.launcher.core.AppCategory
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.selection.selectable
+import androidx.compose.material3.RadioButton
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import kotlinx.coroutines.launch
@@ -209,6 +215,39 @@ fun AppMenuSheet(vm: HomeViewModel, d: LauncherData, app: AppInfo, actions: Home
     val hidden = app.key in d.hiddenApps
     val badgeOff = app.key.packageName in d.badgeDisabled
     fun close() = vm.showMenu(null)
+    var pickCategory by remember { mutableStateOf(false) }
+    if (pickCategory) {
+        val current = d.categoryOverrides[app.key.packageName] ?: app.category
+        AlertDialog(
+            onDismissRequest = { pickCategory = false },
+            title = { Text(stringResource(R.string.menu_change_category)) },
+            text = {
+                Column(Modifier.heightIn(max = 420.dp).verticalScroll(rememberScrollState())) {
+                    AppCategory.entries.filter { it != AppCategory.RECENT }.forEach { cat ->
+                        Row(
+                            Modifier.fillMaxWidth().defaultMinSize(minHeight = 48.dp).selectable(cat == current, role = Role.RadioButton) {
+                                vm.controller.updateData { dd ->
+                                    // Automatische Zuordnung gewählt: eigene Zuordnung wieder entfernen.
+                                    val auto = cat == app.category
+                                    dd.copy(categoryOverrides = if (auto) dd.categoryOverrides - app.key.packageName else dd.categoryOverrides + (app.key.packageName to cat))
+                                }
+                                pickCategory = false
+                                close()
+                            },
+                            verticalAlignment = Alignment.CenterVertically,
+                        ) {
+                            RadioButton(selected = cat == current, onClick = null)
+                            Spacer(Modifier.width(12.dp))
+                            Icon(painterResource(de.umstieg.launcher.ui.drawer.categoryIcon(cat)), null, modifier = Modifier.size(20.dp))
+                            Spacer(Modifier.width(10.dp))
+                            Text(de.umstieg.launcher.ui.drawer.categoryName(cat))
+                        }
+                    }
+                }
+            },
+            confirmButton = { TextButton(onClick = { pickCategory = false }) { Text(stringResource(R.string.close)) } },
+        )
+    }
     Box(
         Modifier.fillMaxSize().background(c.scrim)
             .clickable(interactionSource = remember { MutableInteractionSource() }, indication = null) { close() },
@@ -231,6 +270,7 @@ fun AppMenuSheet(vm: HomeViewModel, d: LauncherData, app: AppInfo, actions: Home
             if (app.key !in placed) MenuRow(R.drawable.ic_lucide_house, stringResource(R.string.menu_to_home)) { vm.addApp(app.key, page); close() }
             MenuRow(R.drawable.ic_lucide_square_pen, stringResource(R.string.menu_customize)) { close(); vm.showCustomize(app) }
             MenuRow(R.drawable.ic_lucide_info, stringResource(R.string.menu_app_info)) { vm.controller.apps.showAppDetails(app, null); close() }
+            MenuRow(R.drawable.ic_lucide_tag, stringResource(R.string.menu_change_category)) { pickCategory = true }
             MenuRow(if (badgeOff) R.drawable.ic_lucide_bell else R.drawable.ic_lucide_bell_off, stringResource(if (badgeOff) R.string.menu_badge_on else R.string.menu_badge_off)) {
                 vm.controller.setBadgeDisabled(app.key.packageName, !badgeOff); close()
             }

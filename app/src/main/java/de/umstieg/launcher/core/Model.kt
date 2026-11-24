@@ -323,6 +323,8 @@ data class LauncherData(
     val widgetPage: List<WidgetEntry> = emptyList(),
     /** Ausgeblendete Apps (nicht in App-Übersicht und Suche). */
     val hiddenApps: Set<AppKey> = emptySet(),
+    /** Eigene Kategorie je App (Paketname → Kategorie), über „Kategorie ändern“. */
+    val categoryOverrides: Map<String, AppCategory> = emptyMap(),
     /** Eigene Namen/Icon-Stil je App (Schlüssel: [AppKey.id]). */
     val appOverrides: Map<String, AppOverride> = emptyMap(),
     /** Pakete ohne Badge. */

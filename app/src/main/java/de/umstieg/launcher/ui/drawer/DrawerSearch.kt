@@ -204,9 +204,9 @@ private fun AppTile(vm: HomeViewModel, d: LauncherData, app: AppInfo, shape: Sup
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
 private fun CategoryList(vm: HomeViewModel, d: LauncherData, list: List<AppInfo>, shape: SuperellipseShape) {
-    val groups = remember(list) {
+    val groups = remember(list, d.categoryOverrides) {
         val byKey = list.associateBy { it.key }
-        Categories.group(list.map { AppMeta(it.key, it.label, it.category, it.firstInstallTime) }).map { (cat, metas) ->
+        Categories.group(list.map { AppMeta(it.key, it.label, d.categoryOverrides[it.key.packageName] ?: it.category, it.firstInstallTime) }).map { (cat, metas) ->
             cat to metas.mapNotNull { byKey[it.key] }
         }
     }

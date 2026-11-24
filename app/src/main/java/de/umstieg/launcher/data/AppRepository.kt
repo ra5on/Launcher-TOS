@@ -160,14 +160,15 @@ class AppRepository(context: Context, private val scope: CoroutineScope) {
                 } else {
                     0L
                 }
+                val label = info.label?.toString()?.trim().orEmpty().ifEmpty { cn.packageName }
                 AppInfo(
                     key = AppKey(cn.packageName, cn.className, serial),
-                    label = info.label?.toString()?.trim().orEmpty().ifEmpty { cn.packageName },
+                    label = label,
                     component = cn,
                     user = user,
                     isWorkProfile = user != me,
                     activityInfo = info,
-                    category = Categories.fromAndroid(appInfo.category, cn.packageName),
+                    category = Categories.classify(cn.packageName, label, appInfo.category),
                     firstInstallTime = installed,
                     quiet = quiet,
                 )
