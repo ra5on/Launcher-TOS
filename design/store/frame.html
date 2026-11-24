@@ -29,6 +29,6 @@
   document.getElementById("bg").classList.add("bg" + (q.get("bg") || "1"));
   document.getElementById("h").textContent = q.get("h") || "";
   document.getElementById("sub").textContent = q.get("sub") || "";
-  document.getElementById("img").src = "../export/screens/" + q.get("s") + ".png";
+  const src = q.get("s"); document.getElementById("img").src = "../export/" + (src.includes("/") ? src : "screens/" + src) + ".png";
 </script>
 </body></html>

@@ -1,8 +1,8 @@
-01-store-homescreen	01-homescreen	Vertraut vom ersten Tag an	Übersichtlicher Homescreen mit Dock, Ordnern und Widgets	1
-02-store-benachrichtigungen	03-benachrichtigungen	Alles Neue auf einen Blick	Von oben links nach unten wischen	2
-03-store-schnellzugriff	04-schnellzugriff	Schnellzugriff mit einem Wisch	Von oben rechts: WLAN, Licht, Musik und mehr	3
-04-store-bearbeiten	12-bearbeitungsmodus	Ordnen, wie du willst	Lange drücken, verschieben, fertig	4
-05-store-icons	15-einstellungen-icons	Deine Icons, deine Form	Original-Icons mit stufenlos einstellbarer Rundung	1
-06-store-app-uebersicht	09-app-uebersicht	Jede App sofort finden	Automatische Kategorien und schnelle Suche	2
-07-store-schnellzugriff-seiten	07-schnellzugriff-bearbeiten	Dein Schnellzugriff, deine Seiten	Elemente hinzufügen, verkleinern, entfernen	3
-08-store-einstellungen	14-einstellungen-uebersicht	Fast alles einstellbar	Raster, Gesten, Glas, Schrift und vieles mehr	4
+01-store-homescreen	app/01-home	Vertraut vom ersten Tag an	Deine Apps, Ordner und ein Dock – übersichtlich wie gewohnt	1
+02-store-schnellzugriff	app/05-schnellzugriff	Schnellzugriff mit einem Wisch	Von oben rechts: Licht, Lautstärke, Helligkeit und mehr	3
+03-store-bearbeiten	app/02-edit	Ordnen, wie du willst	Lange drücken, verschieben, fertig	4
+04-store-ordner	app/03-ordner	Ordner per Ziehen	App auf App ziehen – fertig ist der Ordner	2
+05-store-suche	app/06-suche	Findet auch bei Tippfehlern	Mitten auf dem Display nach unten wischen	1
+06-store-app-uebersicht	app/07-uebersicht	Jede App sofort finden	Automatische Kategorien und A–Z-Liste	2
+07-store-raster	app/08-icons	Dein Raster, deine Icons	Spalten, Reihen, Größe und Rundung frei einstellbar	3
+08-store-einstellungen	app/10-einstellungen	Fast alles einstellbar	Gesten, Glas, Schrift, Badges und vieles mehr	4

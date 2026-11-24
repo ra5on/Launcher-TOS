@@ -20,7 +20,7 @@ done
 if [[ -z "$pat" || "$pat" == store ]]; then
   enc() { python3 -c 'import sys,urllib.parse;print(urllib.parse.quote(sys.argv[1]))' "$1"; }
   while IFS=$'\t' read -r name scr h sub bg; do
-    [[ -z "$name" || ! -f "export/screens/$scr.png" ]] && { echo "fehlt: $scr"; continue; }
+    f="export/screens/$scr.png"; [[ "$scr" == */* ]] && f="export/$scr.png"; [[ -z "$name" || ! -f "$f" ]] && { echo "fehlt: $scr"; continue; }
     render "http://127.0.0.1:8765/store/frame.html?s=$scr&h=$(enc "$h")&sub=$(enc "$sub")&bg=$bg" "export/store/$name.png" 360 640 3 && echo "ok store/$name"
   done < store/list.tsv
   render "http://127.0.0.1:8765/store/feature-graphic.html" "export/store/feature-graphic.png" 1024 500 1 && echo "ok feature-graphic"
