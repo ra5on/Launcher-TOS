@@ -61,9 +61,15 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         // Auch in den Kamera-Ausschnitt/Statusleistenbereich zeichnen (auch bei ausgeblendeter Statusleiste),
         // damit Overlays, Abdunkelung und Unschärfe bis ganz oben reichen.
+        // Fenster über den ganzen Bildschirm: keine Einpassung an Statusleiste/Gestenleiste durch das System
+        // (sonst beginnt das Fenster unter der Statusleiste: dort bliebe das Hintergrundbild unverändert, und der
+        // Inhalt rutscht um die Statusleistenhöhe zu tief, weil Compose die Insets zusätzlich anwendet).
+        androidx.core.view.WindowCompat.setDecorFitsSystemWindows(window, false)
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
             window.attributes = window.attributes.apply {
                 layoutInDisplayCutoutMode = WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_ALWAYS
+                fitInsetsTypes = 0
+                fitInsetsSides = 0
             }
         } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
             window.attributes = window.attributes.apply {
@@ -156,7 +162,12 @@ class MainActivity : ComponentActivity() {
         val enabled = windowManager.isCrossWindowBlurEnabled
         if (on && enabled) {
             window.addFlags(WindowManager.LayoutParams.FLAG_BLUR_BEHIND)
-            window.attributes = window.attributes.apply { blurBehindRadius = BLUR_RADIUS_PX }
+            window.attributes = window.attributes.apply {
+                blurBehindRadius = BLUR_RADIUS_PX
+                // Sicherstellen, dass das Fenster auch mit Unschärfe den ganzen Bildschirm abdeckt.
+                fitInsetsTypes = 0
+                fitInsetsSides = 0
+            }
         } else {
             window.clearFlags(WindowManager.LayoutParams.FLAG_BLUR_BEHIND)
         }

@@ -1,5 +1,13 @@
 # Änderungen
 
+## 1.2.1 (versionCode 121)
+
+- **Suche und Panels decken die Statusleiste wieder vollständig ab:** Der Homescreen nutzte für die Tastatur
+  „adjustPan“; beim Öffnen der Tastatur konnte Android das ganze Fenster verschieben (heller, nicht
+  weichgezeichneter Balken oben, Inhalt um die Statusleistenhöhe zu tief). Jetzt „adjustResize“ mit eigener
+  Behandlung der Tastatur-Insets, und das Fenster passt sich ausdrücklich nicht an Systemleisten an
+  (auch mit Fenster-Unschärfe).
+
 ## 1.2.0 (versionCode 120)
 
 - **Ordner per Ziehen repariert:** Ziel ist die Mitte des gezogenen Icons, nach kurzem Verweilen (400 ms)

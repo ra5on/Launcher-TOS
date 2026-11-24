@@ -16,8 +16,8 @@ android {
         applicationId = "de.umstieg.launcher"
         minSdk = 26
         targetSdk = 37
-        versionCode = 120
-        versionName = "1.2.0"
+        versionCode = 121
+        versionName = "1.2.1"
     }
     signingConfigs {
         if (releaseKeystore != null && releasePassword != null) {
